@@ -11,7 +11,9 @@ const app = express();
 // Middleware
 app.use(helmet());
 app.use(cors({ origin: env.FRONTEND_URL }));
-app.use(morgan('dev'));
+if (env.NODE_ENV !== 'test') {
+  app.use(morgan('dev'));
+}
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -20,10 +22,5 @@ app.use('/', routes);
 
 // Error handling
 app.use(errorMiddleware);
-
-// Start server
-app.listen(env.PORT, () => {
-  console.log(`Server running on port ${env.PORT}`);
-});
 
 export default app;
