@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String      @id @default(uuid())
+  email        String      @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  portfolios   Portfolio[]
+}
+
+model Portfolio {
+  id           String        @id @default(uuid())
+  name         String
+  description  String?
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  positions    Position[]
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([userId])
+}
+
+model Position {
+  id          String    @id @default(uuid())
+  symbol      String
+  quantity    Decimal   @db.Decimal(18, 8)
+  avgCost     Decimal   @db.Decimal(18, 2)
+  portfolioId String
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([portfolioId, symbol])
+  @@index([portfolioId])
+}
+
+model Transaction {
+  id          String          @id @default(uuid())
+  type        TransactionType
+  symbol      String
+  quantity    Decimal         @db.Decimal(18, 8)
+  price       Decimal         @db.Decimal(18, 2)
+  portfolioId String
+  portfolio   Portfolio       @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  executedAt  DateTime        @default(now())
+  createdAt   DateTime        @default(now())
+
+  @@index([portfolioId])
+  @@index([symbol])
+}
+
+enum TransactionType {
+  BUY
+  SELL
+}
