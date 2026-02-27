@@ -1,2 +1,2 @@
 // Service exports
-export {};
+export * from './auth.service';
