@@ -7,12 +7,6 @@ import { useAuthStore } from '../../store/authStore';
  * If the user is not authenticated, they are redirected to /login.
  * The `replace` prop replaces the current history entry so the user
  * can't press the back button to get back to the protected page.
- *
- * Usage in router:
- *   <Route element={<ProtectedRoute />}>
- *     <Route path="/dashboard" element={<Dashboard />} />
- *     <Route path="/portfolio" element={<Portfolio />} />
- *   </Route>
  */
 const ProtectedRoute = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -20,8 +14,6 @@ const ProtectedRoute = () => {
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-
-  // Renders the matched child route
   return <Outlet />;
 };
 

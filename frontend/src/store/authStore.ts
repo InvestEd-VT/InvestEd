@@ -39,16 +39,13 @@ export const useAuthStore = create<AuthStore>()(
       isLoading: false,
 
       // Updates the user and keeps isAuthenticated in sync.
-      setUser: (user) =>
-        set({ user, isAuthenticated: user !== null }),
+      setUser: (user) => set({ user, isAuthenticated: user !== null }),
 
       // Updates both tokens after a token refresh.
-      setTokens: (accessToken, refreshToken) =>
-        set({ accessToken, refreshToken }),
+      setTokens: (accessToken, refreshToken) => set({ accessToken, refreshToken }),
 
       // toggles loading
-      setLoading: (isLoading) =>
-        set({ isLoading }),
+      setLoading: (isLoading) => set({ isLoading }),
 
       // After a successful login, sets user, tokens, and marks as authenticated.
       login: (user, accessToken, refreshToken) =>

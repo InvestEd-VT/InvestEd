@@ -49,7 +49,6 @@ const ForgotPassword = () => {
   return (
     <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
-
         {/* Header */}
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-semibold text-zinc-50 tracking-tight">
@@ -62,7 +61,6 @@ const ForgotPassword = () => {
 
         {/* Card */}
         <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6 shadow-xl">
-
           {/* Success state */}
           {status === 'success' ? (
             <div className="text-center space-y-4">
@@ -93,7 +91,6 @@ const ForgotPassword = () => {
             </div>
           ) : (
             <form onSubmit={handleSubmit} noValidate className="space-y-4">
-
               {/* Error banner */}
               {status === 'error' && (
                 <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3">
@@ -128,9 +125,7 @@ const ForgotPassword = () => {
                     ${emailError ? 'border-red-500/70' : 'border-zinc-700 hover:border-zinc-600'}
                   `}
                 />
-                {emailError && (
-                  <p className="text-xs text-red-400">{emailError}</p>
-                )}
+                {emailError && <p className="text-xs text-red-400">{emailError}</p>}
               </div>
 
               {/* Submit button */}
@@ -145,14 +140,12 @@ const ForgotPassword = () => {
               >
                 {isSubmitting ? (
                   <span className="flex items-center justify-center gap-2">
-                    <svg
-                      className="h-4 w-4 animate-spin"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                    >
+                    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
                       <circle
                         className="opacity-25"
-                        cx="12" cy="12" r="10"
+                        cx="12"
+                        cy="12"
+                        r="10"
                         stroke="currentColor"
                         strokeWidth="4"
                       />
@@ -172,10 +165,7 @@ const ForgotPassword = () => {
               {/* Back to login */}
               <p className="text-center text-sm text-zinc-500">
                 Remember your password?{' '}
-                <Link
-                  to="/login"
-                  className="text-zinc-300 hover:text-zinc-50 transition-colors"
-                >
+                <Link to="/login" className="text-zinc-300 hover:text-zinc-50 transition-colors">
                   Back to login
                 </Link>
               </p>
