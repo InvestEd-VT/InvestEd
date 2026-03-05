@@ -23,7 +23,16 @@ model User {
 
 model Portfolio {
   id           String        @id @default(uuid())
-  name         String
+  name         String  <Routes>
+    {/* Public routes */}
+    <Route path="/login" element={<Login />} />
+  
+    {/* Protected routes — all wrapped under ProtectedRoute */}
+    <Route element={<ProtectedRoute />}>
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/portfolio" element={<Portfolio />} />
+    </Route>
+  </Routes>
   description  String?
   userId       String
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
