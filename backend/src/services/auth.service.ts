@@ -1,14 +1,14 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { env } from '../config/env';
-
-// ─── TYPES ────────────────────────────────────────────
-
-export interface TokenPayload {
-  userId: string;
-  iat?: number;
-  exp?: number;
-}
+import { env } from '../config/env.js';
+import prisma from '../config/database.js';
+import { AppError } from '../utils/AppError.js';
+import {
+  RegisterRequestBody,
+  LoginRequestBody,
+  AuthResponse,
+  TokenPayload,
+} from '../types/auth.types.js';
 
 // ─── PASSWORD HASHING ─────────────────────────────────
 
@@ -49,26 +49,162 @@ export const generateRefreshToken = (userId: string): string => {
 // ─── TOKEN VERIFICATION ───────────────────────────────
 
 /**
- * Verifies and decodes a JWT token
+ * Verifies and decodes a JWT access token
  * Throws error if token is invalid or expired
  */
-export const verifyToken = (token: string): TokenPayload => {
+export const verifyAccessToken = (token: string): TokenPayload => {
   return jwt.verify(token, env.JWT_SECRET) as TokenPayload;
 };
 
-// Placeholder, to be replaced when auth service is implemented
-export const register = async (data: unknown) => {
-  throw new Error('Not implemented yet');
+/**
+ * Verifies and decodes a JWT refresh token
+ * Throws error if token is invalid or expired
+ */
+export const verifyRefreshToken = (token: string): TokenPayload => {
+  return jwt.verify(token, env.JWT_REFRESH_SECRET) as TokenPayload;
 };
 
-export const login = async (data: unknown) => {
-  throw new Error('Not implemented yet');
+// ─── AUTH OPERATIONS ──────────────────────────────────
+
+/**
+ * Registers a new user account and returns tokens (auto-login)
+ * Checks for existing email, hashes password, creates user in database
+ * Generates access and refresh tokens, stores hashed refresh token
+ * Returns 409 if email already registered
+ */
+export const register = async (data: RegisterRequestBody): Promise<AuthResponse> => {
+  const existing = await prisma.user.findUnique({ where: { email: data.email } });
+  if (existing) {
+    throw new AppError('Email already registered', 409);
+  }
+
+  const passwordHash = await hashPassword(data.password);
+
+  const user = await prisma.user.create({
+    data: {
+      email: data.email,
+      passwordHash,
+      firstName: data.firstName,
+      lastName: data.lastName,
+    },
+  });
+
+  // Generate tokens for auto-login after registration
+  const accessToken = generateAccessToken(user.id);
+  const refreshToken = generateRefreshToken(user.id);
+
+  // Store hashed refresh token in database
+  const hashedRefresh = await hashPassword(refreshToken);
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { refreshToken: hashedRefresh },
+  });
+
+  return {
+    accessToken,
+    refreshToken,
+    user: {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      createdAt: user.createdAt,
+    },
+  };
 };
 
+/**
+ * Authenticates user credentials and returns access and refresh tokens
+ * Stores hashed refresh token in database for later validation
+ * Returns 401 if email or password is invalid
+ */
+export const login = async (data: LoginRequestBody): Promise<AuthResponse> => {
+  const user = await prisma.user.findUnique({ where: { email: data.email } });
+  if (!user) {
+    throw new AppError('Invalid email or password', 401);
+  }
+
+  const valid = await comparePassword(data.password, user.passwordHash);
+  if (!valid) {
+    throw new AppError('Invalid email or password', 401);
+  }
+
+  const accessToken = generateAccessToken(user.id);
+  const refreshToken = generateRefreshToken(user.id);
+
+  // Store hashed refresh token in database
+  const hashedRefresh = await hashPassword(refreshToken);
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { refreshToken: hashedRefresh },
+  });
+
+  return {
+    accessToken,
+    refreshToken,
+    user: {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      createdAt: user.createdAt,
+    },
+  };
+};
+
+/**
+ * Issues new access and refresh tokens using a valid refresh token
+ * Implements token rotation: old refresh token is invalidated, new one is stored
+ * Verifies the provided token matches the stored hash in database
+ * Returns 401 if token is invalid, expired, or doesn't match stored hash
+ */
 export const refresh = async (token: string) => {
-  throw new Error('Not implemented yet');
+  if (!token) {
+    throw new AppError('Refresh token required', 400);
+  }
+
+  // Verify the JWT signature and expiration
+  let payload: TokenPayload;
+  try {
+    payload = verifyRefreshToken(token);
+  } catch {
+    throw new AppError('Invalid or expired refresh token', 401);
+  }
+
+  // Look up user and their stored refresh token hash
+  const user = await prisma.user.findUnique({ where: { id: payload.userId } });
+  if (!user || !user.refreshToken) {
+    throw new AppError('Invalid refresh token', 401);
+  }
+
+  // Verify the provided token matches the stored hash
+  const valid = await comparePassword(token, user.refreshToken);
+  if (!valid) {
+    throw new AppError('Invalid refresh token', 401);
+  }
+
+  // Rotate: issue new tokens and store new refresh hash
+  const newAccessToken = generateAccessToken(user.id);
+  const newRefreshToken = generateRefreshToken(user.id);
+  const hashedRefresh = await hashPassword(newRefreshToken);
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { refreshToken: hashedRefresh },
+  });
+
+  return { accessToken: newAccessToken, refreshToken: newRefreshToken };
 };
 
+/**
+ * Invalidates the user's refresh token in the database
+ * Sets refreshToken to null, preventing further token refreshes
+ */
 export const logout = async (userId: string) => {
-  throw new Error('Not implemented yet');
+  await prisma.user.update({
+    where: { id: userId },
+    data: { refreshToken: null },
+  });
+
+  return { message: 'Logged out successfully' };
 };
