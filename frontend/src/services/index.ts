@@ -1,2 +1,2 @@
 // API service functions
-export {};
+export { default as api } from './api';

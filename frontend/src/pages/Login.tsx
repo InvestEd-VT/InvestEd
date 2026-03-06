@@ -11,7 +11,7 @@ import {
 import { Input } from "../components/ui/input"
 import { Label } from "../components/ui/label"
 
-export default function Login() {
+const Login = () => {    
     return (
         <div className="flex min-h-screen items-center justify-between px-[17vw] bg-black">
             <div className="text-left mb-[10vh]">
@@ -73,4 +73,6 @@ export default function Login() {
             </Card>
         </div>
     )
-}
+};
+
+export default Login;
