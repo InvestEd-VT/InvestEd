@@ -1,9 +1,9 @@
+import { Link } from "react-router-dom"
 import { Button } from "../components/ui/button"
 import {
   Card,
   CardAction,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -13,23 +13,15 @@ import { Label } from "../components/ui/label"
 
 const Login = () => {    
     return (
-        <div className="flex min-h-screen items-center justify-between px-[17vw] bg-black">
+        <div className="flex min-h-screen items-center justify-between px-[17vw] bg-zinc-950">
             <div className="text-left mb-[10vh]">
                 <h1 className="text-4xl font-bold text-white mb-4">InvestEd</h1>
                 <p className="text-lg text-gray-400">Your investment education platform</p>
             </div>
 
-            <Card className="w-full max-w-sm">
+            <Card className="w-full max-w-sm bg-zinc-900 border-zinc-800 text-zinc-200">
                 <CardHeader>
-                    <div className="space-y-1.5">
-                        <CardTitle>Login to your account</CardTitle>
-                        <CardDescription>
-                            Enter your email below to login to your account
-                        </CardDescription>
-                    </div>
-                    <CardAction>
-                        <Button variant="link">Sign Up</Button>
-                    </CardAction>
+                    <CardTitle>Sign In</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <form>
@@ -51,7 +43,9 @@ const Login = () => {
                                 href="#"
                                 className="ml-auto text-sm underline-offset-4 hover:underline"
                             >
-                                Forgot your password?
+                                <Link to="/forgot-password">
+                                    Forgot your password?
+                                </Link>
                             </a>
                             </div>
                             <Input
@@ -66,9 +60,19 @@ const Login = () => {
                 </CardContent>
 
                 <CardFooter className="flex flex-col gap-2">
-                    <Button type="submit" className="w-full">
-                        Login
+                    <Button type="submit" className="w-full rounded-lg bg-zinc-50 px-4 py-2 text-sm font-medium text-zinc-900
+                        hover:bg-zinc-200 active:bg-zinc-300
+                        focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-1 focus:ring-offset-zinc-900
+                        disabled:cursor-not-allowed disabled:opacity-50
+                        transition-colors">
+                        Sign In
                     </Button>
+                    <CardAction>
+                        <span className="text-zinc-500">Don't have an account?</span>
+                        <Link to="/register">
+                            <Button variant="link" className="p-2 text-zinc-300 hover:text-zinc-50 transition-colors">Sign Up</Button>
+                        </Link>
+                    </CardAction>
                 </CardFooter>
             </Card>
         </div>
