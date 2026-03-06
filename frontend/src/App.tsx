@@ -1,10 +1,9 @@
+import Login from "./pages/Login";
+
 function App() {
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">InvestEd</h1>
-        <p className="text-gray-600">Your investment education platform</p>
-      </div>
+    <div className="dark">
+      <Login />
     </div>
   );
 }
