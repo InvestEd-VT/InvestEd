@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import * as authController from '../../controllers/auth.controller';
-import { authMiddleware } from '../../middleware/auth.middleware';
-import { validate } from '../../middleware/validation.middleware';
-import { registerSchema, loginSchema } from '../../validators/auth.validator';
+import * as authController from '../../controllers/auth.controller.js';
+import { authMiddleware } from '../../middleware/auth.middleware.js';
+import { validate } from '../../middleware/validation.middleware.js';
+import { registerSchema, loginSchema } from '../../validators/auth.validator.js';
 
 const router = Router();
 
