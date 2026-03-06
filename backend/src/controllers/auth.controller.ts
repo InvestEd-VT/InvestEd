@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthRequest } from '../types/auth.types.js';
-import * as authService from '../services/auth.service';
+import * as authService from '../services/auth.service.js';
 
 /**
  * POST /api/v1/auth/register
