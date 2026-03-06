@@ -1,15 +1,29 @@
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect } from 'vitest';
 import App from './App';
 
+// Helper to render App with a router context and an optional initial route
+const renderApp = (initialPath = '/') =>
+  render(
+    <MemoryRouter initialEntries={[initialPath]}>
+      <App />
+    </MemoryRouter>
+  );
+
 describe('App', () => {
-  it('renders the app title', () => {
-    render(<App />);
-    expect(screen.getByText('InvestEd')).toBeInTheDocument();
+  it('redirects unauthenticated users to login', () => {
+    renderApp('/dashboard');
+    expect(screen.getByText(/login — coming soon/i)).toBeInTheDocument();
   });
 
-  it('renders the tagline', () => {
-    render(<App />);
-    expect(screen.getByText('Your investment education platform')).toBeInTheDocument();
+  it('renders the forgot password page on /forgot-password', () => {
+    renderApp('/forgot-password');
+    expect(screen.getByText(/forgot your password/i)).toBeInTheDocument();
+  });
+
+  it('redirects unknown paths to login for unauthenticated users', () => {
+    renderApp('/some/unknown/path');
+    expect(screen.getByText(/login — coming soon/i)).toBeInTheDocument();
   });
 });
