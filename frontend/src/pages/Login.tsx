@@ -31,8 +31,12 @@ const Login = () => {
             const response = await authService.login({ email, password });
             authStore.login(response.user, response.accessToken, response.refreshToken);
             navigate("/dashboard");
-        } catch (error: any) {
-            setErrors([error.response?.data?.message || error.message || "Login failed"]);
+        } catch (error) {
+            if (error instanceof Error) {
+                setErrors([error.message]);
+            } else {
+                setErrors(["Login failed"]);
+            }
         } finally {
             setIsLoading(false);
         }

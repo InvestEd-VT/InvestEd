@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { RegisterRequest, User } from '../types';
+import type { User } from '../types';
 import { authService } from '../services';
 
 // Keys used to store auth data in localStorage

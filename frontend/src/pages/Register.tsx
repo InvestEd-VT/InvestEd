@@ -47,8 +47,12 @@ const Register = () => {
             const response = await authService.register({ firstName, lastName, email, password });
             authStore.login(response.user, response.accessToken, response.refreshToken);
             navigate("/dashboard");
-        } catch (error: any) {
-            setErrors([error.response?.data?.message || error.message || "Registration failed"]);
+        } catch (error) {
+            if (error instanceof Error) {
+                setErrors([error.message]);
+            } else {
+                setErrors(["Registration failed"]);
+            }
         } finally {
             setIsLoading(false);
         }
