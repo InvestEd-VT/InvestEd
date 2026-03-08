@@ -117,7 +117,7 @@ const Login = () => {
                     <CardAction>
                         <span className="text-zinc-500">Don't have an account?</span>
                         <Link to="/register">
-                            <Button variant="link" className="p-2 text-zinc-300 hover:text-zinc-50 transition-colors">Sign Up</Button>
+                            <Button className="p-2 text-zinc-300 hover:text-zinc-50 transition-colors">Sign Up</Button>
                         </Link>
                     </CardAction>
                 </CardFooter>
