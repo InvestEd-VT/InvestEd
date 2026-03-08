@@ -1,6 +1,14 @@
-// Check if email is valid
-export function isValidEmail(email: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+// Check if email is a valid .edu email
+export function isValidEmail(email: string): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+
+  if (!email) {
+    errors.push("Email is required");
+  } else if (!/^[^\s@]+@[^\s@]+\.edu$/i.test(email)) {
+    errors.push("Email must be a valid .edu address");
+  }
+
+  return { valid: errors.length === 0, errors };
 }
 
 // Check if password is valid

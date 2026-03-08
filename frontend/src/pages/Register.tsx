@@ -31,7 +31,8 @@ const Register = () => {
 
         // Store errors relating to invalid email or password
         const newErrors: string[] = [];
-        if (!isValidEmail(email)) newErrors.push("Invalid email address");
+        const emailCheck = isValidEmail(email);
+        if (!emailCheck.valid) newErrors.push(...emailCheck.errors);
         const passwordCheck = isValidPassword(password);
         if (!passwordCheck.valid) newErrors.push(...passwordCheck.errors);
         if (password !== confirmPassword) newErrors.push("Passwords do not match");
