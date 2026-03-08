@@ -76,9 +76,12 @@ const Login = () => {
                   <Label htmlFor="password" className="">
                     Password
                   </Label>
-                  <a href="#" className="ml-auto text-sm underline-offset-4 hover:underline">
-                    <Link to="/forgot-password">Forgot your password?</Link>
-                  </a>
+                  <Link
+                    to="/forgot-password"
+                    className="ml-auto text-sm underline-offset-4 hover:underline"
+                  >
+                    Forgot your password?
+                  </Link>
                 </div>
                 <Input
                   id="password"
