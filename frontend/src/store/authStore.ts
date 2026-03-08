@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User } from '../types';
+import { api } from '../services';
 
 // Keys used to store auth data in localStorage
 export const AUTH_STORAGE_KEYS = {
@@ -21,13 +22,14 @@ interface AuthActions {
   setLoading: (isLoading: boolean) => void;
   login: (user: User, accessToken: string, refreshToken: string) => void;
   logout: () => void;
+  loadUser: () => void;
 }
 
 type AuthStore = AuthState & AuthActions;
 
 export const useAuthStore = create<AuthStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       // The logged-in user's profile.
       user: null,
       // JWT sent in the Authorization header with API request.
@@ -66,6 +68,22 @@ export const useAuthStore = create<AuthStore>()(
           isAuthenticated: false,
           isLoading: false,
         }),
+
+      loadUser: async () => {
+        const { accessToken, setUser, setLoading, logout } = get();
+        if (!accessToken) return;
+
+        try {
+          setLoading(true);
+          const response = await api.get<User>('/users/me'); // TODO: create a /users/me endpoint to get the current user
+          setUser(response.data);
+        } catch (error) {
+          console.error('Failed to fetch current user', error);
+          logout();
+        } finally {
+          setLoading(false);
+        }
+      },
     }),
     {
       name: AUTH_STORAGE_KEYS.STORE,
