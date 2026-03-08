@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { User } from '../types';
-import { api } from '../services';
+import type { RegisterRequest, User } from '../types';
+import { authService } from '../services';
 
 // Keys used to store auth data in localStorage
 export const AUTH_STORAGE_KEYS = {
@@ -75,8 +75,8 @@ export const useAuthStore = create<AuthStore>()(
 
         try {
           setLoading(true);
-          const response = await api.get<User>('/users/me'); // TODO: create a /users/me endpoint to get the current user
-          setUser(response.data);
+          const user = await authService.getMe();
+          setUser(user);
         } catch (error) {
           console.error('Failed to fetch current user', error);
           logout();
