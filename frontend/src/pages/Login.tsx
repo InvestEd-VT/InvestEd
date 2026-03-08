@@ -26,6 +26,7 @@ const Login = () => {
         e.preventDefault();
         setErrors([]);
 
+        // Call API, display errors
         try {
             setIsLoading(true);
             const response = await authService.login({ email, password });

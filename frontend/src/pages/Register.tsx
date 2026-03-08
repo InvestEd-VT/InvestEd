@@ -29,19 +29,20 @@ const Register = () => {
         e.preventDefault();
         setErrors([]);
 
+        // Store errors relating to invalid email or password
         const newErrors: string[] = [];
-        if (!firstName.trim()) newErrors.push("First name is required");
-        if (!lastName.trim()) newErrors.push("Last name is required");
         if (!isValidEmail(email)) newErrors.push("Invalid email address");
         const passwordCheck = isValidPassword(password);
         if (!passwordCheck.valid) newErrors.push(...passwordCheck.errors);
         if (password !== confirmPassword) newErrors.push("Passwords do not match");
 
+        // Set errors list if errors are present
         if (newErrors.length > 0) {
             setErrors(newErrors);
             return;
         }
 
+        // Call API, display errors
         try {
             setIsLoading(true);
             const response = await authService.register({ firstName, lastName, email, password });

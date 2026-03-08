@@ -69,6 +69,7 @@ export const useAuthStore = create<AuthStore>()(
           isLoading: false,
         }),
 
+      // Gets the current user
       loadUser: async () => {
         const { accessToken, setUser, setLoading, logout } = get();
         if (!accessToken) return;
