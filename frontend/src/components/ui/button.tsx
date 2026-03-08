@@ -1,16 +1,16 @@
-import * as React from "react";
-import { Slot } from "@radix-ui/react-slot";
+import * as React from 'react';
+import { Slot } from '@radix-ui/react-slot';
 
-import { cn } from "../../lib/utils";
+import { cn } from '../../lib/utils';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   asChild?: boolean;
-  size?: "sm" | "md" | "lg"; // optional if you want different sizes
+  size?: 'sm' | 'md' | 'lg'; // optional if you want different sizes
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, asChild = false, size = "md", ...props }, ref) => {
-    const Comp = asChild ? Slot : "button";
+  ({ className, asChild = false, size = 'md', ...props }, ref) => {
+    const Comp = asChild ? Slot : 'button';
 
     // Base styling for all buttons
     let baseStyles = `
@@ -22,13 +22,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     `;
 
     // Optional: size overrides
-    if (size === "sm") baseStyles += " h-8 px-3 text-xs";
-    if (size === "lg") baseStyles += " h-10 px-8";
+    if (size === 'sm') baseStyles += ' h-8 px-3 text-xs';
+    if (size === 'lg') baseStyles += ' h-10 px-8';
 
     return <Comp className={cn(baseStyles, className)} ref={ref} {...props} />;
   }
 );
 
-Button.displayName = "Button";
+Button.displayName = 'Button';
 
 export { Button };

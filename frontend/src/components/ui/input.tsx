@@ -1,9 +1,9 @@
-import * as React from "react"
+import * as React from 'react';
 
-import { cn } from "../../lib/utils"
+import { cn } from '../../lib/utils';
 
-interface CustomInputProps extends React.ComponentProps<"input"> {
-  emailError?: boolean
+interface CustomInputProps extends React.ComponentProps<'input'> {
+  emailError?: boolean;
 }
 
 const Input = React.forwardRef<HTMLInputElement, CustomInputProps>(
@@ -22,10 +22,10 @@ const Input = React.forwardRef<HTMLInputElement, CustomInputProps>(
         )}
         {...props}
       />
-    )
+    );
   }
-)
+);
 
-Input.displayName = "Input"
+Input.displayName = 'Input';
 
-export { Input }
+export { Input };
