@@ -11,16 +11,20 @@ datasource db {
 }
 
 model User {
-  id            String      @id @default(uuid())
-  email         String      @unique
-  passwordHash  String
-  firstName     String
-  lastName      String
-  emailVerified Boolean     @default(false)
-  refreshToken  String?
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  portfolios    Portfolio[]
+  id                 String      @id @default(uuid())
+  email              String      @unique
+  passwordHash       String
+  firstName          String
+  lastName           String
+  emailVerified      Boolean     @default(false)
+  refreshToken       String?
+  verificationToken  String?
+  verificationExpiry DateTime?
+  resetToken         String?
+  resetTokenExpiry   DateTime?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  portfolios         Portfolio[]
 }
 
 model Portfolio {
@@ -28,6 +32,7 @@ model Portfolio {
   name         String
   description  String?
   userId       String
+  cashBalance  Float         @default(10000)
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   positions    Position[]
   transactions Transaction[]
