@@ -22,3 +22,8 @@ export const registerSchema: ValidationChain[] = [
   body('firstName').notEmpty().withMessage('First name required'),
   body('lastName').notEmpty().withMessage('Last name required'),
 ];
+
+// Forgot Password Schema
+export const forgotPasswordSchema: ValidationChain[] = [
+  body('email').isEmail().withMessage('Valid email required'),
+];
