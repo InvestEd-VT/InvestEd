@@ -30,4 +30,10 @@ router.post('/refresh', authController.refresh);
  */
 router.post('/logout', authMiddleware, authController.logout);
 
+/**
+ * GET /api/v1/auth/verify/:token
+ * Public route - no auth required
+ */
+router.get('/verify/:token', authController.verifyEmail);
+
 export default router;
