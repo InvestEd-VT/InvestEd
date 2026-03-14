@@ -82,3 +82,22 @@ export const verifyEmail = async (
     next(error);
   }
 };
+
+/**
+ * POST /api/v1/auth/forgot-password
+ * Public route - no auth required
+ * Sends password reset email if account exists
+ * Always returns success to prevent account enumeration
+ */
+export const forgotPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const result = await authService.forgotPassword(req.body.email);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};

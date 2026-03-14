@@ -2,7 +2,11 @@ import { Router } from 'express';
 import * as authController from '../../controllers/auth.controller.js';
 import { authMiddleware } from '../../middleware/auth.middleware.js';
 import { validate } from '../../middleware/validation.middleware.js';
-import { registerSchema, loginSchema } from '../../validators/auth.validator.js';
+import {
+  registerSchema,
+  loginSchema,
+  forgotPasswordSchema,
+} from '../../validators/auth.validator.js';
 
 const router = Router();
 
@@ -35,5 +39,11 @@ router.post('/logout', authMiddleware, authController.logout);
  * Public route - no auth required
  */
 router.get('/verify/:token', authController.verifyEmail);
+
+/**
+ * POST /api/v1/auth/forgot-password
+ * Public route - no auth required
+ */
+router.post('/forgot-password', validate(forgotPasswordSchema), authController.forgotPassword);
 
 export default router;

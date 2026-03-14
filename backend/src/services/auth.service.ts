@@ -10,7 +10,7 @@ import {
   TokenPayload,
 } from '../types/auth.types.js';
 import crypto from 'crypto';
-import { sendVerificationEmail } from './email.service.js';
+import { sendVerificationEmail, sendPasswordResetEmail } from './email.service.js';
 
 // ─── PASSWORD HASHING ─────────────────────────────────
 
@@ -235,4 +235,29 @@ export const verifyEmail = async (token: string) => {
   });
 
   return { message: 'Email verified successfully' };
+};
+
+/**
+ * Generates a password reset token and sends reset email
+ * Always returns success to prevent account enumeration
+ */
+export const forgotPassword = async (email: string) => {
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  // always return success to prevent account enumeration
+  if (!user) {
+    return { message: 'If that email exists you will receive a reset link' };
+  }
+
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000);
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { resetToken, resetTokenExpiry },
+  });
+
+  await sendPasswordResetEmail(email, resetToken);
+
+  return { message: 'If that email exists you will receive a reset link' };
 };
