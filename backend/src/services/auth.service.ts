@@ -9,6 +9,8 @@ import {
   AuthResponse,
   TokenPayload,
 } from '../types/auth.types.js';
+import crypto from 'crypto';
+import { sendVerificationEmail } from './email.service.js';
 
 // ─── PASSWORD HASHING ─────────────────────────────────
 
@@ -67,50 +69,47 @@ export const verifyRefreshToken = (token: string): TokenPayload => {
 // ─── AUTH OPERATIONS ──────────────────────────────────
 
 /**
- * Registers a new user account and returns tokens (auto-login)
- * Checks for existing email, hashes password, creates user in database
- * Generates access and refresh tokens, stores hashed refresh token
- * Returns 409 if email already registered
+ * Registers a new user account
+ * Validates .edu email, hashes password, creates user and default portfolio
+ * Generates verification token and sends verification email
+ * Returns success message without tokens - user must verify email before login
  */
-export const register = async (data: RegisterRequestBody): Promise<AuthResponse> => {
+export const register = async (data: RegisterRequestBody): Promise<{ message: string }> => {
+  // check for existing email
   const existing = await prisma.user.findUnique({ where: { email: data.email } });
   if (existing) {
     throw new AppError('Email already registered', 409);
   }
 
+  // hash password
   const passwordHash = await hashPassword(data.password);
 
-  const user = await prisma.user.create({
+  // generate verification token and expiry
+  const verificationToken = crypto.randomBytes(32).toString('hex');
+  const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+  // create user and default portfolio
+  await prisma.user.create({
     data: {
       email: data.email,
       passwordHash,
       firstName: data.firstName,
       lastName: data.lastName,
+      verificationToken,
+      verificationExpiry,
+      portfolios: {
+        create: {
+          name: 'My Portfolio',
+          cashBalance: 10000,
+        },
+      },
     },
   });
 
-  // Generate tokens for auto-login after registration
-  const accessToken = generateAccessToken(user.id);
-  const refreshToken = generateRefreshToken(user.id);
+  // send verification email
+  await sendVerificationEmail(data.email, verificationToken);
 
-  // Store hashed refresh token in database
-  const hashedRefresh = await hashPassword(refreshToken);
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { refreshToken: hashedRefresh },
-  });
-
-  return {
-    accessToken,
-    refreshToken,
-    user: {
-      id: user.id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      createdAt: user.createdAt,
-    },
-  };
+  return { message: 'Registration successful, please verify your email' };
 };
 
 /**
