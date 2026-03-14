@@ -63,3 +63,22 @@ export const logout = async (req: Request, res: Response, next: NextFunction): P
     next(error);
   }
 };
+
+/**
+ * GET /api/v1/auth/verify/:token
+ * Public route - no auth required
+ * Verifies user email using token from verification link
+ * Returns 200 on success, 400 if token invalid or expired
+ */
+export const verifyEmail = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const result = await authService.verifyEmail(req.params.token as string);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};

@@ -208,3 +208,32 @@ export const logout = async (userId: string) => {
 
   return { message: 'Logged out successfully' };
 };
+
+/**
+ * Verifies a user's email using the verification token
+ * Marks user as verified and clears token and expiry
+ * Returns 400 if token is invalid or expired
+ */
+export const verifyEmail = async (token: string) => {
+  const user = await prisma.user.findFirst({
+    where: {
+      verificationToken: token,
+      verificationExpiry: { gt: new Date() },
+    },
+  });
+
+  if (!user) {
+    throw new AppError('Invalid or expired verification token', 400);
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      emailVerified: true,
+      verificationToken: null,
+      verificationExpiry: null,
+    },
+  });
+
+  return { message: 'Email verified successfully' };
+};
