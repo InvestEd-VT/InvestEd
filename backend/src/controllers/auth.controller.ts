@@ -101,3 +101,23 @@ export const forgotPassword = async (
     next(error);
   }
 };
+
+/**
+ * POST /api/v1/auth/reset-password
+ * Public route - no auth required
+ * Resets user password using valid reset token
+ * Returns 200 on success, 400 if token invalid or expired
+ */
+export const resetPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { token, newPassword } = req.body;
+    const result = await authService.resetPassword(token, newPassword);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};

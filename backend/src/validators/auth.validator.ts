@@ -27,3 +27,9 @@ export const registerSchema: ValidationChain[] = [
 export const forgotPasswordSchema: ValidationChain[] = [
   body('email').isEmail().withMessage('Valid email required'),
 ];
+
+// Reset Password Schema - requires token and password length
+export const resetPasswordSchema: ValidationChain[] = [
+  body('token').notEmpty().withMessage('Token required'),
+  body('newPassword').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+];
