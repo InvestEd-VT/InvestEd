@@ -261,3 +261,35 @@ export const forgotPassword = async (email: string) => {
 
   return { message: 'If that email exists you will receive a reset link' };
 };
+
+/**
+ * Resets user password using a valid reset token
+ * Clears reset token and invalidates all existing sessions
+ * Returns 400 if token is invalid or expired
+ */
+export const resetPassword = async (token: string, newPassword: string) => {
+  const user = await prisma.user.findFirst({
+    where: {
+      resetToken: token,
+      resetTokenExpiry: { gt: new Date() },
+    },
+  });
+
+  if (!user) {
+    throw new AppError('Invalid or expired reset token', 400);
+  }
+
+  const passwordHash = await hashPassword(newPassword);
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      passwordHash,
+      resetToken: null,
+      resetTokenExpiry: null,
+      refreshToken: null,
+    },
+  });
+
+  return { message: 'Password reset successfully' };
+};
