@@ -293,3 +293,36 @@ export const resetPassword = async (token: string, newPassword: string) => {
 
   return { message: 'Password reset successfully' };
 };
+
+/**
+ * Resends verification email with a new token and 24 hour expiry
+ * Always returns success to prevent account enumeration
+ * Returns 400 if user is already verified
+ */
+export const resendVerification = async (email: string) => {
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  // always return success if email not found to prevent enumeration
+  if (!user) {
+    return { message: 'If that email exists you will receive a verification link' };
+  }
+
+  // return 400 if already verified
+  if (user.emailVerified) {
+    throw new AppError('Email is already verified', 400);
+  }
+
+  // generate new token and expiry
+  const verificationToken = crypto.randomBytes(32).toString('hex');
+  const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+  // replace old token with new one
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { verificationToken, verificationExpiry },
+  });
+
+  await sendVerificationEmail(email, verificationToken);
+
+  return { message: 'If that email exists you will receive a verification link' };
+};

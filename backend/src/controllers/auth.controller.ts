@@ -121,3 +121,22 @@ export const resetPassword = async (
     next(error);
   }
 };
+
+/**
+ * POST /api/v1/auth/resend-verification
+ * Public route - no auth required
+ * Resends verification email with new token
+ * Returns 200 on success, 400 if already verified
+ */
+export const resendVerification = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const result = await authService.resendVerification(req.body.email);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};

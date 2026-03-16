@@ -7,6 +7,7 @@ import {
   loginSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  resendVerificationSchema,
 } from '../../validators/auth.validator.js';
 
 const router = Router();
@@ -52,5 +53,15 @@ router.post('/forgot-password', validate(forgotPasswordSchema), authController.f
  * Public route - no auth required
  */
 router.post('/reset-password', validate(resetPasswordSchema), authController.resetPassword);
+
+/**
+ * POST /api/v1/auth/resend-verification
+ * Public route - no auth required
+ */
+router.post(
+  '/resend-verification',
+  validate(resendVerificationSchema),
+  authController.resendVerification
+);
 
 export default router;
