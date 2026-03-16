@@ -33,3 +33,8 @@ export const resetPasswordSchema: ValidationChain[] = [
   body('token').notEmpty().withMessage('Token required'),
   body('newPassword').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
 ];
+
+// Resend Verification Schema
+export const resendVerificationSchema: ValidationChain[] = [
+  body('email').isEmail().withMessage('Valid email required'),
+];
