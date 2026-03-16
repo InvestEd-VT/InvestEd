@@ -1,0 +1,2 @@
+// Educational content components
+export {};
