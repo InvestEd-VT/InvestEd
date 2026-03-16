@@ -1,11 +1,13 @@
-/** @type {import('tailwindcss').Config} */
+import { shadcnPreset } from "shadcn-ui";
+
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
-  theme: {
-    extend: {},
+  presets: [shadcnPreset],
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+
+  // ⭐ REQUIRED FOR TAILWIND V4 + NOVA
+  tailwindcss: {
+    config: {
+      darkMode: "class",
+    },
   },
-  plugins: [],
-}
+};
