@@ -1,4 +1,4 @@
-import { shadcnPreset } from "shadcn-ui";
+import { shadcnPreset } from "shadcn/preset";
 
 export default {
   presets: [shadcnPreset],

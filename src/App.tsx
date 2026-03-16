@@ -1,7 +1,8 @@
-import Dashboard from "./app/dashboard/Dashboard"
+import Dashboard from "@/app/dashboard/Dashboard"
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute, PublicRoute } from './components/common';
 import { ForgotPassword } from './pages';
+import { ThemeProvider } from "./components/ui/theme-provider";
 
 // ─── Placeholder pages ────────────────────────────────────────────────────────
 // Replace these with real page components as they are built
@@ -18,24 +19,25 @@ const Login = () => (
 
 function App() {
   return (
-    <Routes>
-      <Route path="/test" element={
-        <div className="bg-red-500 text-white p-10">Tailwind test</div>
-      } />
-      <Route path="/preview-dashboard" element={<Dashboard />} />
-      {/* Public routes — redirect to /dashboard if already authenticated */}
-      <Route element={<PublicRoute />}>
-        <Route path="/login" element={<Login />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-      </Route>
-      {/* Protected routes — redirect to /login if not authenticated */}
-      <Route element={<ProtectedRoute />}>
-        <Route path="/dashboard" element={<Dashboard />} />
-      </Route>
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <Routes>
+        <Route path="/preview-dashboard" element={<Dashboard />} />
 
-      {/* Catch-all: redirect unknown paths to dashboard */}
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
-    </Routes>
+        {/* Public routes */}
+        <Route element={<PublicRoute />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+        </Route>
+
+        {/* Protected routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+        </Route>
+
+        {/* Catch-all */}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
+    </ThemeProvider>
   );
 }
 
