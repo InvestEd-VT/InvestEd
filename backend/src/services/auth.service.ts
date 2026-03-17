@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { Prisma } from '@prisma/client';
 import { env } from '../config/env.js';
 import prisma from '../config/database.js';
 import { AppError } from '../utils/AppError.js';
@@ -11,6 +12,7 @@ import {
 } from '../types/auth.types.js';
 import crypto from 'crypto';
 import { sendVerificationEmail, sendPasswordResetEmail } from './email.service.js';
+import { createDefaultPortfolio } from './portfolio.service.js';
 
 // ─── PASSWORD HASHING ─────────────────────────────────
 
@@ -88,23 +90,31 @@ export const register = async (data: RegisterRequestBody): Promise<{ message: st
   const verificationToken = crypto.randomBytes(32).toString('hex');
   const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-  // create user and default portfolio
-  await prisma.user.create({
-    data: {
-      email: data.email,
-      passwordHash,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      verificationToken,
-      verificationExpiry,
-      portfolios: {
-        create: {
-          name: 'My Portfolio',
-          cashBalance: 10000,
+  try {
+    await prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          email: data.email,
+          passwordHash,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          verificationToken,
+          verificationExpiry,
         },
-      },
-    },
-  });
+        select: {
+          id: true,
+        },
+      });
+
+      await createDefaultPortfolio(user.id, tx);
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      throw new AppError('Email already registered', 409);
+    }
+
+    throw error;
+  }
 
   // send verification email
   await sendVerificationEmail(data.email, verificationToken);
