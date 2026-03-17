@@ -17,11 +17,10 @@ import { LayoutDashboardIcon, ListIcon, ChartBarIcon, FolderIcon, UsersIcon, Cam
 
 const data = {
   user: {
-    name: "Noa Nelson",
-    email: "noan22@vt.edu",
+    name: "shadcn",
+    email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
-  // Placeholder navigation items, add URL paths and icons as needed
   navMain: [
     {
       title: "Dashboard",
@@ -32,7 +31,7 @@ const data = {
       ),
     },
     {
-      title: "Modules",
+      title: "Lifecycle",
       url: "#",
       icon: (
         <ListIcon
@@ -40,10 +39,18 @@ const data = {
       ),
     },
     {
-      title: "Portfolio",
+      title: "Analytics",
       url: "#",
       icon: (
         <ChartBarIcon
+        />
+      ),
+    },
+    {
+      title: "Projects",
+      url: "#",
+      icon: (
+        <FolderIcon
         />
       ),
     },

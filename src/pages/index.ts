@@ -1,2 +1,2 @@
 // Page components
-export {};
+export { default as ForgotPassword } from './ForgotPassword';

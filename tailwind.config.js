@@ -1,11 +1,11 @@
-/** @type {import('tailwindcss').Config} */
+import { shadcnPreset } from "shadcn/preset";
+
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
-  theme: {
-    extend: {},
+  presets: [shadcnPreset],
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  tailwindcss: {
+    config: {
+      darkMode: "class",
+    },
   },
-  plugins: [],
-}
+};
