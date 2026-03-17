@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthRequest } from '../types/auth.types.js';
-import * as authService from '../services/auth.service';
+import * as authService from '../services/auth.service.js';
 
 /**
  * POST /api/v1/auth/register
@@ -58,6 +58,83 @@ export const logout = async (req: Request, res: Response, next: NextFunction): P
   try {
     const { userId } = req as AuthRequest;
     const result = await authService.logout(userId!);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * GET /api/v1/auth/verify/:token
+ * Public route - no auth required
+ * Verifies user email using token from verification link
+ * Returns 200 on success, 400 if token invalid or expired
+ */
+export const verifyEmail = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const result = await authService.verifyEmail(req.params.token as string);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /api/v1/auth/forgot-password
+ * Public route - no auth required
+ * Sends password reset email if account exists
+ * Always returns success to prevent account enumeration
+ */
+export const forgotPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const result = await authService.forgotPassword(req.body.email);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /api/v1/auth/reset-password
+ * Public route - no auth required
+ * Resets user password using valid reset token
+ * Returns 200 on success, 400 if token invalid or expired
+ */
+export const resetPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { token, newPassword } = req.body;
+    const result = await authService.resetPassword(token, newPassword);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /api/v1/auth/resend-verification
+ * Public route - no auth required
+ * Resends verification email with new token
+ * Returns 200 on success, 400 if already verified
+ */
+export const resendVerification = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const result = await authService.resendVerification(req.body.email);
     res.json(result);
   } catch (error) {
     next(error);
