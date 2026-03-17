@@ -113,10 +113,12 @@ describe('Auth Login', () => {
   });
 
   it('Should return 401 for non-existent email', async () => {
-    const response = await request(app).post(LOGIN_ROUTE).send({
-      email: `${TEST_EMAIL_PREFIX}-missing@test.edu`,
-      password: 'Password123!',
-    });
+    const response = await request(app)
+      .post(LOGIN_ROUTE)
+      .send({
+        email: `${TEST_EMAIL_PREFIX}-missing@test.edu`,
+        password: 'Password123!',
+      });
 
     expect(response.status).toBe(401);
     expect(response.body).toEqual({
