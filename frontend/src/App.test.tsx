@@ -14,7 +14,7 @@ const renderApp = (initialPath = '/') =>
 describe('App', () => {
   it('redirects unauthenticated users to login', () => {
     renderApp('/dashboard');
-    expect(screen.getByText(/login — coming soon/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/sign in/i)[0]).toBeInTheDocument();
   });
 
   it('renders the forgot password page on /forgot-password', () => {
@@ -24,6 +24,6 @@ describe('App', () => {
 
   it('redirects unknown paths to login for unauthenticated users', () => {
     renderApp('/some/unknown/path');
-    expect(screen.getByText(/login — coming soon/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/sign in/i)[0]).toBeInTheDocument();
   });
 });
