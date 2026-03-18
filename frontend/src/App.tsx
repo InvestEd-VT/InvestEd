@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute, PublicRoute } from './components/common';
-import { ForgotPassword } from './pages';
+import { ForgotPassword, Login, Register } from './pages';
 
 // ─── Placeholder pages ────────────────────────────────────────────────────────
 // Replace these with real page components as they are built
@@ -13,14 +13,6 @@ const Dashboard = () => (
   </div>
 );
 
-const Login = () => (
-  <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-    <div className="text-center">
-      <h1 className="text-4xl font-bold text-gray-900 mb-4">InvestEd</h1>
-      <p className="text-gray-600">Login — coming soon</p>
-    </div>
-  </div>
-);
 // ─────────────────────────────────────────────────────────────────────────────
 
 function App() {
@@ -29,6 +21,7 @@ function App() {
       {/* Public routes — redirect to /dashboard if already authenticated */}
       <Route element={<PublicRoute />}>
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
       </Route>
 

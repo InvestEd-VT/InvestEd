@@ -22,3 +22,19 @@ export const registerSchema: ValidationChain[] = [
   body('firstName').notEmpty().withMessage('First name required'),
   body('lastName').notEmpty().withMessage('Last name required'),
 ];
+
+// Forgot Password Schema
+export const forgotPasswordSchema: ValidationChain[] = [
+  body('email').isEmail().withMessage('Valid email required'),
+];
+
+// Reset Password Schema - requires token and password length
+export const resetPasswordSchema: ValidationChain[] = [
+  body('token').notEmpty().withMessage('Token required'),
+  body('newPassword').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+];
+
+// Resend Verification Schema
+export const resendVerificationSchema: ValidationChain[] = [
+  body('email').isEmail().withMessage('Valid email required'),
+];

@@ -1,8 +1,8 @@
 {
-  "name": "invested",
-  "version": "1.0.0",
-  "description": "InvestEd - Investment Education Platform",
+  "name": "frontend",
   "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
     "dev:frontend": "cd frontend && npm run dev",
     "dev:backend": "cd backend && npm run dev",
