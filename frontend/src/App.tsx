@@ -1,8 +1,8 @@
-import { ThemeProvider } from "@/components/theme-provider"
 import Dashboard from "@/app/dashboard/Dashboard"
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute, PublicRoute } from './components/common';
 import { ForgotPassword } from './pages';
+import { ThemeProvider } from "./components/ui/theme-provider";
 
 // ─── Placeholder pages ────────────────────────────────────────────────────────
 // Replace these with real page components as they are built
