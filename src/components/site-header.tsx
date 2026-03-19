@@ -1,7 +1,7 @@
 // import { Button } from "@/components/ui/button"
-import { Separator } from "../components/ui/separator"
-import { SidebarTrigger } from "../components/ui/sidebar"
-import { ModeToggle } from "../components/ui/mode-toggle"
+import { Separator } from "@/components/ui/separator"
+import { SidebarTrigger } from "@/components/ui/sidebar"
+import { ModeToggle } from "@/components/ui/mode-toggle"
 
 export function SiteHeader() {
   return (
