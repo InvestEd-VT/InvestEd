@@ -79,20 +79,17 @@ describe('POST /api/v1/auth/register', () => {
     expect(createdUser?.passwordHash).not.toBe(payload.password);
   });
 
-  it(
-    'Should return tokens on successful registration (blocked: registration currently returns only a success message)',
-    async () => {
-      const payload = buildRegisterPayload();
+  it('Should return tokens on successful registration (blocked: registration currently returns only a success message)', async () => {
+    const payload = buildRegisterPayload();
 
-      const response = await request(app).post(REGISTER_ROUTE).send(payload);
+    const response = await request(app).post(REGISTER_ROUTE).send(payload);
 
-      expect(response.status).toBe(201);
-      expect(response.body).toMatchObject({
-        accessToken: expect.any(String),
-        refreshToken: expect.any(String),
-      });
-    }
-  );
+    expect(response.status).toBe(201);
+    expect(response.body).toMatchObject({
+      accessToken: expect.any(String),
+      refreshToken: expect.any(String),
+    });
+  });
 
   it('Should create a portfolio with $10K balance', async () => {
     const payload = buildRegisterPayload();
@@ -134,10 +131,12 @@ describe('POST /api/v1/auth/register', () => {
   it('Should return 400 for invalid email format', async () => {
     const payload = buildRegisterPayload();
 
-    const response = await request(app).post(REGISTER_ROUTE).send({
-      ...payload,
-      email: 'invalid-email-format',
-    });
+    const response = await request(app)
+      .post(REGISTER_ROUTE)
+      .send({
+        ...payload,
+        email: 'invalid-email-format',
+      });
 
     expect(response.status).toBe(400);
     expect(response.body.errors).toEqual(
@@ -153,10 +152,12 @@ describe('POST /api/v1/auth/register', () => {
   it('Should return 400 for password less than 8 chars', async () => {
     const payload = buildRegisterPayload();
 
-    const response = await request(app).post(REGISTER_ROUTE).send({
-      ...payload,
-      password: 'Short1!',
-    });
+    const response = await request(app)
+      .post(REGISTER_ROUTE)
+      .send({
+        ...payload,
+        password: 'Short1!',
+      });
 
     expect(response.status).toBe(400);
     expect(response.body).toEqual({
@@ -195,9 +196,9 @@ describe('POST /api/v1/auth/register', () => {
     const lastNameErrors = getErrorMessagesForField(response.body.errors, 'lastName');
 
     expect(passwordErrors.length).toBeGreaterThan(0);
-    expect(passwordErrors.every((message) => typeof message === 'string' && message.length > 0)).toBe(
-      true
-    );
+    expect(
+      passwordErrors.every((message) => typeof message === 'string' && message.length > 0)
+    ).toBe(true);
     expect(firstNameErrors).toContain('First name required');
     expect(lastNameErrors).toContain('Last name required');
   });
