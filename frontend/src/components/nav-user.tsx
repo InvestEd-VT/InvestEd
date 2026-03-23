@@ -19,6 +19,9 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { EllipsisVerticalIcon, CircleUserRoundIcon, CreditCardIcon, BellIcon, LogOutIcon } from "lucide-react"
+import { useNavigate } from 'react-router-dom'
+import { authService } from '@/services'
+import { useAuthStore } from '@/store/authStore'
 
 export function NavUser({
   user,
@@ -30,6 +33,7 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const navigate = useNavigate()
 
   return (
     <SidebarMenu>
@@ -92,7 +96,23 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={async () => {
+                try {
+                  // Call backend to invalidate session / clear server cookies
+                  await authService.logout()
+                } catch (error) {
+                  // Still clear local state even if backend call fails
+                  console.error('Logout request failed', error)
+                } finally {
+                  // Clear local auth state and redirect to login
+                  useAuthStore.getState().logout()
+                  // navigate to login page
+                  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                  navigate('/login')
+                }
+              }}
+            >
               <LogOutIcon
               />
               Log out
