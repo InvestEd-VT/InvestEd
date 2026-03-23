@@ -104,17 +104,13 @@ describe('Stocks API', () => {
       expect(searchResponse.body.results).toBeInstanceOf(Array);
       expect(searchResponse.body.results.length).toBeGreaterThan(0);
 
-      const aapl = searchResponse.body.results.find(
-        (r: { ticker: string }) => r.ticker === 'AAPL'
-      );
+      const aapl = searchResponse.body.results.find((r: { ticker: string }) => r.ticker === 'AAPL');
       expect(aapl).toBeDefined();
       expect(aapl.name).toContain('Apple');
 
       // Test 2: Price
       const priceResponse = await retryOnRateLimit(() =>
-        request(app)
-          .get(`${STOCKS_ROUTE}/AAPL/price`)
-          .set('Authorization', `Bearer ${accessToken}`)
+        request(app).get(`${STOCKS_ROUTE}/AAPL/price`).set('Authorization', `Bearer ${accessToken}`)
       );
 
       expect(priceResponse.status).toBe(200);

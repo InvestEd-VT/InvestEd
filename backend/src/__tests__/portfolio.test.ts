@@ -82,7 +82,7 @@ describe('Portfolio API', () => {
         data: {
           symbol: 'AAPL',
           quantity: 10,
-          avgCost: 150.00,
+          avgCost: 150.0,
           positionType: 'STOCK',
           status: 'OPEN',
           portfolioId: testPortfolioId,
@@ -114,7 +114,7 @@ describe('Portfolio API', () => {
         data: {
           symbol: 'TSLA',
           quantity: 5,
-          avgCost: 12.50,
+          avgCost: 12.5,
           positionType: 'OPTION',
           optionType: 'CALL',
           strikePrice: 300,

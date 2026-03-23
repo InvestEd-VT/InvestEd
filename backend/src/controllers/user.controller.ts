@@ -20,7 +20,11 @@ export const getMe = async (req: AuthRequest, res: Response, next: NextFunction)
  * GET /api/v1/users/profile
  * Returns full user profile
  */
-export const getProfile = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+export const getProfile = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const user = await userService.getCurrentUser(req.userId!);
     res.json(user);
@@ -33,7 +37,11 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
  * PUT /api/v1/users/profile
  * Update user's first and last name
  */
-export const updateProfile = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+export const updateProfile = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { firstName, lastName } = req.body;
     const user = await userService.updateProfile(req.userId!, { firstName, lastName });
@@ -47,7 +55,11 @@ export const updateProfile = async (req: AuthRequest, res: Response, next: NextF
  * PUT /api/v1/users/change-password
  * Change user's password
  */
-export const changePassword = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+export const changePassword = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { currentPassword, newPassword } = req.body;
 

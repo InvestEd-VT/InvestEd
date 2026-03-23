@@ -6,7 +6,11 @@ import * as massiveService from '../services/massive.service.js';
  * GET /api/v1/stocks/search?q=apple
  * Search for stocks by name or ticker symbol
  */
-export const searchStocks = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+export const searchStocks = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const query = req.query.q as string;
     const limit = parseInt(req.query.limit as string) || 10;
@@ -27,7 +31,11 @@ export const searchStocks = async (req: AuthRequest, res: Response, next: NextFu
  * GET /api/v1/stocks/:symbol
  * Get detailed info for a specific stock
  */
-export const getTickerDetails = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+export const getTickerDetails = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { symbol } = req.params;
     const details = await massiveService.getTickerDetails(symbol);
@@ -41,7 +49,11 @@ export const getTickerDetails = async (req: AuthRequest, res: Response, next: Ne
  * GET /api/v1/stocks/:symbol/price
  * Get the current (previous day close) price for a stock
  */
-export const getStockPrice = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+export const getStockPrice = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { symbol } = req.params;
     const price = await massiveService.getStockPrice(symbol);
@@ -55,7 +67,11 @@ export const getStockPrice = async (req: AuthRequest, res: Response, next: NextF
  * GET /api/v1/stocks/:symbol/history?from=2026-01-01&to=2026-03-23&timespan=day
  * Get historical price bars for a stock
  */
-export const getStockHistory = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+export const getStockHistory = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { symbol } = req.params;
     const from = req.query.from as string;

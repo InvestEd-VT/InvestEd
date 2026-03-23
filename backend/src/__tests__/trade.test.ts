@@ -58,7 +58,7 @@ const buyPayload = {
   strikePrice: 250,
   expirationDate: '2026-05-15',
   quantity: 2,
-  price: 5.00,
+  price: 5.0,
 };
 
 describe('Trade API', () => {
@@ -87,7 +87,7 @@ describe('Trade API', () => {
       const response = await request(app)
         .post(`${TRADE_ROUTE}/options/buy`)
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ ...buyPayload, quantity: 1, price: 8.00 });
+        .send({ ...buyPayload, quantity: 1, price: 8.0 });
 
       expect(response.status).toBe(201);
       // Now have 3 contracts: (5*2 + 8*1) / 3 = 6.00 avg cost
@@ -138,9 +138,7 @@ describe('Trade API', () => {
     });
 
     it('should return 401 without auth', async () => {
-      const response = await request(app)
-        .post(`${TRADE_ROUTE}/options/buy`)
-        .send(buyPayload);
+      const response = await request(app).post(`${TRADE_ROUTE}/options/buy`).send(buyPayload);
 
       expect(response.status).toBe(401);
     });
@@ -151,7 +149,7 @@ describe('Trade API', () => {
       const response = await request(app)
         .post(`${TRADE_ROUTE}/options/sell`)
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ ...buyPayload, quantity: 1, price: 7.50 });
+        .send({ ...buyPayload, quantity: 1, price: 7.5 });
 
       expect(response.status).toBe(200);
       // Had 3, sold 1 = 2 remaining
@@ -166,7 +164,7 @@ describe('Trade API', () => {
       const response = await request(app)
         .post(`${TRADE_ROUTE}/options/sell`)
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ ...buyPayload, quantity: 2, price: 6.00 });
+        .send({ ...buyPayload, quantity: 2, price: 6.0 });
 
       expect(response.status).toBe(200);
       expect(response.body.position.status).toBe('CLOSED');
@@ -179,7 +177,7 @@ describe('Trade API', () => {
       const response = await request(app)
         .post(`${TRADE_ROUTE}/options/sell`)
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ ...buyPayload, quantity: 1, price: 5.00 });
+        .send({ ...buyPayload, quantity: 1, price: 5.0 });
 
       expect(response.status).toBe(404);
       expect(response.body.error).toContain('No open position');
@@ -193,7 +191,7 @@ describe('Trade API', () => {
         strikePrice: 300,
         expirationDate: '2026-06-18',
         quantity: 1,
-        price: 5.00,
+        price: 5.0,
       };
 
       await request(app)
@@ -205,16 +203,14 @@ describe('Trade API', () => {
       const response = await request(app)
         .post(`${TRADE_ROUTE}/options/sell`)
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ ...uniquePayload, quantity: 10, price: 5.00 });
+        .send({ ...uniquePayload, quantity: 10, price: 5.0 });
 
       expect(response.status).toBe(400);
       expect(response.body.error).toContain('Insufficient position');
     });
 
     it('should return 401 without auth', async () => {
-      const response = await request(app)
-        .post(`${TRADE_ROUTE}/options/sell`)
-        .send(buyPayload);
+      const response = await request(app).post(`${TRADE_ROUTE}/options/sell`).send(buyPayload);
 
       expect(response.status).toBe(401);
     });

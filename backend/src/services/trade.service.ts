@@ -64,8 +64,7 @@ export const buyOption = async (
       const existingQty = Number(existingPosition.quantity);
       const existingCost = Number(existingPosition.avgCost);
       const newAvgCost =
-        (existingCost * existingQty + data.price * data.quantity) /
-        (existingQty + data.quantity);
+        (existingCost * existingQty + data.price * data.quantity) / (existingQty + data.quantity);
 
       position = await tx.position.update({
         where: { id: existingPosition.id },

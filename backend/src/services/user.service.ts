@@ -31,7 +31,10 @@ export const getCurrentUser = async (userId: string) => {
  * Updates user profile (firstName, lastName)
  * INVESTED-261: PUT /api/v1/users/profile
  */
-export const updateProfile = async (userId: string, data: { firstName?: string; lastName?: string }) => {
+export const updateProfile = async (
+  userId: string,
+  data: { firstName?: string; lastName?: string }
+) => {
   const user = await prisma.user.update({
     where: { id: userId },
     data: {
@@ -55,7 +58,11 @@ export const updateProfile = async (userId: string, data: { firstName?: string; 
  * Changes user password
  * INVESTED-262: PUT /api/v1/users/change-password
  */
-export const changePassword = async (userId: string, currentPassword: string, newPassword: string) => {
+export const changePassword = async (
+  userId: string,
+  currentPassword: string,
+  newPassword: string
+) => {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new AppError('User not found', 404);
 

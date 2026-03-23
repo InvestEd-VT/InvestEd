@@ -29,7 +29,9 @@ beforeAll(async () => {
 
   testUserId = user.id;
 
-  const loginResponse = await request(app).post(LOGIN_ROUTE).send({ email, password: testPassword });
+  const loginResponse = await request(app)
+    .post(LOGIN_ROUTE)
+    .send({ email, password: testPassword });
   accessToken = loginResponse.body.accessToken;
 });
 

@@ -43,24 +43,39 @@ beforeAll(async () => {
     .post(`${TRADE_ROUTE}/options/buy`)
     .set('Authorization', `Bearer ${accessToken}`)
     .send({
-      symbol: 'AAPL', contractSymbol: 'AAPL260515C00250000', optionType: 'CALL',
-      strikePrice: 250, expirationDate: '2026-05-15', quantity: 2, price: 5.00,
+      symbol: 'AAPL',
+      contractSymbol: 'AAPL260515C00250000',
+      optionType: 'CALL',
+      strikePrice: 250,
+      expirationDate: '2026-05-15',
+      quantity: 2,
+      price: 5.0,
     });
 
   await request(app)
     .post(`${TRADE_ROUTE}/options/buy`)
     .set('Authorization', `Bearer ${accessToken}`)
     .send({
-      symbol: 'TSLA', contractSymbol: 'TSLA260618P00200000', optionType: 'PUT',
-      strikePrice: 200, expirationDate: '2026-06-18', quantity: 1, price: 12.00,
+      symbol: 'TSLA',
+      contractSymbol: 'TSLA260618P00200000',
+      optionType: 'PUT',
+      strikePrice: 200,
+      expirationDate: '2026-06-18',
+      quantity: 1,
+      price: 12.0,
     });
 
   await request(app)
     .post(`${TRADE_ROUTE}/options/sell`)
     .set('Authorization', `Bearer ${accessToken}`)
     .send({
-      symbol: 'AAPL', contractSymbol: 'AAPL260515C00250000', optionType: 'CALL',
-      strikePrice: 250, expirationDate: '2026-05-15', quantity: 1, price: 7.00,
+      symbol: 'AAPL',
+      contractSymbol: 'AAPL260515C00250000',
+      optionType: 'CALL',
+      strikePrice: 250,
+      expirationDate: '2026-05-15',
+      quantity: 1,
+      price: 7.0,
     });
 });
 
@@ -128,7 +143,9 @@ describe('Transactions API', () => {
         .get(`${PORTFOLIO_ROUTE}/transactions`)
         .set('Authorization', `Bearer ${accessToken}`);
 
-      const dates = response.body.transactions.map((t: { executedAt: string }) => new Date(t.executedAt).getTime());
+      const dates = response.body.transactions.map((t: { executedAt: string }) =>
+        new Date(t.executedAt).getTime()
+      );
       for (let i = 1; i < dates.length; i++) {
         expect(dates[i]).toBeLessThanOrEqual(dates[i - 1]);
       }

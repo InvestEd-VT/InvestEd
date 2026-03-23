@@ -6,7 +6,11 @@ import * as massiveService from '../services/massive.service.js';
  * GET /api/v1/options/contracts/:symbol
  * Get options contracts for an underlying ticker
  */
-export const getOptionsContracts = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+export const getOptionsContracts = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { symbol } = req.params;
     const contract_type = req.query.contract_type as 'call' | 'put' | undefined;
@@ -32,7 +36,11 @@ export const getOptionsContracts = async (req: AuthRequest, res: Response, next:
  * GET /api/v1/options/chain/:symbol?expiration_date=2026-04-18
  * Get options chain with calls and puts for a symbol
  */
-export const getOptionsChain = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+export const getOptionsChain = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { symbol } = req.params;
     const expiration_date = req.query.expiration_date as string | undefined;

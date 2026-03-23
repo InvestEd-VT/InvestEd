@@ -6,7 +6,11 @@ import * as portfolioService from '../services/portfolio.service.js';
  * GET /api/v1/portfolio
  * Returns the user's portfolio with positions, total value, and P&L
  */
-export const getPortfolio = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+export const getPortfolio = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const userId = req.userId!;
     const portfolio = await portfolioService.getPortfolio(userId);
@@ -21,7 +25,11 @@ export const getPortfolio = async (req: AuthRequest, res: Response, next: NextFu
  * Returns positions for the user's portfolio
  * Query params: status (OPEN, CLOSED, EXPIRED, EXERCISED)
  */
-export const getPositions = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+export const getPositions = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const userId = req.userId!;
     const status = req.query.status as 'OPEN' | 'CLOSED' | 'EXPIRED' | 'EXERCISED' | undefined;
@@ -36,7 +44,11 @@ export const getPositions = async (req: AuthRequest, res: Response, next: NextFu
  * GET /api/v1/portfolio/transactions
  * Returns transaction history with filtering
  */
-export const getTransactions = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+export const getTransactions = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const userId = req.userId!;
     const result = await portfolioService.getTransactions(userId, {
@@ -58,13 +70,19 @@ export const getTransactions = async (req: AuthRequest, res: Response, next: Nex
  * POST /api/v1/portfolio/reset
  * Resets portfolio to initial $10,000 balance
  */
-export const resetPortfolio = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+export const resetPortfolio = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const userId = req.userId!;
     const { confirm } = req.body;
 
     if (confirm !== 'RESET') {
-      res.status(400).json({ error: 'Must send { "confirm": "RESET" } to confirm portfolio reset' });
+      res
+        .status(400)
+        .json({ error: 'Must send { "confirm": "RESET" } to confirm portfolio reset' });
       return;
     }
 
@@ -79,7 +97,11 @@ export const resetPortfolio = async (req: AuthRequest, res: Response, next: Next
  * GET /api/v1/portfolio/history?period=30d
  * Returns portfolio value history for charting
  */
-export const getPortfolioHistory = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+export const getPortfolioHistory = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const userId = req.userId!;
     const period = (req.query.period as string) || '30d';

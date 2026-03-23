@@ -43,7 +43,9 @@ export const getPortfolio = async (userId: string) => {
     throw new AppError('Portfolio not found', 404);
   }
 
-  const { totalPositionsValue, totalPnL, positionsWithPnL } = calculatePortfolioValue(portfolio.positions);
+  const { totalPositionsValue, totalPnL, positionsWithPnL } = calculatePortfolioValue(
+    portfolio.positions
+  );
 
   return {
     id: portfolio.id,
@@ -52,9 +54,12 @@ export const getPortfolio = async (userId: string) => {
     positionsValue: totalPositionsValue,
     totalValue: portfolio.cashBalance + totalPositionsValue,
     totalPnL,
-    totalPnLPercent: DEFAULT_PORTFOLIO_CASH_BALANCE > 0
-      ? ((portfolio.cashBalance + totalPositionsValue - DEFAULT_PORTFOLIO_CASH_BALANCE) / DEFAULT_PORTFOLIO_CASH_BALANCE) * 100
-      : 0,
+    totalPnLPercent:
+      DEFAULT_PORTFOLIO_CASH_BALANCE > 0
+        ? ((portfolio.cashBalance + totalPositionsValue - DEFAULT_PORTFOLIO_CASH_BALANCE) /
+            DEFAULT_PORTFOLIO_CASH_BALANCE) *
+          100
+        : 0,
     positions: positionsWithPnL,
     createdAt: portfolio.createdAt,
     updatedAt: portfolio.updatedAt,
@@ -64,7 +69,10 @@ export const getPortfolio = async (userId: string) => {
 /**
  * Gets all positions for a portfolio (open positions only by default)
  */
-export const getPositions = async (userId: string, status?: 'OPEN' | 'CLOSED' | 'EXPIRED' | 'EXERCISED') => {
+export const getPositions = async (
+  userId: string,
+  status?: 'OPEN' | 'CLOSED' | 'EXPIRED' | 'EXERCISED'
+) => {
   const portfolio = await prisma.portfolio.findFirst({
     where: { userId },
   });
@@ -170,7 +178,11 @@ export const getPortfolioHistory = async (userId: string, period: string = '30d'
   if (!portfolio) throw new AppError('Portfolio not found', 404);
 
   const periodDays: Record<string, number> = {
-    '7d': 7, '30d': 30, '90d': 90, '1y': 365, 'all': 3650,
+    '7d': 7,
+    '30d': 30,
+    '90d': 90,
+    '1y': 365,
+    all: 3650,
   };
   const days = periodDays[period] || 30;
   const since = new Date();
@@ -187,7 +199,8 @@ export const getPortfolioHistory = async (userId: string, period: string = '30d'
   // Build a simple history from transactions
   let runningCash = DEFAULT_PORTFOLIO_CASH_BALANCE;
   const history = transactions.map((tx) => {
-    const amount = Number(tx.price) * Number(tx.quantity) * (tx.positionType === 'OPTION' ? 100 : 1);
+    const amount =
+      Number(tx.price) * Number(tx.quantity) * (tx.positionType === 'OPTION' ? 100 : 1);
     if (tx.type === 'BUY') runningCash -= amount;
     else if (tx.type === 'SELL') runningCash += amount;
 
@@ -202,14 +215,16 @@ export const getPortfolioHistory = async (userId: string, period: string = '30d'
   return { history, currentCash: portfolio.cashBalance };
 };
 
-const calculatePortfolioValue = (positions: Array<{
-  symbol: string;
-  quantity: Prisma.Decimal;
-  avgCost: Prisma.Decimal;
-  positionType: string;
-  optionType: string | null;
-  strikePrice: Prisma.Decimal | null;
-}>) => {
+const calculatePortfolioValue = (
+  positions: Array<{
+    symbol: string;
+    quantity: Prisma.Decimal;
+    avgCost: Prisma.Decimal;
+    positionType: string;
+    optionType: string | null;
+    strikePrice: Prisma.Decimal | null;
+  }>
+) => {
   let totalPositionsValue = 0;
   let totalPnL = 0;
 

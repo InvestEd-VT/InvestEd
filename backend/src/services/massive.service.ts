@@ -24,7 +24,10 @@ const massiveRequest = async <T>(path: string, params: Record<string, string> = 
   }
 
   if (!response.ok) {
-    throw new AppError(`Massive API error: ${response.status} ${response.statusText}`, response.status);
+    throw new AppError(
+      `Massive API error: ${response.status} ${response.statusText}`,
+      response.status
+    );
   }
 
   return response.json() as Promise<T>;
@@ -91,11 +94,16 @@ export interface OptionsContract {
  * Search for stocks by name or ticker
  * INVESTED-111: Stock Search
  */
-export const searchStocks = async (query: string, limit: number = 10): Promise<StockSearchResult[]> => {
-  const data = await massiveRequest<{ results: StockSearchResult[] }>(
-    '/v3/reference/tickers',
-    { search: query, active: 'true', limit: String(limit), market: 'stocks' }
-  );
+export const searchStocks = async (
+  query: string,
+  limit: number = 10
+): Promise<StockSearchResult[]> => {
+  const data = await massiveRequest<{ results: StockSearchResult[] }>('/v3/reference/tickers', {
+    search: query,
+    active: 'true',
+    limit: String(limit),
+    market: 'stocks',
+  });
   return data.results || [];
 };
 
@@ -138,7 +146,9 @@ export const getStockPrice = async (symbol: string): Promise<StockPrice> => {
 /**
  * Get prices for multiple stocks at once
  */
-export const getMultipleStockPrices = async (symbols: string[]): Promise<Map<string, StockPrice>> => {
+export const getMultipleStockPrices = async (
+  symbols: string[]
+): Promise<Map<string, StockPrice>> => {
   const prices = new Map<string, StockPrice>();
 
   // Fetch in parallel (respecting rate limits with small batches)

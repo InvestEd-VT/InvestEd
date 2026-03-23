@@ -6,13 +6,29 @@ import * as tradeService from '../services/trade.service.js';
  * POST /api/v1/trade/options/buy
  * Buy an options contract
  */
-export const buyOption = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+export const buyOption = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const userId = req.userId!;
-    const { symbol, contractSymbol, optionType, strikePrice, expirationDate, quantity, price } = req.body;
+    const { symbol, contractSymbol, optionType, strikePrice, expirationDate, quantity, price } =
+      req.body;
 
-    if (!symbol || !contractSymbol || !optionType || !strikePrice || !expirationDate || !quantity || !price) {
-      res.status(400).json({ error: 'Missing required fields: symbol, contractSymbol, optionType, strikePrice, expirationDate, quantity, price' });
+    if (
+      !symbol ||
+      !contractSymbol ||
+      !optionType ||
+      !strikePrice ||
+      !expirationDate ||
+      !quantity ||
+      !price
+    ) {
+      res.status(400).json({
+        error:
+          'Missing required fields: symbol, contractSymbol, optionType, strikePrice, expirationDate, quantity, price',
+      });
       return;
     }
 
@@ -27,7 +43,13 @@ export const buyOption = async (req: AuthRequest, res: Response, next: NextFunct
     }
 
     const result = await tradeService.buyOption(userId, {
-      symbol, contractSymbol, optionType, strikePrice, expirationDate, quantity, price,
+      symbol,
+      contractSymbol,
+      optionType,
+      strikePrice,
+      expirationDate,
+      quantity,
+      price,
     });
 
     res.status(201).json(result);
@@ -40,13 +62,29 @@ export const buyOption = async (req: AuthRequest, res: Response, next: NextFunct
  * POST /api/v1/trade/options/sell
  * Sell an options contract
  */
-export const sellOption = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+export const sellOption = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const userId = req.userId!;
-    const { symbol, contractSymbol, optionType, strikePrice, expirationDate, quantity, price } = req.body;
+    const { symbol, contractSymbol, optionType, strikePrice, expirationDate, quantity, price } =
+      req.body;
 
-    if (!symbol || !contractSymbol || !optionType || !strikePrice || !expirationDate || !quantity || !price) {
-      res.status(400).json({ error: 'Missing required fields: symbol, contractSymbol, optionType, strikePrice, expirationDate, quantity, price' });
+    if (
+      !symbol ||
+      !contractSymbol ||
+      !optionType ||
+      !strikePrice ||
+      !expirationDate ||
+      !quantity ||
+      !price
+    ) {
+      res.status(400).json({
+        error:
+          'Missing required fields: symbol, contractSymbol, optionType, strikePrice, expirationDate, quantity, price',
+      });
       return;
     }
 
@@ -56,7 +94,13 @@ export const sellOption = async (req: AuthRequest, res: Response, next: NextFunc
     }
 
     const result = await tradeService.sellOption(userId, {
-      symbol, contractSymbol, optionType, strikePrice, expirationDate, quantity, price,
+      symbol,
+      contractSymbol,
+      optionType,
+      strikePrice,
+      expirationDate,
+      quantity,
+      price,
     });
 
     res.status(200).json(result);
