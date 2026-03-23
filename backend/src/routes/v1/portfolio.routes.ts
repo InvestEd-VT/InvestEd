@@ -19,4 +19,27 @@ router.get('/', authMiddleware, portfolioController.getPortfolio);
  */
 router.get('/positions', authMiddleware, portfolioController.getPositions);
 
+/**
+ * GET /api/v1/portfolio/transactions
+ * @access Private
+ * Returns transaction history with filtering
+ * @query type, symbol, positionType, from, to, limit, offset
+ */
+router.get('/transactions', authMiddleware, portfolioController.getTransactions);
+
+/**
+ * GET /api/v1/portfolio/history
+ * @access Private
+ * Returns portfolio value history for charting
+ * @query period - 7d, 30d, 90d, 1y, all
+ */
+router.get('/history', authMiddleware, portfolioController.getPortfolioHistory);
+
+/**
+ * POST /api/v1/portfolio/reset
+ * @access Private
+ * Resets portfolio to $10,000 (requires { confirm: "RESET" })
+ */
+router.post('/reset', authMiddleware, portfolioController.resetPortfolio);
+
 export default router;

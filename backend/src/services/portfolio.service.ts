@@ -89,6 +89,119 @@ export const getPositions = async (userId: string, status?: 'OPEN' | 'CLOSED' | 
  * Note: Uses avgCost as current value placeholder until Massive API integration (INVESTED-150)
  * Once live prices are available, this will fetch real-time prices per position
  */
+/**
+ * Gets transaction history for a portfolio
+ * INVESTED-146: transactionService.getTransactions()
+ */
+export const getTransactions = async (
+  userId: string,
+  filters: {
+    type?: string;
+    symbol?: string;
+    positionType?: string;
+    from?: string;
+    to?: string;
+    limit?: number;
+    offset?: number;
+  } = {}
+) => {
+  const portfolio = await prisma.portfolio.findFirst({ where: { userId } });
+  if (!portfolio) throw new AppError('Portfolio not found', 404);
+
+  const where: Record<string, unknown> = { portfolioId: portfolio.id };
+  if (filters.type) where.type = filters.type;
+  if (filters.symbol) where.symbol = filters.symbol;
+  if (filters.positionType) where.positionType = filters.positionType;
+  if (filters.from || filters.to) {
+    where.executedAt = {};
+    if (filters.from) (where.executedAt as Record<string, unknown>).gte = new Date(filters.from);
+    if (filters.to) (where.executedAt as Record<string, unknown>).lte = new Date(filters.to);
+  }
+
+  const [transactions, total] = await Promise.all([
+    prisma.transaction.findMany({
+      where,
+      orderBy: { executedAt: 'desc' },
+      take: filters.limit || 50,
+      skip: filters.offset || 0,
+    }),
+    prisma.transaction.count({ where }),
+  ]);
+
+  return { transactions, total, limit: filters.limit || 50, offset: filters.offset || 0 };
+};
+
+/**
+ * Resets a portfolio back to $10,000 with no positions
+ * INVESTED-265: POST /api/v1/portfolio/reset
+ */
+export const resetPortfolio = async (userId: string) => {
+  const portfolio = await prisma.portfolio.findFirst({
+    where: { userId },
+    include: { positions: true },
+  });
+
+  if (!portfolio) throw new AppError('Portfolio not found', 404);
+
+  await prisma.$transaction(async (tx) => {
+    // Close all open positions
+    await tx.position.updateMany({
+      where: { portfolioId: portfolio.id, status: 'OPEN' },
+      data: { status: 'CLOSED' },
+    });
+
+    // Reset cash balance
+    await tx.portfolio.update({
+      where: { id: portfolio.id },
+      data: { cashBalance: DEFAULT_PORTFOLIO_CASH_BALANCE },
+    });
+  });
+
+  return { message: 'Portfolio reset to $10,000', cashBalance: DEFAULT_PORTFOLIO_CASH_BALANCE };
+};
+
+/**
+ * Gets portfolio value history for charting
+ * INVESTED-292: GET /api/v1/portfolio/history
+ * Note: Returns transaction-based history until daily snapshots (INVESTED-291) are implemented
+ */
+export const getPortfolioHistory = async (userId: string, period: string = '30d') => {
+  const portfolio = await prisma.portfolio.findFirst({ where: { userId } });
+  if (!portfolio) throw new AppError('Portfolio not found', 404);
+
+  const periodDays: Record<string, number> = {
+    '7d': 7, '30d': 30, '90d': 90, '1y': 365, 'all': 3650,
+  };
+  const days = periodDays[period] || 30;
+  const since = new Date();
+  since.setDate(since.getDate() - days);
+
+  const transactions = await prisma.transaction.findMany({
+    where: {
+      portfolioId: portfolio.id,
+      executedAt: { gte: since },
+    },
+    orderBy: { executedAt: 'asc' },
+  });
+
+  // Build a simple history from transactions
+  let runningCash = DEFAULT_PORTFOLIO_CASH_BALANCE;
+  const history = transactions.map((tx) => {
+    const amount = Number(tx.price) * Number(tx.quantity) * (tx.positionType === 'OPTION' ? 100 : 1);
+    if (tx.type === 'BUY') runningCash -= amount;
+    else if (tx.type === 'SELL') runningCash += amount;
+
+    return {
+      date: tx.executedAt,
+      cashBalance: runningCash,
+      type: tx.type,
+      symbol: tx.symbol,
+    };
+  });
+
+  return { history, currentCash: portfolio.cashBalance };
+};
+
 const calculatePortfolioValue = (positions: Array<{
   symbol: string;
   quantity: Prisma.Decimal;
