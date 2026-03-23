@@ -78,11 +78,27 @@ describe('Stocks API', () => {
   });
 
   describe('Massive API integration', () => {
+    // Helper: retry a request if rate limited (429)
+    const retryOnRateLimit = async (
+      fn: () => ReturnType<typeof request>,
+      maxRetries = 3,
+      delayMs = 15000
+    ) => {
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        const response = await fn();
+        if (response.status !== 429) return response;
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+      return fn();
+    };
+
     it('should search stocks, get price, and get history', async () => {
       // Test 1: Search
-      const searchResponse = await request(app)
-        .get(`${STOCKS_ROUTE}/search?q=apple&limit=3`)
-        .set('Authorization', `Bearer ${accessToken}`);
+      const searchResponse = await retryOnRateLimit(() =>
+        request(app)
+          .get(`${STOCKS_ROUTE}/search?q=apple&limit=3`)
+          .set('Authorization', `Bearer ${accessToken}`)
+      );
 
       expect(searchResponse.status).toBe(200);
       expect(searchResponse.body.results).toBeInstanceOf(Array);
@@ -94,10 +110,12 @@ describe('Stocks API', () => {
       expect(aapl).toBeDefined();
       expect(aapl.name).toContain('Apple');
 
-      // Test 2: Price (single API call to stay under rate limit)
-      const priceResponse = await request(app)
-        .get(`${STOCKS_ROUTE}/AAPL/price`)
-        .set('Authorization', `Bearer ${accessToken}`);
+      // Test 2: Price
+      const priceResponse = await retryOnRateLimit(() =>
+        request(app)
+          .get(`${STOCKS_ROUTE}/AAPL/price`)
+          .set('Authorization', `Bearer ${accessToken}`)
+      );
 
       expect(priceResponse.status).toBe(200);
       expect(priceResponse.body).toMatchObject({
@@ -111,9 +129,11 @@ describe('Stocks API', () => {
       expect(priceResponse.body.close).toBeGreaterThan(0);
 
       // Test 3: History
-      const historyResponse = await request(app)
-        .get(`${STOCKS_ROUTE}/AAPL/history?from=2026-03-10&to=2026-03-21&timespan=day`)
-        .set('Authorization', `Bearer ${accessToken}`);
+      const historyResponse = await retryOnRateLimit(() =>
+        request(app)
+          .get(`${STOCKS_ROUTE}/AAPL/history?from=2026-03-10&to=2026-03-21&timespan=day`)
+          .set('Authorization', `Bearer ${accessToken}`)
+      );
 
       expect(historyResponse.status).toBe(200);
       expect(historyResponse.body.ticker).toBe('AAPL');
@@ -128,6 +148,6 @@ describe('Stocks API', () => {
         c: expect.any(Number),
         v: expect.any(Number),
       });
-    }, 30000); // 30s timeout for API calls
+    }, 120000); // 2min timeout to handle rate limit retries
   });
 });

@@ -59,14 +59,27 @@ describe('Options API', () => {
   });
 
   describe('Massive API integration', () => {
-    it('should get options contracts and chain for AAPL', async () => {
-      // Wait for rate limit window to reset when running full suite
-      await new Promise((resolve) => setTimeout(resolve, 12000));
+    // Helper: retry a request if rate limited (429)
+    const retryOnRateLimit = async (
+      fn: () => ReturnType<typeof request>,
+      maxRetries = 3,
+      delayMs = 15000
+    ) => {
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        const response = await fn();
+        if (response.status !== 429) return response;
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+      return fn();
+    };
 
+    it('should get options contracts and chain for AAPL', async () => {
       // Test 1: Get contracts
-      const contractsResponse = await request(app)
-        .get(`${OPTIONS_ROUTE}/contracts/AAPL?contract_type=call&limit=5`)
-        .set('Authorization', `Bearer ${accessToken}`);
+      const contractsResponse = await retryOnRateLimit(() =>
+        request(app)
+          .get(`${OPTIONS_ROUTE}/contracts/AAPL?contract_type=call&limit=5`)
+          .set('Authorization', `Bearer ${accessToken}`)
+      );
 
       expect(contractsResponse.status).toBe(200);
       expect(contractsResponse.body.contracts).toBeInstanceOf(Array);
@@ -81,10 +94,12 @@ describe('Options API', () => {
         underlying_ticker: 'AAPL',
       });
 
-      // Test 2: Get chain (uses 1 API call internally)
-      const chainResponse = await request(app)
-        .get(`${OPTIONS_ROUTE}/chain/AAPL`)
-        .set('Authorization', `Bearer ${accessToken}`);
+      // Test 2: Get chain
+      const chainResponse = await retryOnRateLimit(() =>
+        request(app)
+          .get(`${OPTIONS_ROUTE}/chain/AAPL`)
+          .set('Authorization', `Bearer ${accessToken}`)
+      );
 
       expect(chainResponse.status).toBe(200);
       expect(chainResponse.body.calls).toBeInstanceOf(Array);
@@ -99,6 +114,6 @@ describe('Options API', () => {
       for (let i = 1; i < dates.length; i++) {
         expect(dates[i] >= dates[i - 1]).toBe(true);
       }
-    }, 30000);
+    }, 120000);
   });
 });
