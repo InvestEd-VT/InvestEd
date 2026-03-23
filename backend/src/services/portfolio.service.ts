@@ -76,7 +76,7 @@ export const getPositions = async (userId: string, status?: 'OPEN' | 'CLOSED' | 
   const positions = await prisma.position.findMany({
     where: {
       portfolioId: portfolio.id,
-      ...(status ? { status } : {}),
+      status: status || 'OPEN',
     },
     orderBy: { createdAt: 'desc' },
   });
