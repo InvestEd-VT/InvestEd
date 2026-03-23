@@ -37,7 +37,7 @@ export const getTickerDetails = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { symbol } = req.params;
+    const symbol = req.params.symbol as string;
     const details = await massiveService.getTickerDetails(symbol);
     res.json(details);
   } catch (error) {
@@ -55,7 +55,7 @@ export const getStockPrice = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { symbol } = req.params;
+    const symbol = req.params.symbol as string;
     const price = await massiveService.getStockPrice(symbol);
     res.json(price);
   } catch (error) {
@@ -73,7 +73,7 @@ export const getStockHistory = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { symbol } = req.params;
+    const symbol = req.params.symbol as string;
     const from = req.query.from as string;
     const to = req.query.to as string;
     const timespan = (req.query.timespan as 'minute' | 'hour' | 'day' | 'week' | 'month') || 'day';

@@ -12,7 +12,7 @@ export const getOptionsContracts = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { symbol } = req.params;
+    const symbol = req.params.symbol as string;
     const contract_type = req.query.contract_type as 'call' | 'put' | undefined;
     const expiration_date = req.query.expiration_date as string | undefined;
     const limit = parseInt(req.query.limit as string) || 50;
@@ -42,7 +42,7 @@ export const getOptionsChain = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { symbol } = req.params;
+    const symbol = req.params.symbol as string;
     const expiration_date = req.query.expiration_date as string | undefined;
 
     const chain = await massiveService.getOptionsChain(symbol, expiration_date);

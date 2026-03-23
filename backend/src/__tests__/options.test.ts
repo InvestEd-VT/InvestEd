@@ -60,11 +60,7 @@ describe('Options API', () => {
 
   describe('Massive API integration', () => {
     // Helper: retry a request if rate limited (429)
-    const retryOnRateLimit = async (
-      fn: () => ReturnType<typeof request>,
-      maxRetries = 3,
-      delayMs = 15000
-    ) => {
+    const retryOnRateLimit = async (fn: () => request.Test, maxRetries = 3, delayMs = 15000) => {
       for (let attempt = 0; attempt < maxRetries; attempt++) {
         const response = await fn();
         if (response.status !== 429) return response;
