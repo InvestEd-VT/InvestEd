@@ -1,0 +1,22 @@
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "install:all": "cd frontend && npm install && cd ../backend && npm install",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "prisma:generate": "cd backend && npm run prisma:generate",
+    "prisma:migrate": "cd backend && npm run prisma:migrate"
+  },
+  "dependencies": {
+    "@radix-ui/react-label": "^2.1.8",
+    "@radix-ui/react-slot": "^1.2.4",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^3.5.0"
+  }
+}
