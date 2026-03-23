@@ -77,7 +77,7 @@ describe('Stocks API', () => {
     });
   });
 
-  describe('Massive API integration', () => {
+  describe.skipIf(!process.env.MASSIVE_API_KEY)('Massive API integration', () => {
     // Helper: retry a request if rate limited (429)
     const retryOnRateLimit = async (fn: () => request.Test, maxRetries = 3, delayMs = 15000) => {
       for (let attempt = 0; attempt < maxRetries; attempt++) {
