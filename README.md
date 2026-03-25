@@ -1,4 +1,5 @@
 # InvestEd
+
 An options-focused investment learning platform for college students. Practice trading with virtual money, learn through interactive modules, and compete with friends.
 
 ## Tech Stack
@@ -10,6 +11,7 @@ An options-focused investment learning platform for college students. Practice t
 - TailwindCSS
 - Zustand
 - React Router
+
 ### Backend
 - Express
 - TypeScript
@@ -25,7 +27,8 @@ An options-focused investment learning platform for college students. Practice t
 - Docker and Docker Compose
 - npm
 
-## Installation
+### Installation
+
 1. Clone the repository
 ```bash
 git clone <repository-url>
@@ -57,6 +60,7 @@ docker compose up -d
 cd backend
 npm run prisma:generate
 npm run prisma:migrate
+```
 
 6. Start the development servers
 
@@ -67,6 +71,7 @@ cd backend && npm run dev
 
 # Terminal 2 - Frontend (http://localhost:3000)
 cd frontend && npm run dev
+```
 
 ### Available Commands
 
