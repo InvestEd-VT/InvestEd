@@ -25,6 +25,7 @@ model User {
   createdAt          DateTime    @default(now())
   updatedAt          DateTime    @updatedAt
   portfolios         Portfolio[]
+  progress           ModuleProgress[]
 }
 
 model Portfolio {
@@ -83,6 +84,31 @@ model Transaction {
   @@index([portfolioId])
   @@index([symbol])
   @@index([positionType])
+}
+
+model Module {
+  id          String           @id @default(uuid())
+  title       String
+  description String
+  order       Int
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  progress    ModuleProgress[]
+}
+
+model ModuleProgress {
+  id          String    @id @default(uuid())
+  userId      String
+  moduleId    String
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module      Module    @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, moduleId])
+  @@index([userId])
 }
 
 enum PositionType {
