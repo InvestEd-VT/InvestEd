@@ -1,73 +1,146 @@
-# React + TypeScript + Vite
+# InvestEd
+An options-focused investment learning platform for college students. Practice trading with virtual money, learn through interactive modules, and compete with friends.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Tech Stack
 
-Currently, two official plugins are available:
+### Frontend
+- React 19
+- TypeScript
+- Vite
+- TailwindCSS
+- Zustand
+- React Router
+### Backend
+- Express
+- TypeScript
+- Prisma
+- PostgreSQL
+- Redis
+- JWT Authentication
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Getting Started
 
-## React Compiler
+### Prerequisites
+- Node.js 18+
+- Docker and Docker Compose
+- npm
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Installation
+1. Clone the repository
+```bash
+git clone <repository-url>
+cd InvestEd
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2. Install dependencies
+```bash
+# Install frontend dependencies
+cd frontend && npm install
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Install backend dependencies
+cd ../backend && npm install
 ```
+
+3. Set up environment variables
+```bash
+# Copy the example env file
+cp .env.example backend/.env
+```
+
+4. Start the database services
+```bash
+docker compose up -d
+```
+
+5. Generate Prisma client and run migrations
+```bash
+cd backend
+npm run prisma:generate
+npm run prisma:migrate
+
+6. Start the development servers
+
+In separate terminals:
+```bash
+# Terminal 1 - Backend (http://localhost:5001)
+cd backend && npm run dev
+
+# Terminal 2 - Frontend (http://localhost:3000)
+cd frontend && npm run dev
+
+### Available Commands
+
+#### Root
+| Command | Description |
+|---------|-------------|
+| `npm run docker:up` | Start PostgreSQL and Redis containers |
+| `npm run docker:down` | Stop database containers |
+| `npm run dev:frontend` | Start frontend dev server |
+| `npm run dev:backend` | Start backend dev server |
+
+#### Frontend
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server on port 3000 |
+| `npm run build` | Build for production |
+| `npm run lint` | Run ESLint |
+| `npm run preview` | Preview production build |
+
+#### Backend
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server on port 5001 |
+| `npm run build` | Compile TypeScript |
+| `npm run start` | Run compiled JavaScript |
+| `npm run test` | Run tests with Vitest |
+| `npm run prisma:generate` | Generate Prisma client |
+| `npm run prisma:migrate` | Run database migrations |
+| `npm run prisma:studio` | Open Prisma Studio |
+
+### API Endpoints
+
+- Health check: `GET http://localhost:5001/health`
+
+## Project Structure
+
+```
+InvestEd/
+├── frontend/           # React + Vite frontend
+│   ├── src/
+│   │   ├── components/ # UI components
+│   │   ├── pages/      # Route pages
+│   │   ├── hooks/      # Custom React hooks
+│   │   ├── store/      # Zustand state management
+│   │   ├── services/   # API client functions
+│   │   ├── types/      # TypeScript types
+│   │   └── utils/      # Utility functions
+│   └── ...
+├── backend/            # Express + TypeScript API
+│   ├── src/
+│   │   ├── config/     # Configuration files
+│   │   ├── controllers/# Route handlers
+│   │   ├── middleware/ # Express middleware
+│   │   ├── routes/     # API routes
+│   │   ├── services/   # Business logic
+│   │   ├── types/      # TypeScript types
+│   │   └── utils/      # Utility functions
+│   ├── prisma/         # Database schema
+│   └── ...
+├── docker-compose.yml  # Database services
+└── ...
+```
+
+## Team
+
+### Frontend
+- Andrew Hand
+- Kevin Alegre
+- Noa
+
+### Backend
+- Lucas Berger
+- Brendan Neely
+- Federico Tafur
+
+### API/Testing
+- Vignesh Yampally
