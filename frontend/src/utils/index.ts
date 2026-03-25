@@ -1,2 +1,2 @@
 // Utility functions
-export {};
+export { isValidEmail, isValidPassword } from './validation';

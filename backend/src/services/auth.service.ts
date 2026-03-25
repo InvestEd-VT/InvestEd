@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { Prisma } from '@prisma/client';
 import { env } from '../config/env.js';
 import prisma from '../config/database.js';
 import { AppError } from '../utils/AppError.js';
@@ -9,6 +10,9 @@ import {
   AuthResponse,
   TokenPayload,
 } from '../types/auth.types.js';
+import crypto from 'crypto';
+import { sendVerificationEmail, sendPasswordResetEmail } from './email.service.js';
+import { createDefaultPortfolio } from './portfolio.service.js';
 
 // ─── PASSWORD HASHING ─────────────────────────────────
 
@@ -67,50 +71,55 @@ export const verifyRefreshToken = (token: string): TokenPayload => {
 // ─── AUTH OPERATIONS ──────────────────────────────────
 
 /**
- * Registers a new user account and returns tokens (auto-login)
- * Checks for existing email, hashes password, creates user in database
- * Generates access and refresh tokens, stores hashed refresh token
- * Returns 409 if email already registered
+ * Registers a new user account
+ * Validates .edu email, hashes password, creates user and default portfolio
+ * Generates verification token and sends verification email
+ * Returns success message without tokens - user must verify email before login
  */
-export const register = async (data: RegisterRequestBody): Promise<AuthResponse> => {
+export const register = async (data: RegisterRequestBody): Promise<{ message: string }> => {
+  // check for existing email
   const existing = await prisma.user.findUnique({ where: { email: data.email } });
   if (existing) {
     throw new AppError('Email already registered', 409);
   }
 
+  // hash password
   const passwordHash = await hashPassword(data.password);
 
-  const user = await prisma.user.create({
-    data: {
-      email: data.email,
-      passwordHash,
-      firstName: data.firstName,
-      lastName: data.lastName,
-    },
-  });
+  // generate verification token and expiry
+  const verificationToken = crypto.randomBytes(32).toString('hex');
+  const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-  // Generate tokens for auto-login after registration
-  const accessToken = generateAccessToken(user.id);
-  const refreshToken = generateRefreshToken(user.id);
+  try {
+    await prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          email: data.email,
+          passwordHash,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          verificationToken,
+          verificationExpiry,
+        },
+        select: {
+          id: true,
+        },
+      });
 
-  // Store hashed refresh token in database
-  const hashedRefresh = await hashPassword(refreshToken);
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { refreshToken: hashedRefresh },
-  });
+      await createDefaultPortfolio(user.id, tx);
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      throw new AppError('Email already registered', 409);
+    }
 
-  return {
-    accessToken,
-    refreshToken,
-    user: {
-      id: user.id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      createdAt: user.createdAt,
-    },
-  };
+    throw error;
+  }
+
+  // send verification email
+  await sendVerificationEmail(data.email, verificationToken);
+
+  return { message: 'Registration successful, please verify your email' };
 };
 
 /**
@@ -207,4 +216,123 @@ export const logout = async (userId: string) => {
   });
 
   return { message: 'Logged out successfully' };
+};
+
+/**
+ * Verifies a user's email using the verification token
+ * Marks user as verified and clears token and expiry
+ * Returns 400 if token is invalid or expired
+ */
+export const verifyEmail = async (token: string) => {
+  const user = await prisma.user.findFirst({
+    where: {
+      verificationToken: token,
+      verificationExpiry: { gt: new Date() },
+    },
+  });
+
+  if (!user) {
+    throw new AppError('Invalid or expired verification token', 400);
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      emailVerified: true,
+      verificationToken: null,
+      verificationExpiry: null,
+    },
+  });
+
+  return { message: 'Email verified successfully' };
+};
+
+/**
+ * Generates a password reset token and sends reset email
+ * Always returns success to prevent account enumeration
+ */
+export const forgotPassword = async (email: string) => {
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  // always return success to prevent account enumeration
+  if (!user) {
+    return { message: 'If that email exists you will receive a reset link' };
+  }
+
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000);
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { resetToken, resetTokenExpiry },
+  });
+
+  await sendPasswordResetEmail(email, resetToken);
+
+  return { message: 'If that email exists you will receive a reset link' };
+};
+
+/**
+ * Resets user password using a valid reset token
+ * Clears reset token and invalidates all existing sessions
+ * Returns 400 if token is invalid or expired
+ */
+export const resetPassword = async (token: string, newPassword: string) => {
+  const user = await prisma.user.findFirst({
+    where: {
+      resetToken: token,
+      resetTokenExpiry: { gt: new Date() },
+    },
+  });
+
+  if (!user) {
+    throw new AppError('Invalid or expired reset token', 400);
+  }
+
+  const passwordHash = await hashPassword(newPassword);
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      passwordHash,
+      resetToken: null,
+      resetTokenExpiry: null,
+      refreshToken: null,
+    },
+  });
+
+  return { message: 'Password reset successfully' };
+};
+
+/**
+ * Resends verification email with a new token and 24 hour expiry
+ * Always returns success to prevent account enumeration
+ * Returns 400 if user is already verified
+ */
+export const resendVerification = async (email: string) => {
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  // always return success if email not found to prevent enumeration
+  if (!user) {
+    return { message: 'If that email exists you will receive a verification link' };
+  }
+
+  // return 400 if already verified
+  if (user.emailVerified) {
+    throw new AppError('Email is already verified', 400);
+  }
+
+  // generate new token and expiry
+  const verificationToken = crypto.randomBytes(32).toString('hex');
+  const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+  // replace old token with new one
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { verificationToken, verificationExpiry },
+  });
+
+  await sendVerificationEmail(email, verificationToken);
+
+  return { message: 'If that email exists you will receive a verification link' };
 };
