@@ -5,7 +5,7 @@ import './index.css';
 import App from './App.tsx';
 
 // ⭐ Import TooltipProvider from your UI folder
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

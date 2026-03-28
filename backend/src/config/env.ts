@@ -1,6 +1,19 @@
 import dotenv from 'dotenv';
+import path from 'path';
+import { existsSync } from 'fs';
 
-dotenv.config();
+// Try .env in cwd first, then relative to this file's compiled location
+const envPaths = [
+  path.resolve(process.cwd(), '.env'),
+  path.resolve(process.cwd(), 'backend', '.env'),
+];
+
+for (const envPath of envPaths) {
+  if (existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+    break;
+  }
+}
 
 export const env = {
   NODE_ENV: process.env.NODE_ENV || 'development',
@@ -13,4 +26,5 @@ export const env = {
   BACKEND_URL: process.env.BACKEND_URL || 'http://localhost:5001',
   EMAIL_USER: process.env.EMAIL_USER || '',
   EMAIL_PASS: process.env.EMAIL_PASS || '',
+  MASSIVE_API_KEY: process.env.MASSIVE_API_KEY || '',
 };
