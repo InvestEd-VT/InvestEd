@@ -3,12 +3,43 @@ import { AppError } from '../utils/AppError.js';
 
 const BASE_URL = 'https://api.polygon.io';
 
+type CacheEntry = {
+  data: unknown;
+  expiresAt: number;
+};
+
+const responseCache = new Map<string, CacheEntry>();
+const pendingRequests = new Map<string, Promise<unknown>>();
+const DEFAULT_CACHE_TTL_MS = 60 * 60 * 1000;
+
+const buildCacheKey = (path: string, params: Record<string, string>): string => {
+  const sorted = Object.entries(params).sort(([a], [b]) => a.localeCompare(b));
+  return `${path}?${new URLSearchParams(sorted).toString()}`;
+};
+
 /**
  * Makes an authenticated request to the Massive (Polygon) API
  */
-const massiveRequest = async <T>(path: string, params: Record<string, string> = {}): Promise<T> => {
+const massiveRequest = async <T>(
+  path: string,
+  params: Record<string, string> = {},
+  cacheTtlMs: number = DEFAULT_CACHE_TTL_MS
+): Promise<T> => {
   if (!env.MASSIVE_API_KEY) {
     throw new AppError('MASSIVE_API_KEY is not configured', 500);
+  }
+
+  const cacheKey = buildCacheKey(path, params);
+  const now = Date.now();
+  const cached = responseCache.get(cacheKey);
+
+  if (cached && cached.expiresAt > now) {
+    return cached.data as T;
+  }
+
+  const inFlight = pendingRequests.get(cacheKey);
+  if (inFlight) {
+    return (await inFlight) as T;
   }
 
   const url = new URL(`${BASE_URL}${path}`);
@@ -17,20 +48,43 @@ const massiveRequest = async <T>(path: string, params: Record<string, string> = 
     url.searchParams.set(key, value);
   }
 
-  const response = await fetch(url.toString());
+  const requestPromise = (async () => {
+    const response = await fetch(url.toString());
 
-  if (response.status === 429) {
-    throw new AppError('API rate limit exceeded. Please try again later.', 429);
+    if (response.status === 304 && cached) {
+      return cached.data as T;
+    }
+
+    if (response.status === 429) {
+      if (cached) {
+        return cached.data as T;
+      }
+      throw new AppError('API rate limit exceeded. Please try again later.', 429);
+    }
+
+    if (!response.ok) {
+      throw new AppError(
+        `Massive API error: ${response.status} ${response.statusText}`,
+        response.status
+      );
+    }
+
+    const data = (await response.json()) as T;
+    responseCache.set(cacheKey, {
+      data,
+      expiresAt: Date.now() + cacheTtlMs,
+    });
+
+    return data;
+  })();
+
+  pendingRequests.set(cacheKey, requestPromise as Promise<unknown>);
+
+  try {
+    return await requestPromise;
+  } finally {
+    pendingRequests.delete(cacheKey);
   }
-
-  if (!response.ok) {
-    throw new AppError(
-      `Massive API error: ${response.status} ${response.statusText}`,
-      response.status
-    );
-  }
-
-  return response.json() as Promise<T>;
 };
 
 // ─── Types ──────────────────────────────────────────────────────────────────
