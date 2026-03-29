@@ -151,16 +151,11 @@ export function StockSearch() {
                     onClick={() => handleSelectResult(stock.symbol)}
                     className="w-full px-4 py-3 text-left hover:bg-muted/50 transition-colors block"
                   >
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center">
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-sm">{stock.symbol}</div>
                         <div className="text-xs text-muted-foreground truncate">
                           {stock.companyName}
-                        </div>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <div className="font-semibold text-sm">
-                          {stock.currentPrice > 0 ? `$${stock.currentPrice.toFixed(2)}` : 'N/A'}
                         </div>
                       </div>
                     </div>

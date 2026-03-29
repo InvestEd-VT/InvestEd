@@ -10,6 +10,7 @@ import {
 } from 'lightweight-charts';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
@@ -46,6 +47,14 @@ export default function StockDetail() {
   const [error, setError] = useState<string | null>(null);
   const [isRateLimited, setIsRateLimited] = useState(false);
   const [timeframe, setTimeframe] = useState<ChartTimeframe>('1m');
+  const [tickerQuery, setTickerQuery] = useState(() => (symbol ?? '').toUpperCase());
+  const [tickerSearchError, setTickerSearchError] = useState<string | null>(null);
+  const [isTickerSearching, setIsTickerSearching] = useState(false);
+
+  useEffect(() => {
+    setTickerQuery((symbol ?? '').toUpperCase());
+    setTickerSearchError(null);
+  }, [symbol]);
 
   useEffect(() => {
     if (!symbol) {
@@ -132,6 +141,18 @@ export default function StockDetail() {
       },
       timeScale: {
         borderVisible: false,
+        tickMarkFormatter: (time: Time) => {
+          const date =
+            typeof time === 'string'
+              ? new Date(time)
+              : typeof time === 'number'
+                ? new Date(time * 1000)
+                : new Date(time.year, time.month - 1, time.day);
+
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          return `${month}/${day}`;
+        },
       },
       crosshair: {
         vertLine: {
@@ -226,9 +247,41 @@ export default function StockDetail() {
     };
   }, [candleData, chartLoading]);
 
-  const handleViewOptionsChain = () => {
-    if (symbol) {
-      navigate(`/options/${symbol}`);
+  const handleBackToDashboard = () => {
+    navigate('/dashboard');
+  };
+
+  const handleTickerSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const nextSymbol = tickerQuery.trim().toUpperCase();
+    if (!nextSymbol) return;
+
+    if (nextSymbol === symbol?.toUpperCase()) {
+      setTickerSearchError(null);
+      return;
+    }
+
+    try {
+      setTickerSearchError(null);
+      setIsTickerSearching(true);
+      const results = await stockService.search(nextSymbol);
+      const exactMatch = results.some((item) => item.symbol.toUpperCase() === nextSymbol);
+
+      if (!exactMatch) {
+        setTickerSearchError(`Ticker '${nextSymbol}' was not found.`);
+        return;
+      }
+
+      navigate(`/stock/${nextSymbol}`);
+    } catch (err) {
+      if (isAxiosError(err) && err.response?.status === 429) {
+        setTickerSearchError('Rate limit reached. Please try again in a few minutes.');
+      } else {
+        setTickerSearchError('Could not verify that ticker right now.');
+      }
+    } finally {
+      setIsTickerSearching(false);
     }
   };
 
@@ -264,15 +317,36 @@ export default function StockDetail() {
   return (
     <div className="flex-1 p-4 md:p-6 space-y-6">
       <div className="space-y-2">
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <h1 className="text-3xl font-bold">{stock.symbol}</h1>
             <p className="text-lg text-muted-foreground">{stock.companyName}</p>
           </div>
-          <Button onClick={handleViewOptionsChain} size="lg">
-            View Options Chain
-          </Button>
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+            <form
+              onSubmit={handleTickerSubmit}
+              className="flex w-full items-center gap-2 sm:w-auto"
+            >
+              <Input
+                value={tickerQuery}
+                onChange={(event) => {
+                  setTickerQuery(event.target.value.toUpperCase());
+                  if (tickerSearchError) setTickerSearchError(null);
+                }}
+                placeholder="Search ticker"
+                className="w-full sm:w-40"
+                aria-label="Search ticker"
+              />
+              <Button type="submit" variant="outline" size="sm" disabled={isTickerSearching}>
+                {isTickerSearching ? 'Checking...' : 'Go'}
+              </Button>
+            </form>
+            <Button onClick={handleBackToDashboard} variant="secondary" size="sm">
+              Back to Dashboard
+            </Button>
+          </div>
         </div>
+        {tickerSearchError && <p className="text-sm text-destructive">{tickerSearchError}</p>}
       </div>
 
       <Card className="p-6">
