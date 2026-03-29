@@ -239,6 +239,19 @@ export default function StockDetail() {
           </Select>
         </div>
 
+        <div className="ml-4 min-h-5 text-xs font-medium text-slate-600">
+          <span className={hoveredCandle ? 'opacity-100' : 'opacity-0'}>
+            {hoveredCandle
+              ? `Hovered: ${hoveredCandle.date.toLocaleDateString('en-US', {
+                  weekday: 'short',
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}`
+              : 'Hovered: placeholder'}
+          </span>
+        </div>
+
         <div
           ref={setChartContainerElement}
           className="relative w-full"
@@ -294,22 +307,8 @@ export default function StockDetail() {
                 });
               };
 
-              const hoveredDateLabel = hoveredCandle
-                ? hoveredCandle.date.toLocaleDateString('en-US', {
-                    weekday: 'short',
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })
-                : null;
-
               return (
                 <>
-                  {hoveredDateLabel && (
-                    <div className="pointer-events-none absolute left-2 top-2 z-10 rounded bg-slate-900/90 px-2 py-1 text-xs font-medium text-slate-100">
-                      {`Hovered: ${hoveredDateLabel}`}
-                    </div>
-                  )}
                   <ChartCanvas
                     height={chartHeight}
                     width={chartWidth}
@@ -346,7 +345,7 @@ export default function StockDetail() {
                       <GenericChartComponent
                         clip={false}
                         svgDraw={() => null}
-                        drawOn={['mousemove']}
+                        drawOn={['mousemove', 'pan']}
                         onMouseMove={(_, moreProps) => {
                           const currentItem = moreProps?.currentItem as StockChartData | undefined;
                           setHoveredCandle((previous) => {
@@ -359,7 +358,7 @@ export default function StockDetail() {
                       />
                       {isChartHovered && (
                         <OHLCTooltip
-                          origin={[8, 18]}
+                          origin={[8, 0]}
                           labelFill="#94a3b8"
                           textFill="#e2e8f0"
                           displayValuesFor={(_, moreProps) => moreProps.currentItem}
