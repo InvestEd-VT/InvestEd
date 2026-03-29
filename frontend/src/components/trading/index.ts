@@ -1,2 +1,3 @@
 // Trading-related components
-export {};
+export { StockSearch } from './StockSearch';
+

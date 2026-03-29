@@ -35,3 +35,30 @@ export interface RefreshTokenResponse {
   accessToken: string;
   refreshToken: string;
 }
+
+export interface Stock {
+  symbol: string;
+  companyName: string;
+  currentPrice: number;
+  priceChange: number;
+  priceChangePercent: number;
+  volume: number;
+  marketCap: number;
+  high52Week?: number;
+  low52Week?: number;
+}
+
+export interface StockSearchResult {
+  symbol: string;
+  companyName: string;
+  currentPrice: number;
+}
+
+export interface StockChartData {
+  date: Date;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
