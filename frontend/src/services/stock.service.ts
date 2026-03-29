@@ -44,8 +44,7 @@ const resolveHistoryRange = (
 
   switch (timeframe) {
     case '2d':
-      // Pull a slightly wider window to survive weekends/market holidays,
-      // then consume the last 2 available trading candles.
+      // Pull a wider daily window for smoother chart interaction.
       from.setDate(to.getDate() - 10);
       return { from: toISODate(from), to: toISODate(to), timespan: 'day' };
     case '1w':
@@ -223,7 +222,7 @@ const stockService = {
         volume: bar.v,
       }));
 
-      const finalData = timeframe === '2d' ? normalized.slice(-2) : normalized;
+      const finalData = normalized;
 
       if (finalData.length > 0) {
         setCached(historyCache, key, finalData, HISTORY_CACHE_TTL_MS);

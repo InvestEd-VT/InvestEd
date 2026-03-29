@@ -1,5 +1,13 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import {
+  CandlestickSeries,
+  ColorType,
+  createChart,
+  type CandlestickData,
+  type Time,
+  type UTCTimestamp,
+} from 'lightweight-charts';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -14,19 +22,11 @@ import {
 import { stockService } from '@/services';
 import type { Stock, StockChartData } from '@/types';
 import { isAxiosError } from 'axios';
-import { Chart, ChartCanvas, GenericChartComponent } from '@react-financial-charts/core';
-import { CandlestickSeries } from '@react-financial-charts/series';
-import { XAxis, YAxis } from '@react-financial-charts/axes';
-import { discontinuousTimeScaleProviderBuilder } from '@react-financial-charts/scales';
-import {
-  CrossHairCursor,
-  MouseCoordinateX,
-  MouseCoordinateY,
-} from '@react-financial-charts/coordinates';
-import { OHLCTooltip } from '@react-financial-charts/tooltip';
 import { AlertCircleIcon, TrendingUpIcon, TrendingDownIcon } from 'lucide-react';
 
 type ChartTimeframe = '2d' | '1w' | '1m';
+
+type CandlePoint = CandlestickData<UTCTimestamp>;
 
 const TIMEFRAME_LABELS: Record<ChartTimeframe, string> = {
   '2d': '2 Day',
@@ -37,6 +37,8 @@ const TIMEFRAME_LABELS: Record<ChartTimeframe, string> = {
 export default function StockDetail() {
   const { symbol } = useParams<{ symbol: string }>();
   const navigate = useNavigate();
+  const chartContainerRef = useRef<HTMLDivElement | null>(null);
+
   const [stock, setStock] = useState<Stock | null>(null);
   const [chartData, setChartData] = useState<StockChartData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,13 +46,6 @@ export default function StockDetail() {
   const [error, setError] = useState<string | null>(null);
   const [isRateLimited, setIsRateLimited] = useState(false);
   const [timeframe, setTimeframe] = useState<ChartTimeframe>('1m');
-  const [isChartHovered, setIsChartHovered] = useState(false);
-  const [hoveredCandle, setHoveredCandle] = useState<StockChartData | null>(null);
-  const [chartContainerElement, setChartContainerElement] = useState<HTMLDivElement | null>(null);
-  const [chartWidth, setChartWidth] = useState(() => {
-    if (typeof window === 'undefined') return 640;
-    return Math.max(0, window.innerWidth);
-  });
 
   useEffect(() => {
     if (!symbol) {
@@ -105,44 +100,131 @@ export default function StockDetail() {
     fetchHistory();
   }, [symbol, timeframe]);
 
+  const candleData = useMemo<CandlePoint[]>(() => {
+    return [...chartData]
+      .sort((a, b) => a.date.getTime() - b.date.getTime())
+      .map((candle) => ({
+        time: Math.floor(candle.date.getTime() / 1000) as UTCTimestamp,
+        open: Number(candle.open.toFixed(2)),
+        high: Number(candle.high.toFixed(2)),
+        low: Number(candle.low.toFixed(2)),
+        close: Number(candle.close.toFixed(2)),
+      }));
+  }, [chartData]);
+
   useEffect(() => {
-    if (!chartContainerElement) return;
+    const container = chartContainerRef.current;
+    if (!container || chartLoading || candleData.length === 0) return;
 
-    const computeFallbackWidth = () => {
-      if (typeof window === 'undefined') return 640;
-      return Math.max(0, window.innerWidth);
-    };
-
-    const updateWidth = () => {
-      const width = chartContainerElement.getBoundingClientRect().width;
-      if (width > 0) {
-        setChartWidth(Math.floor(width));
-      } else {
-        setChartWidth(computeFallbackWidth());
-      }
-    };
-
-    updateWidth();
-
-    const observer = new ResizeObserver((entries) => {
-      const width = entries[0]?.contentRect.width ?? 0;
-      if (width > 0) {
-        setChartWidth(Math.floor(width));
-      }
+    const chart = createChart(container, {
+      width: container.clientWidth,
+      height: 460,
+      layout: {
+        textColor: '#9EAAC7',
+        background: { type: ColorType.Solid, color: 'transparent' },
+      },
+      grid: {
+        vertLines: { color: 'rgba(56, 62, 85, 0.35)' },
+        horzLines: { color: 'rgba(56, 62, 85, 0.35)' },
+      },
+      rightPriceScale: {
+        borderVisible: false,
+      },
+      timeScale: {
+        borderVisible: false,
+      },
+      crosshair: {
+        vertLine: {
+          color: 'rgba(158, 170, 199, 0.5)',
+          width: 1,
+        },
+        horzLine: {
+          color: 'rgba(158, 170, 199, 0.5)',
+          width: 1,
+        },
+      },
     });
 
-    observer.observe(chartContainerElement);
-    window.addEventListener('resize', updateWidth);
+    const candleSeries = chart.addSeries(CandlestickSeries, {
+      upColor: '#16a34a',
+      downColor: '#dc2626',
+      borderUpColor: '#16a34a',
+      borderDownColor: '#dc2626',
+      wickUpColor: '#16a34a',
+      wickDownColor: '#dc2626',
+    });
+
+    candleSeries.setData(candleData);
+    chart.timeScale().fitContent();
+
+    const tooltip = document.createElement('div');
+    tooltip.style.position = 'absolute';
+    tooltip.style.display = 'none';
+    tooltip.style.pointerEvents = 'none';
+    tooltip.style.zIndex = '20';
+    tooltip.style.minWidth = '170px';
+    tooltip.style.borderRadius = '10px';
+    tooltip.style.border = '1px solid rgba(39, 45, 64, 0.9)';
+    tooltip.style.background = 'rgba(10, 12, 18, 0.94)';
+    tooltip.style.color = '#e5e7eb';
+    tooltip.style.padding = '10px 12px';
+    tooltip.style.fontSize = '12px';
+    container.appendChild(tooltip);
+
+    chart.subscribeCrosshairMove((param) => {
+      if (!param.point || !param.time || !param.seriesData.size) {
+        tooltip.style.display = 'none';
+        return;
+      }
+
+      const candle = param.seriesData.get(candleSeries) as CandlestickData<Time> | undefined;
+      if (!candle) {
+        tooltip.style.display = 'none';
+        return;
+      }
+
+      const date =
+        typeof candle.time === 'number'
+          ? new Date(candle.time * 1000)
+          : new Date(
+              (candle.time as { year: number; month: number; day: number }).year,
+              (candle.time as { year: number; month: number; day: number }).month - 1,
+              (candle.time as { year: number; month: number; day: number }).day
+            );
+
+      tooltip.innerHTML = `
+        <div style="font-weight:600; margin-bottom:6px;">${date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        })}</div>
+        <div style="display:grid; gap:2px; color:#9ca3af;">
+          <div style="display:flex; justify-content:space-between; gap:10px;"><span>Open</span><span style="color:#f9fafb;">$${candle.open.toFixed(2)}</span></div>
+          <div style="display:flex; justify-content:space-between; gap:10px;"><span>High</span><span style="color:#f9fafb;">$${candle.high.toFixed(2)}</span></div>
+          <div style="display:flex; justify-content:space-between; gap:10px;"><span>Low</span><span style="color:#f9fafb;">$${candle.low.toFixed(2)}</span></div>
+          <div style="display:flex; justify-content:space-between; gap:10px;"><span>Close</span><span style="color:#f9fafb;">$${candle.close.toFixed(2)}</span></div>
+        </div>
+      `;
+
+      const left = Math.min(container.clientWidth - 190, Math.max(8, param.point.x + 12));
+      const top = Math.max(8, param.point.y + 12);
+      tooltip.style.left = `${left}px`;
+      tooltip.style.top = `${top}px`;
+      tooltip.style.display = 'block';
+    });
+
+    const resizeObserver = new ResizeObserver(() => {
+      chart.applyOptions({ width: container.clientWidth });
+      chart.timeScale().fitContent();
+    });
+    resizeObserver.observe(container);
 
     return () => {
-      observer.disconnect();
-      window.removeEventListener('resize', updateWidth);
+      resizeObserver.disconnect();
+      tooltip.remove();
+      chart.remove();
     };
-  }, [chartContainerElement]);
-
-  const financialChartData = useMemo(() => {
-    return [...chartData].sort((a, b) => a.date.getTime() - b.date.getTime());
-  }, [chartData]);
+  }, [candleData, chartLoading]);
 
   const handleViewOptionsChain = () => {
     if (symbol) {
@@ -181,7 +263,6 @@ export default function StockDetail() {
 
   return (
     <div className="flex-1 p-4 md:p-6 space-y-6">
-      {/* Header */}
       <div className="space-y-2">
         <div className="flex items-start justify-between">
           <div>
@@ -194,7 +275,6 @@ export default function StockDetail() {
         </div>
       </div>
 
-      {/* Price and Change */}
       <Card className="p-6">
         <div className="space-y-4">
           <div className="flex items-baseline gap-4">
@@ -220,7 +300,6 @@ export default function StockDetail() {
         </div>
       </Card>
 
-      {/* Chart */}
       <Card className="p-6">
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-lg font-semibold">Price Chart ({TIMEFRAME_LABELS[timeframe]})</h2>
@@ -239,148 +318,17 @@ export default function StockDetail() {
           </Select>
         </div>
 
-        <div className="ml-4 min-h-5 text-xs font-medium text-slate-600">
-          <span className={hoveredCandle ? 'opacity-100' : 'opacity-0'}>
-            {hoveredCandle
-              ? `Hovered: ${hoveredCandle.date.toLocaleDateString('en-US', {
-                  weekday: 'short',
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}`
-              : 'Hovered: placeholder'}
-          </span>
-        </div>
-
-        <div
-          ref={setChartContainerElement}
-          className="relative w-full"
-          style={{ height: 360 }}
-          onMouseEnter={() => setIsChartHovered(true)}
-          onMouseLeave={() => {
-            setIsChartHovered(false);
-            setHoveredCandle(null);
-          }}
-        >
-          {chartLoading ? (
-            <Skeleton className="h-full w-full" />
-          ) : (
-            chartWidth > 0 &&
-            financialChartData.length > 0 &&
-            (() => {
-              const xScaleProvider = discontinuousTimeScaleProviderBuilder().inputDateAccessor(
-                (d) => d.date
-              );
-              const { data, xScale, xAccessor, displayXAccessor } =
-                xScaleProvider(financialChartData);
-
-              const max = xAccessor(data[data.length - 1]);
-              const min = xAccessor(data[Math.max(0, data.length - 100)]);
-              const xExtents = data.length > 1 ? [min, max] : [Math.max(0, max - 1), max + 1];
-              const chartHeight = 360;
-              const xTickCount =
-                timeframe === '1m' ? Math.min(data.length, 20) : Math.min(data.length, 10);
-
-              const resolveCandleDate = (value: unknown): Date | null => {
-                if (value instanceof Date) {
-                  return Number.isNaN(value.getTime()) ? null : value;
-                }
-
-                if (typeof value === 'number' && Number.isFinite(value)) {
-                  const item = data[Math.round(value)];
-                  if (item?.date instanceof Date && !Number.isNaN(item.date.getTime())) {
-                    return item.date;
-                  }
-                }
-
-                const parsed = new Date(value as string | number);
-                return Number.isNaN(parsed.getTime()) ? null : parsed;
-              };
-
-              const formatXAxisDate = (value: unknown) => {
-                const date = resolveCandleDate(value);
-                if (!date) return '';
-
-                return date.toLocaleDateString('en-US', {
-                  month: '2-digit',
-                  day: '2-digit',
-                });
-              };
-
-              return (
-                <>
-                  <ChartCanvas
-                    height={chartHeight}
-                    width={chartWidth}
-                    ratio={typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1}
-                    margin={{ left: 8, right: 64, top: 10, bottom: 28 }}
-                    mouseMoveEvent
-                    disablePan
-                    disableZoom
-                    data={data}
-                    displayXAccessor={displayXAccessor}
-                    seriesName={`${stock.symbol} (${TIMEFRAME_LABELS[timeframe]})`}
-                    xScale={xScale}
-                    xAccessor={xAccessor}
-                    xExtents={xExtents}
-                  >
-                    <Chart id={1} height={250} yExtents={(d) => [d.high, d.low]}>
-                      <XAxis
-                        strokeStyle="#94a3b8"
-                        tickStrokeStyle="#94a3b8"
-                        gridLinesStrokeStyle="rgba(148,163,184,0.25)"
-                        tickLabelFill="#94a3b8"
-                        ticks={xTickCount}
-                        tickFormat={formatXAxisDate}
-                      />
-                      <YAxis
-                        strokeStyle="#94a3b8"
-                        tickStrokeStyle="#94a3b8"
-                        gridLinesStrokeStyle="rgba(148,163,184,0.25)"
-                        tickLabelFill="#94a3b8"
-                      />
-                      <CandlestickSeries widthRatio={0.9} />
-                      <MouseCoordinateX snapX displayFormat={formatXAxisDate} />
-                      <MouseCoordinateY displayFormat={(value) => `$${value.toFixed(2)}`} />
-                      <GenericChartComponent
-                        clip={false}
-                        svgDraw={() => null}
-                        drawOn={['mousemove', 'pan']}
-                        onMouseMove={(_, moreProps) => {
-                          const currentItem = moreProps?.currentItem as StockChartData | undefined;
-                          setHoveredCandle((previous) => {
-                            const prevTs = previous?.date.getTime();
-                            const nextTs = currentItem?.date.getTime();
-                            if (prevTs === nextTs) return previous;
-                            return currentItem ?? null;
-                          });
-                        }}
-                      />
-                      {isChartHovered && (
-                        <OHLCTooltip
-                          origin={[8, 0]}
-                          labelFill="#94a3b8"
-                          textFill="#e2e8f0"
-                          displayValuesFor={(_, moreProps) => moreProps.currentItem}
-                        />
-                      )}
-                    </Chart>
-                    <CrossHairCursor snapX />
-                  </ChartCanvas>
-                </>
-              );
-            })()
-          )}
-        </div>
-
-        {!chartLoading && financialChartData.length === 0 && (
+        {chartLoading ? (
+          <Skeleton className="h-115 w-full" />
+        ) : candleData.length > 0 ? (
+          <div ref={chartContainerRef} className="relative h-115 w-full" />
+        ) : (
           <p className="mt-3 text-sm text-muted-foreground">
             No chart candles available for this timeframe.
           </p>
         )}
       </Card>
 
-      {/* Key Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="p-4">
           <div className="space-y-1">
