@@ -1,41 +1,39 @@
+import Dashboard from '@/app/dashboard/Dashboard';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute, PublicRoute } from './components/common';
 import { ForgotPassword, Login, Register, VerifyEmail } from './pages';
+import { ThemeProvider } from './components/ui/theme-provider';
 
 // ─── Placeholder pages ────────────────────────────────────────────────────────
 // Replace these with real page components as they are built
-const Dashboard = () => (
-  <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-    <div className="text-center">
-      <h1 className="text-4xl font-bold text-gray-900 mb-4">InvestEd</h1>
-      <p className="text-gray-600">Dashboard — coming soon</p>
-    </div>
-  </div>
-);
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 function App() {
   return (
-    <Routes>
-      {/* Public routes — redirect to /dashboard if already authenticated */}
-      <Route element={<PublicRoute />}>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-      </Route>
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <Routes>
+        <Route path="/preview-dashboard" element={<Dashboard />} />
 
-      {/* Protected routes — redirect to /login if not authenticated */}
-      <Route element={<ProtectedRoute />}>
-        <Route path="/dashboard" element={<Dashboard />} />
-      </Route>
+        {/* Public routes */}
+        <Route element={<PublicRoute />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+        </Route>
 
-      {/* Catch-all: redirect unknown paths to dashboard */}
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        {/* Protected routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+        </Route>
 
-      {/* Other Routes — no redirect */}
-      <Route path="/verify-email" element={<VerifyEmail />} />
-    </Routes>
+        {/* Catch-all */}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+
+        {/* Other routes, no redirect */}
+        <Route path="/verify-email" element={<VerifyEmail />} />
+      </Routes>
+    </ThemeProvider>
   );
 }
 

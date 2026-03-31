@@ -21,6 +21,11 @@ const transporter = nodemailer.createTransport({
 export const sendVerificationEmail = async (email: string, token: string): Promise<void> => {
   const verificationUrl = `${env.FRONTEND_URL}/verify-email?token=${encodeURIComponent(token)}`;
 
+  if (!env.EMAIL_USER || !env.EMAIL_PASS) {
+    console.log(`[DEV] Verification email skipped. Verify link: ${verificationUrl}`);
+    return;
+  }
+
   await transporter.sendMail({
     from: env.EMAIL_USER,
     to: email,
@@ -40,6 +45,11 @@ export const sendVerificationEmail = async (email: string, token: string): Promi
  */
 export const sendPasswordResetEmail = async (email: string, token: string): Promise<void> => {
   const resetUrl = `${env.FRONTEND_URL}/reset-password?token=${token}`;
+
+  if (!env.EMAIL_USER || !env.EMAIL_PASS) {
+    console.log(`[DEV] Password reset email skipped. Reset link: ${resetUrl}`);
+    return;
+  }
 
   await transporter.sendMail({
     from: env.EMAIL_USER,
