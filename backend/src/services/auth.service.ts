@@ -299,8 +299,12 @@ export const resetPassword = async (token: string, newPassword: string) => {
  * Always returns success to prevent account enumeration
  * Returns 400 if user is already verified
  */
-export const resendVerification = async (email: string) => {
-  const user = await prisma.user.findUnique({ where: { email } });
+export const resendVerification = async (token: string) => {
+  const user = await prisma.user.findFirst({
+  where: {
+      verificationToken: token,
+    },
+  });
 
   // always return success if email not found to prevent enumeration
   if (!user) {
@@ -316,13 +320,12 @@ export const resendVerification = async (email: string) => {
   const verificationToken = crypto.randomBytes(32).toString('hex');
   const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-  // replace old token with new one
   await prisma.user.update({
     where: { id: user.id },
     data: { verificationToken, verificationExpiry },
   });
 
-  await sendVerificationEmail(email, verificationToken);
+  await sendVerificationEmail(user.email, verificationToken);
 
-  return { message: 'If that email exists you will receive a verification link' };
+  return { message: 'Verification email sent' };
 };

@@ -36,5 +36,5 @@ export const resetPasswordSchema: ValidationChain[] = [
 
 // Resend Verification Schema
 export const resendVerificationSchema: ValidationChain[] = [
-  body('email').isEmail().withMessage('Valid email required'),
+  body('token').notEmpty().withMessage('Token required'),
 ];

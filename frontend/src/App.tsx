@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute, PublicRoute } from './components/common';
-import { ForgotPassword, Login, Register } from './pages';
+import { ForgotPassword, Login, Register, VerifyEmail } from './pages';
 
 // ─── Placeholder pages ────────────────────────────────────────────────────────
 // Replace these with real page components as they are built
@@ -32,6 +32,9 @@ function App() {
 
       {/* Catch-all: redirect unknown paths to dashboard */}
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
+
+      {/* Other Routes — no redirect */}
+      <Route path="/verify-email" element={<VerifyEmail />} />
     </Routes>
   );
 }

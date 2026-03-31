@@ -5,7 +5,6 @@ import { Card, CardAction, CardContent, CardHeader, CardTitle } from '../compone
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { authService } from '../services';
-import { useAuthStore } from '../store/authStore';
 import { isValidEmail, isValidPassword } from '../utils/validation';
 
 const Register = () => {
@@ -17,7 +16,6 @@ const Register = () => {
   const [errors, setErrors] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const authStore = useAuthStore();
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
@@ -40,9 +38,8 @@ const Register = () => {
     // Call API, display errors
     try {
       setIsLoading(true);
-      const response = await authService.register({ firstName, lastName, email, password });
-      authStore.login(response.user, response.accessToken, response.refreshToken);
-      navigate('/dashboard');
+      await authService.register({ firstName, lastName, email, password });
+      navigate('/verify-email');
     } catch (error) {
       if (error instanceof Error) {
         setErrors([error.message]);

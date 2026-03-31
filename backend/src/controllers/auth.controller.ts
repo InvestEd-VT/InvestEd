@@ -134,7 +134,8 @@ export const resendVerification = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const result = await authService.resendVerification(req.body.email);
+    const { token } = req.body;
+    const result = await authService.resendVerification(token);
     res.json(result);
   } catch (error) {
     next(error);
