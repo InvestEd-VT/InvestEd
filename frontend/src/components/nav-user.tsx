@@ -13,11 +13,17 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
-import { EllipsisVerticalIcon, CircleUserRoundIcon, CreditCardIcon, BellIcon, LogOutIcon } from "lucide-react"
-import { useNavigate } from 'react-router-dom'
-import { authService } from '@/services'
-import { useAuthStore } from '@/store/authStore'
+} from '@/components/ui/sidebar';
+import {
+  EllipsisVerticalIcon,
+  CircleUserRoundIcon,
+  CreditCardIcon,
+  BellIcon,
+  LogOutIcon,
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '@/store/authStore';
+import { authService } from '@/services';
 
 export function NavUser({
   user,
@@ -28,8 +34,20 @@ export function NavUser({
     avatar: string;
   };
 }) {
-  const { isMobile } = useSidebar()
-  const navigate = useNavigate()
+  const { isMobile } = useSidebar();
+  const navigate = useNavigate();
+  const logout = useAuthStore((state) => state.logout);
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+    } catch (error) {
+      console.error('Logout failed:', error);
+    } finally {
+      logout();
+      navigate('/login', { replace: true });
+    }
+  };
 
   return (
     <SidebarMenu>

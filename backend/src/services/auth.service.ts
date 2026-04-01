@@ -32,6 +32,19 @@ export const comparePassword = async (password: string, hash: string): Promise<b
   return bcrypt.compare(password, hash);
 };
 
+// ─── TOKEN HASHING ────────────────────────────────────
+
+/**
+ * Hashes a token using SHA-256
+ * Used for verificationToken and resetToken — unlike bcrypt, SHA-256 is
+ * deterministic, so we can hash the incoming token at lookup time and
+ * find the matching row directly via a unique index, without scanning
+ * the whole table.
+ */
+export const hashToken = (token: string): string => {
+  return crypto.createHash('sha256').update(token).digest('hex');
+};
+
 // ─── TOKEN GENERATION ─────────────────────────────────
 
 /**
@@ -73,7 +86,7 @@ export const verifyRefreshToken = (token: string): TokenPayload => {
 /**
  * Registers a new user account
  * Validates .edu email, hashes password, creates user and default portfolio
- * Generates verification token and sends verification email
+ * Generates verification token, stores SHA-256 hash, and sends raw token in email
  * Returns success message without tokens - user must verify email before login
  */
 export const register = async (data: RegisterRequestBody): Promise<{ message: string }> => {
@@ -87,7 +100,9 @@ export const register = async (data: RegisterRequestBody): Promise<{ message: st
   const passwordHash = await hashPassword(data.password);
 
   // generate verification token and expiry
+  // store SHA-256 hash in DB; send raw token in email link
   const verificationToken = crypto.randomBytes(32).toString('hex');
+  const verificationTokenHash = hashToken(verificationToken);
   const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
   try {
@@ -98,7 +113,7 @@ export const register = async (data: RegisterRequestBody): Promise<{ message: st
           passwordHash,
           firstName: data.firstName,
           lastName: data.lastName,
-          verificationToken,
+          verificationToken: verificationTokenHash,
           verificationExpiry,
         },
         select: {
@@ -116,7 +131,7 @@ export const register = async (data: RegisterRequestBody): Promise<{ message: st
     throw error;
   }
 
-  // send verification email
+  // send raw token in verification email
   await sendVerificationEmail(data.email, verificationToken);
 
   return { message: 'Registration successful, please verify your email' };
@@ -220,13 +235,16 @@ export const logout = async (userId: string) => {
 
 /**
  * Verifies a user's email using the verification token
+ * Hashes the incoming token and looks up the stored SHA-256 hash via unique index
  * Marks user as verified and clears token and expiry
  * Returns 400 if token is invalid or expired
  */
 export const verifyEmail = async (token: string) => {
+  const tokenHash = hashToken(token);
+
   const user = await prisma.user.findFirst({
     where: {
-      verificationToken: token,
+      verificationToken: tokenHash,
       verificationExpiry: { gt: new Date() },
     },
   });
@@ -249,6 +267,7 @@ export const verifyEmail = async (token: string) => {
 
 /**
  * Generates a password reset token and sends reset email
+ * Stores SHA-256 hash of token; sends raw token in email link
  * Always returns success to prevent account enumeration
  */
 export const forgotPassword = async (email: string) => {
@@ -260,13 +279,15 @@ export const forgotPassword = async (email: string) => {
   }
 
   const resetToken = crypto.randomBytes(32).toString('hex');
+  const resetTokenHash = hashToken(resetToken);
   const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000);
 
   await prisma.user.update({
     where: { id: user.id },
-    data: { resetToken, resetTokenExpiry },
+    data: { resetToken: resetTokenHash, resetTokenExpiry },
   });
 
+  // send raw token in reset email
   await sendPasswordResetEmail(email, resetToken);
 
   return { message: 'If that email exists you will receive a reset link' };
@@ -274,13 +295,16 @@ export const forgotPassword = async (email: string) => {
 
 /**
  * Resets user password using a valid reset token
+ * Hashes the incoming token and looks up the stored SHA-256 hash via unique index
  * Clears reset token and invalidates all existing sessions
  * Returns 400 if token is invalid or expired
  */
 export const resetPassword = async (token: string, newPassword: string) => {
+  const tokenHash = hashToken(token);
+
   const user = await prisma.user.findFirst({
     where: {
-      resetToken: token,
+      resetToken: tokenHash,
       resetTokenExpiry: { gt: new Date() },
     },
   });
@@ -306,11 +330,16 @@ export const resetPassword = async (token: string, newPassword: string) => {
 
 /**
  * Resends verification email with a new token and 24 hour expiry
+ * Stores SHA-256 hash of token; sends raw token in email link
  * Always returns success to prevent account enumeration
  * Returns 400 if user is already verified
  */
-export const resendVerification = async (email: string) => {
-  const user = await prisma.user.findUnique({ where: { email } });
+export const resendVerification = async (token: string) => {
+  const user = await prisma.user.findFirst({
+    where: {
+      verificationToken: token,
+    },
+  });
 
   // always return success if email not found to prevent enumeration
   if (!user) {
@@ -323,16 +352,18 @@ export const resendVerification = async (email: string) => {
   }
 
   // generate new token and expiry
+  // store SHA-256 hash in DB; send raw token in email link
   const verificationToken = crypto.randomBytes(32).toString('hex');
+  const verificationTokenHash = hashToken(verificationToken);
   const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-  // replace old token with new one
+  // replace old token with new hash
   await prisma.user.update({
     where: { id: user.id },
-    data: { verificationToken, verificationExpiry },
+    data: { verificationToken: verificationTokenHash, verificationExpiry },
   });
 
-  await sendVerificationEmail(email, verificationToken);
+  await sendVerificationEmail(user.email, verificationToken);
 
-  return { message: 'If that email exists you will receive a verification link' };
+  return { message: 'Verification email sent' };
 };

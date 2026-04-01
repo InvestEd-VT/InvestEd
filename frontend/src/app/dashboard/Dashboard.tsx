@@ -5,6 +5,7 @@ import TopPositionsList from '@/components/portfolio/TopPositionsList';
 import RecentTransactions from '@/components/portfolio/RecentTransactions';
 import { SectionCards } from '@/components/section-cards';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { StockSearch } from '@/components/trading';
 
 // data.json removed: TopPositionsList will display real/store-driven data
 import { useEffect } from 'react';
