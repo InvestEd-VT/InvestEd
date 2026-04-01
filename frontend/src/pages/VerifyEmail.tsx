@@ -26,11 +26,9 @@ const VerifyEmail = () => {
         setStatus('success');
         setMessage(res.message || 'Email verified successfully.');
         setTimeout(() => navigate('/login'), 5000);
-      } catch (err: any) {
+      } catch {
         setStatus('error');
-        setMessage(
-          err?.response?.data?.message || 'Verification failed. Token may be invalid or expired.'
-        );
+        setMessage('Verification failed. Token may be invalid or expired.');
       }
     };
 
@@ -47,7 +45,7 @@ const VerifyEmail = () => {
       setResending(true);
       await authService.resendVerification({ token });
       setMessage('A new verification email has been sent.');
-    } catch (err: any) {
+    } catch {
       setMessage('Failed to resend verification email.');
     } finally {
       setResending(false);
