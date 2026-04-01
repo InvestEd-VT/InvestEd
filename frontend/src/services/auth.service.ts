@@ -5,7 +5,8 @@ import type {
   LoginRequest,
   AuthResponse,
   RefreshTokenResponse,
-  ResendVerificationRequest
+  ResendVerificationRequest,
+  ResetPasswordRequest
 } from '../types';
 
 const authService = {
@@ -27,6 +28,9 @@ const authService = {
 
   resendVerification: (data: ResendVerificationRequest): Promise<{ message: string }> =>
     api.post('/auth/resend-verification', data).then((response) => response.data),
+
+  resetPassword: (data: ResetPasswordRequest): Promise<{ message: string }> =>
+    api.post('/auth/reset-password', data).then((response) => response.data),
 };
 
 export default authService;

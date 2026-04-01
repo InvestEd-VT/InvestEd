@@ -242,7 +242,7 @@ export const logout = async (userId: string) => {
 export const verifyEmail = async (token: string) => {
   const tokenHash = hashToken(token);
 
-  const user = await prisma.user.findUnique({
+  const user = await prisma.user.findFirst({
     where: {
       verificationToken: tokenHash,
       verificationExpiry: { gt: new Date() },
@@ -302,7 +302,7 @@ export const forgotPassword = async (email: string) => {
 export const resetPassword = async (token: string, newPassword: string) => {
   const tokenHash = hashToken(token);
 
-  const user = await prisma.user.findUnique({
+  const user = await prisma.user.findFirst({
     where: {
       resetToken: tokenHash,
       resetTokenExpiry: { gt: new Date() },
