@@ -6,7 +6,7 @@ import type {
   AuthResponse,
   RefreshTokenResponse,
   ResendVerificationRequest,
-  ResetPasswordRequest
+  ResetPasswordRequest,
 } from '../types';
 
 const authService = {
