@@ -48,10 +48,9 @@ const ResetPassword = () => {
       await authService.resetPassword({ token: resetToken, newPassword: password });
       setIsSuccess(true);
     } catch (err) {
-      if (err instanceof Error) { 
+      if (err instanceof Error) {
         setErrors([err.message]);
-      }
-      else { 
+      } else {
         setErrors(['Password reset failed.']);
       }
     } finally {
@@ -69,7 +68,8 @@ const ResetPassword = () => {
           <CardContent className="flex flex-col gap-4">
             <p>Your password has been updated successfully.</p>
             <Link to="/login">
-              <Button className="w-full rounded-lg bg-zinc-50 px-4 py-2 text-sm font-medium text-zinc-900
+              <Button
+                className="w-full rounded-lg bg-zinc-50 px-4 py-2 text-sm font-medium text-zinc-900
                 hover:bg-zinc-200 active:bg-zinc-300
                 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-1 focus:ring-offset-zinc-900
                 transition-colors"
@@ -102,7 +102,8 @@ const ResetPassword = () => {
                 required
               />
               <p className="text-xs text-zinc-400 mt-1">
-                Password must be at least 8 characters, contain uppercase, lowercase, number, & special character
+                Password must be at least 8 characters, contain uppercase, lowercase, number, &
+                special character
               </p>
             </div>
 

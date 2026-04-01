@@ -56,17 +56,17 @@ const Register = () => {
       <div className="text-left mb-[5vh]">
         <h1 className="text-4xl font-bold text-white mb-4">Register</h1>
         <p className="text-lg text-gray-400 mb-3">Already have an account?</p>
-          <Link to="/login">
-            <Button
-              className="w-fit rounded-lg bg-zinc-50 px-4 py-2 text-sm font-medium text-zinc-900
+        <Link to="/login">
+          <Button
+            className="w-fit rounded-lg bg-zinc-50 px-4 py-2 text-sm font-medium text-zinc-900
                 hover:bg-zinc-200 active:bg-zinc-300
                 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-1 focus:ring-offset-zinc-900
                 disabled:cursor-not-allowed disabled:opacity-50
                 transition-colors"
-            >
-              Sign In
-            </Button>
-          </Link>
+          >
+            Sign In
+          </Button>
+        </Link>
       </div>
 
       <Card className="w-full max-w-sm bg-zinc-900 border-zinc-800 text-zinc-200">

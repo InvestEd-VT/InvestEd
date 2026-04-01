@@ -29,8 +29,7 @@ const VerifyEmail = () => {
       } catch (err: any) {
         setStatus('error');
         setMessage(
-          err?.response?.data?.message ||
-          'Verification failed. Token may be invalid or expired.'
+          err?.response?.data?.message || 'Verification failed. Token may be invalid or expired.'
         );
       }
     };
@@ -58,23 +57,17 @@ const VerifyEmail = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-zinc-950 px-4">
       <div className="w-full max-w-md bg-zinc-900 rounded-2xl shadow-xl p-8 text-center">
-
         {/* no verification email sent yet */}
         {status === 'idle' && (
           <div className="flex flex-col gap-4">
-            <h1 className="text-2xl font-semibold text-blue-400">
-              Check Your Email
-            </h1>
+            <h1 className="text-2xl font-semibold text-blue-400">Check Your Email</h1>
             <p className="text-zinc-300 text-sm">
               A verification link has been sent to your email.
             </p>
             <p className="text-zinc-400 text-xs">
               Click the link in your email to activate your account.
             </p>
-            <Link
-              to="/login"
-              className="text-sm text-zinc-400 hover:text-zinc-200 mt-2"
-            >
+            <Link to="/login" className="text-sm text-zinc-400 hover:text-zinc-200 mt-2">
               Back to Login
             </Link>
           </div>
@@ -91,13 +84,9 @@ const VerifyEmail = () => {
         {/* verification success */}
         {status === 'success' && (
           <div className="flex flex-col gap-4">
-            <h1 className="text-2xl font-semibold text-green-400">
-              Email Verified
-            </h1>
+            <h1 className="text-2xl font-semibold text-green-400">Email Verified</h1>
             <p className="text-zinc-300 text-sm">{message}</p>
-            <p className="text-xs text-zinc-500">
-              Redirecting to login...
-            </p>
+            <p className="text-xs text-zinc-500">Redirecting to login...</p>
             <Link
               to="/login"
               className="mt-4 inline-block bg-blue-600 hover:bg-blue-700 transition px-5 py-2 rounded-lg text-zinc-50 font-medium"
@@ -110,9 +99,7 @@ const VerifyEmail = () => {
         {/* verification failed */}
         {status === 'error' && (
           <div className="flex flex-col gap-4">
-            <h1 className="text-2xl font-semibold text-red-400">
-              Verification Failed
-            </h1>
+            <h1 className="text-2xl font-semibold text-red-400">Verification Failed</h1>
             <p className="text-zinc-300 text-sm">{message}</p>
             <button
               onClick={handleResend}
@@ -121,10 +108,7 @@ const VerifyEmail = () => {
             >
               {resending ? 'Sending...' : 'Resend Verification Email'}
             </button>
-            <Link
-              to="/login"
-              className="text-sm text-zinc-400 hover:text-zinc-200 mt-2"
-            >
+            <Link to="/login" className="text-sm text-zinc-400 hover:text-zinc-200 mt-2">
               Back to Login
             </Link>
           </div>

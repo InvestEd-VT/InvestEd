@@ -336,7 +336,7 @@ export const resetPassword = async (token: string, newPassword: string) => {
  */
 export const resendVerification = async (token: string) => {
   const user = await prisma.user.findFirst({
-  where: {
+    where: {
       verificationToken: token,
     },
   });
