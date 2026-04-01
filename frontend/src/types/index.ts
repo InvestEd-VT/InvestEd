@@ -35,3 +35,33 @@ export interface RefreshTokenResponse {
   accessToken: string;
   refreshToken: string;
 }
+
+export interface Position {
+  id: string;
+  symbol: string;
+  quantity: number;
+  avgCost: number;
+  positionType: string;
+  optionType?: string | null;
+  strikePrice?: number | null;
+  currentPrice?: number;
+  marketValue?: number;
+  costBasis?: number;
+  unrealizedPnL?: number;
+  unrealizedPnLPercent?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface PortfolioResponse {
+  id: string;
+  name: string;
+  cashBalance: number;
+  positionsValue: number;
+  totalValue: number;
+  totalPnL: number;
+  totalPnLPercent: number;
+  positions: Position[];
+  createdAt: string;
+  updatedAt: string;
+}

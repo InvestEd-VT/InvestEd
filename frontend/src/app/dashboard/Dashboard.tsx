@@ -1,12 +1,37 @@
 import { AppSidebar } from '@/components/app-sidebar';
-import { ChartAreaInteractive } from '@/components/chart-area-interactive';
-import { DataTable } from '@/components/data-table';
+import PerformanceChart from '@/components/portfolio/PerformanceChart';
+import TopPositionsList from '@/components/portfolio/TopPositionsList';
+import RecentTransactions from '@/components/portfolio/RecentTransactions';
 import { SectionCards } from '@/components/section-cards';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
-import data from './data.json';
+// data.json removed: TopPositionsList will display real/store-driven data
+import { useEffect } from 'react';
+import usePortfolioStore from '@/store/portfolioStore';
+import PortfolioValueCard from '@/components/portfolio/PortfolioValueCard';
 
 export default function Dashboard() {
+  // Select the fetch function directly to keep a stable reference
+  const fetchPortfolio = usePortfolioStore((s) => s.fetchPortfolio);
+
+  useEffect(() => {
+    fetchPortfolio();
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') fetchPortfolio();
+    };
+
+    const onFocus = () => fetchPortfolio();
+
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('focus', onFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [fetchPortfolio]);
+
   return (
     <SidebarProvider
       style={
@@ -21,15 +46,23 @@ export default function Dashboard() {
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+              <div className="px-4 lg:px-6">
+                <PortfolioValueCard />
+              </div>
               <SectionCards />
               <div className="px-4 lg:px-6">
-                <ChartAreaInteractive />
+                <PerformanceChart period="all" />
               </div>
-              <DataTable data={data} />
+              <TopPositionsList />
+              <div className="px-4 lg:px-6">
+                <RecentTransactions />
+              </div>
             </div>
           </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
   );
+
 }
+
