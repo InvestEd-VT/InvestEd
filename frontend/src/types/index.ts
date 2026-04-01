@@ -36,7 +36,6 @@ export interface RefreshTokenResponse {
   refreshToken: string;
 }
 
-<<<<<<< HEAD
 export interface Position {
   id: string;
   symbol: string;
@@ -65,7 +64,8 @@ export interface PortfolioResponse {
   positions: Position[];
   createdAt: string;
   updatedAt: string;
-=======
+}
+
 export interface ResendVerificationRequest {
   token: string;
 }
@@ -100,5 +100,4 @@ export interface StockChartData {
   low: number;
   close: number;
   volume: number;
->>>>>>> origin/frontend
 }
