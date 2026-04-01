@@ -5,6 +5,7 @@ import portfolioRoutes from './portfolio.routes.js';
 import stockRoutes from './stock.routes.js';
 import optionsRoutes from './options.routes.js';
 import tradeRoutes from './trade.routes.js';
+import educationRoutes from './education.routes.js';
 
 const router = Router();
 
@@ -14,5 +15,6 @@ router.use('/portfolio', portfolioRoutes);
 router.use('/stocks', stockRoutes);
 router.use('/options', optionsRoutes);
 router.use('/trade', tradeRoutes);
+router.use('/education', educationRoutes);
 
 export default router;

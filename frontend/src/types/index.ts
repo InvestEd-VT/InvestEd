@@ -36,6 +36,15 @@ export interface RefreshTokenResponse {
   refreshToken: string;
 }
 
+export interface ResendVerificationRequest {
+  token: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}
+
 export interface Stock {
   symbol: string;
   companyName: string;

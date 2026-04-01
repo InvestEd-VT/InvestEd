@@ -1,7 +1,7 @@
 import Dashboard from '@/app/dashboard/Dashboard';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute, PublicRoute } from './components/common';
-import { ForgotPassword, Login, Register, StockDetail } from './pages';
+import { ForgotPassword, Login, Register, VerifyEmail, StockDetail, ResetPassword } from './pages';
 import { ThemeProvider } from './components/ui/theme-provider';
 
 // ─── Placeholder pages ────────────────────────────────────────────────────────
@@ -30,6 +30,10 @@ function App() {
 
         {/* Catch-all */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
+
+        {/* Other routes, no redirect */}
+        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
       </Routes>
     </ThemeProvider>
   );
