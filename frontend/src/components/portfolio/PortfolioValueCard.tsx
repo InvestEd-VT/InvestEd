@@ -9,6 +9,8 @@ import {
 } from '@/components/ui/card';
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import usePortfolioStore from '@/store/portfolioStore';
+import { useEffect, useState } from 'react';
+import { getMultipleStockPrev, hasMassiveKey } from '@/services/massive.client';
 
 const STARTING_BALANCE = 10000;
 
@@ -26,10 +28,53 @@ export default function PortfolioValueCard() {
   const data = usePortfolioStore((s) => s.data);
   const isLoading = usePortfolioStore((s) => s.isLoading);
 
+  const [livePositionsValue, setLivePositionsValue] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!data || !hasMassiveKey) return;
+
+    const stockPositions = (data.positions || []).filter((p: any) => (p.positionType || '').toUpperCase() === 'STOCK');
+    const symbols = stockPositions.map((p: any) => String(p.symbol || '').toUpperCase()).filter(Boolean);
+    if (!symbols.length) return;
+
+    let mounted = true;
+    let timer: ReturnType<typeof setInterval> | null = null;
+
+    const fetchPrices = async () => {
+      try {
+        const map = await getMultipleStockPrev(symbols, 10);
+        if (!mounted) return;
+        // compute positions value: use live close for stocks, keep marketValue for options
+        let stocksValue = 0;
+        for (const p of stockPositions) {
+          const sym = String(p.symbol || '').toUpperCase();
+          const price = map.get(sym);
+          if (price) stocksValue += Number(price.close) * Number(p.quantity ?? 0);
+          else stocksValue += Number(p.marketValue ?? (p.currentPrice ? p.currentPrice * (p.quantity ?? 0) : 0));
+        }
+
+        const optionsValue = (data.positions || []).filter((p: any) => (p.positionType || '').toUpperCase() === 'OPTION')
+          .reduce((acc: number, p: any) => acc + (Number(p.marketValue ?? 0) || 0), 0);
+
+        setLivePositionsValue(stocksValue + optionsValue);
+      } catch (e) {
+        // ignore; keep previous livePositionsValue if any
+      }
+    };
+
+    void fetchPrices();
+    timer = setInterval(fetchPrices, 30_000);
+
+    return () => {
+      mounted = false;
+      if (timer) clearInterval(timer);
+    };
+  }, [data]);
+
   // Compute totals defensively
   const cash = data?.cashBalance ?? 0;
   const positionsValue =
-    data?.positionsValue ?? data?.positions?.reduce((acc, p) => acc + (p.marketValue ?? 0), 0) ?? 0;
+    livePositionsValue ?? data?.positionsValue ?? data?.positions?.reduce((acc, p) => acc + (p.marketValue ?? 0), 0) ?? 0;
   const total = data?.totalValue ?? cash + positionsValue;
 
   const pnl = total - STARTING_BALANCE;

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Link } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
 import { NavUser } from '@/components/nav-user'
 import {
@@ -28,10 +28,10 @@ export function AppSidebarSimple(props: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <Link to="/dashboard" className="flex items-center gap-2">
+              <NavLink to="/dashboard" className="flex items-center gap-2">
                 <LayoutDashboardIcon className="size-5" />
                 <span className="text-base font-semibold">InvestEd</span>
-              </Link>
+              </NavLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -41,34 +41,34 @@ export function AppSidebarSimple(props: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <Link to="/dashboard" className="flex items-center gap-2">
+              <NavLink to="/dashboard" className={({ isActive }) => `flex items-center gap-2 ${isActive ? 'font-semibold text-primary' : ''}`}>
                 <LayoutDashboardIcon />
                 Dashboard
-              </Link>
+              </NavLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <Link to="/portfolio" className="flex items-center gap-2">
+              <NavLink to="/portfolio" className={({ isActive }) => `flex items-center gap-2 ${isActive ? 'font-semibold text-primary' : ''}`}>
                 <CreditCardIcon />
                 Portfolio
-              </Link>
+              </NavLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <Link to="/trade" className="flex items-center gap-2">
+              <NavLink to="/trade" className={({ isActive }) => `flex items-center gap-2 ${isActive ? 'font-semibold text-primary' : ''}`}>
                 <ChartBarIcon />
                 Trade
-              </Link>
+              </NavLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <Link to="/learn" className="flex items-center gap-2">
+              <NavLink to="/learn" className={({ isActive }) => `flex items-center gap-2 ${isActive ? 'font-semibold text-primary' : ''}`}>
                 <FileTextIcon />
                 Learn
-              </Link>
+              </NavLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
