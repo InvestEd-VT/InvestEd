@@ -7,12 +7,13 @@ import App from './App.tsx';
 // ⭐ Import TooltipProvider from your UI folder
 import { TooltipProvider } from '@/components/ui/tooltip';
 
+// StrictMode commented out for demo — fixes email verification double-firing
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
+  // <StrictMode>
     <BrowserRouter>
       <TooltipProvider>
         <App />
       </TooltipProvider>
     </BrowserRouter>
-  </StrictMode>
+  // </StrictMode>
 );
