@@ -1,36 +1,8 @@
 import { AppSidebar } from '@/components/app-sidebar';
 import { SiteHeader } from '@/components/site-header';
-import PerformanceChart from '@/components/portfolio/PerformanceChart';
-import TopPositionsList from '@/components/portfolio/TopPositionsList';
-import RecentTransactions from '@/components/portfolio/RecentTransactions';
-import { SectionCards } from '@/components/section-cards';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
-import { useEffect } from 'react';
-import usePortfolioStore from '@/store/portfolioStore';
-import PortfolioValueCard from '@/components/portfolio/PortfolioValueCard';
-
-export default function Dashboard() {
-  const fetchPortfolio = usePortfolioStore((s) => s.fetchPortfolio);
-
-  useEffect(() => {
-    fetchPortfolio();
-
-    const onVisibility = () => {
-      if (document.visibilityState === 'visible') fetchPortfolio();
-    };
-
-    const onFocus = () => fetchPortfolio();
-
-    document.addEventListener('visibilitychange', onVisibility);
-    window.addEventListener('focus', onFocus);
-
-    return () => {
-      document.removeEventListener('visibilitychange', onVisibility);
-      window.removeEventListener('focus', onFocus);
-    };
-  }, [fetchPortfolio]);
-
+export function PageShell({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider
       style={
@@ -66,18 +38,8 @@ export default function Dashboard() {
         <SiteHeader />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <div className="px-4 lg:px-6">
-                <PortfolioValueCard />
-              </div>
-              <SectionCards />
-              <div className="px-4 lg:px-6">
-                <PerformanceChart period="all" />
-              </div>
-              <TopPositionsList />
-              <div className="px-4 lg:px-6">
-                <RecentTransactions />
-              </div>
+            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
+              {children}
             </div>
           </div>
         </div>

@@ -1,13 +1,15 @@
 import { create } from 'zustand';
 import type { PortfolioResponse } from '../types';
 import portfolioService from '../services/portfolio.service';
+import stockService from '../services/stock.service';
+import { priceOption } from '../utils/options';
 
 interface PortfolioState {
   data: PortfolioResponse | null;
   isLoading: boolean;
   error: string | null;
   lastFetched: number | null;
-  staleTime: number; // milliseconds
+  staleTime: number;
   fetchPortfolio: (options?: { force?: boolean }) => Promise<void>;
   clearError: () => void;
 }
@@ -17,78 +19,64 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
   isLoading: false,
   error: null,
   lastFetched: null,
-  // default stale time 30 seconds
   staleTime: 30 * 1000,
 
   clearError: () => set({ error: null }),
 
   fetchPortfolio: async (options = { force: false }) => {
     const { force } = options as { force: boolean };
-
-    // Avoid concurrent fetches
     if (get().isLoading) return;
 
     const { lastFetched, staleTime } = get();
     const now = Date.now();
-
-    // If not forced and we fetched recently, skip
-    if (!force && lastFetched && now - lastFetched < staleTime) {
-      return;
-    }
+    if (!force && lastFetched && now - lastFetched < staleTime) return;
 
     set({ isLoading: true, error: null });
     try {
       const data = await portfolioService.getPortfolio();
-      set({ data, isLoading: false, lastFetched: Date.now() });
-    } catch (err: any) {
-      console.error('Failed to fetch portfolio', err);
-      const message = err?.response?.data?.message || err?.message || 'Failed to load portfolio';
-      // If in dev mode, provide a local mock so UI still shows realistic values
-      if (import.meta.env.DEV) {
-        const mock: PortfolioResponse = {
-          id: 'mock-portfolio-1',
-          name: 'Mock Portfolio',
-          cashBalance: 5234.56,
-          positionsValue: 4765.44,
-          totalValue: 10000.0,
-          totalPnL: 0,
-          totalPnLPercent: 0,
-          positions: [
-            {
-              id: 'pos-1',
-              symbol: 'AAPL',
-              quantity: 10,
-              avgCost: 150,
-              positionType: 'STOCK',
-              currentPrice: 155,
-              marketValue: 1550,
-              costBasis: 1500,
-              unrealizedPnL: 50,
-              unrealizedPnLPercent: 3.33,
-            },
-            {
-              id: 'pos-2',
-              symbol: 'TSLA230917C700',
-              quantity: 1,
-              avgCost: 20,
-              positionType: 'OPTION',
-              optionType: 'CALL',
-              strikePrice: 700,
-              currentPrice: 25,
-              marketValue: 2500,
-              costBasis: 2000,
-              unrealizedPnL: 500,
-              unrealizedPnLPercent: 25,
-            },
-          ],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
 
-        set({ data: mock, isLoading: false, lastFetched: Date.now(), error: null });
-        return;
+      // Enrich positions with live P&L using Black-Scholes
+      if (data.positions.length > 0) {
+        const symbols = [...new Set(data.positions.map((p) => p.symbol))];
+        const prices = new Map<string, number>();
+
+        for (const sym of symbols) {
+          try {
+            const detail = await stockService.getDetail(sym);
+            prices.set(sym, detail.currentPrice);
+          } catch { /* rate limited */ }
+        }
+
+        let totalLiveValue = 0;
+        for (const pos of data.positions) {
+          const stockPrice = prices.get(pos.symbol);
+          if (stockPrice && pos.strikePrice && pos.optionType && pos.expirationDate) {
+            const type = pos.optionType.toLowerCase() as 'call' | 'put';
+            const expStr = (pos.expirationDate as string).split('T')[0];
+            const livePrice = priceOption(stockPrice, pos.strikePrice, expStr, type, pos.symbol);
+            pos.currentPrice = livePrice;
+            pos.marketValue = livePrice * pos.quantity * 100;
+            pos.costBasis = pos.avgCost * pos.quantity * 100;
+            pos.unrealizedPnL = pos.marketValue - pos.costBasis;
+            pos.unrealizedPnLPercent = pos.costBasis > 0 ? (pos.unrealizedPnL / pos.costBasis) * 100 : 0;
+            totalLiveValue += pos.marketValue;
+          } else {
+            totalLiveValue += (pos.marketValue ?? pos.avgCost * pos.quantity * 100);
+          }
+        }
+
+        data.positionsValue = totalLiveValue;
+        data.totalValue = data.cashBalance + totalLiveValue;
+        data.totalPnL = data.totalValue - 10000; // vs starting $10k
+        data.totalPnLPercent = (data.totalPnL / 10000) * 100;
       }
 
+      set({ data, isLoading: false, lastFetched: Date.now() });
+    } catch (err: unknown) {
+      console.error('Failed to fetch portfolio', err);
+      const message = (err as { response?: { data?: { message?: string } }; message?: string })?.response?.data?.message
+        || (err as { message?: string })?.message
+        || 'Failed to load portfolio';
       set({ error: message, isLoading: false });
     }
   },

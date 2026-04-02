@@ -44,11 +44,15 @@ export interface Position {
   positionType: string;
   optionType?: string | null;
   strikePrice?: number | null;
+  expirationDate?: string | null;
+  contractSymbol?: string | null;
+  status?: string;
   currentPrice?: number;
   marketValue?: number;
   costBasis?: number;
   unrealizedPnL?: number;
   unrealizedPnLPercent?: number;
+  portfolioId?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -100,4 +104,66 @@ export interface StockChartData {
   low: number;
   close: number;
   volume: number;
+}
+
+// ─── Options ───────────────────────────────────────────────────────────────────
+
+export interface OptionsContract {
+  ticker: string;
+  contract_type: 'call' | 'put';
+  strike_price: number;
+  expiration_date: string;
+  underlying_ticker: string;
+  shares_per_contract: number;
+}
+
+export interface OptionsChainResponse {
+  calls: OptionsContract[];
+  puts: OptionsContract[];
+  expirationDates: string[];
+}
+
+// ─── Trading ───────────────────────────────────────────────────────────────────
+
+export interface TradeRequest {
+  symbol: string;
+  contractSymbol: string;
+  optionType: 'CALL' | 'PUT';
+  strikePrice: number;
+  expirationDate: string;
+  quantity: number;
+  price: number;
+}
+
+export interface TradeResponse {
+  position: Position;
+  transaction: Transaction;
+  cashBalance: number;
+}
+
+// ─── Portfolio (extended) ──────────────────────────────────────────────────────
+
+export type Portfolio = PortfolioResponse;
+
+export interface Transaction {
+  id: string;
+  type: 'BUY' | 'SELL' | 'EXERCISE' | 'EXPIRED_WORTHLESS' | 'EXPIRATION';
+  symbol: string;
+  quantity: number;
+  price: number;
+  positionType: 'STOCK' | 'OPTION';
+  optionType: 'CALL' | 'PUT' | null;
+  strikePrice: number | null;
+  expirationDate: string | null;
+  contractSymbol: string | null;
+  portfolioId: string;
+  executedAt: string;
+  createdAt: string;
+}
+
+export interface TransactionsResponse {
+  transactions: Transaction[];
+  total: number;
+  limit: number;
+  offset: number;
 }
