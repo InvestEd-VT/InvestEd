@@ -23,18 +23,11 @@ export function AppSidebarSimple(props: React.ComponentProps<typeof Sidebar>) {
   }
 
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <NavLink to="/dashboard" className="flex items-center gap-2">
-                <LayoutDashboardIcon className="size-5" />
-                <span className="text-base font-semibold">InvestEd</span>
-              </NavLink>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+    <Sidebar className="border-r border-zinc-900" collapsible="offcanvas" {...props}>
+      <SidebarHeader className="py-3">
+        <NavLink to="/dashboard" className="flex items-center gap-2">
+          <span className="text-base font-semibold">InvestEd</span>
+        </NavLink>
       </SidebarHeader>
 
       <SidebarContent>
