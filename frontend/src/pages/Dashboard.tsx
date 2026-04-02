@@ -1,73 +1,72 @@
+import AppSidebarSimple from '@/components/layout/Sidebar';
+import Header from '@/components/layout/Header';
+import PerformanceChart from '@/components/portfolio/PerformanceChart';
+import TopPositionsList from '@/components/portfolio/TopPositionsList';
+import RecentTransactions from '@/components/portfolio/RecentTransactions';
+import { SectionCards } from '@/components/section-cards';
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+
+// data.json removed: TopPositionsList will display real/store-driven data
 import { useEffect } from 'react';
-import { SectionCards } from '@/components/section-cards'
-import TopPositionsList from '@/components/portfolio/TopPositionsList'
-import CashBalanceCard from '@/components/portfolio/CashBalanceCard'
-import usePortfolioStore from '@/store/portfolioStore'
+import usePortfolioStore from '@/store/portfolioStore';
+import PortfolioValueCard from '@/components/portfolio/PortfolioValueCard';
 
-function LoadingSkeleton() {
-  return (
-    <div className="grid grid-cols-1 gap-4 px-4 lg:px-6">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="h-28 bg-gray-100 animate-pulse rounded-md" />
-      ))}
-    </div>
-  )
-}
-
-export default function DashboardPage() {
+export default function Dashboard() {
+  // Select the fetch function directly to keep a stable reference
   const fetchPortfolio = usePortfolioStore((s) => s.fetchPortfolio);
-  const isLoading = usePortfolioStore((s) => s.isLoading);
-  const error = usePortfolioStore((s) => s.error);
-  const portfolioData = usePortfolioStore((s) => s.data);
 
-  // Fetch on mount
   useEffect(() => {
     fetchPortfolio();
 
-    // Refresh on tab focus / visibility change so data is fresh when user returns
-    const onFocus = () => fetchPortfolio();
     const onVisibility = () => {
       if (document.visibilityState === 'visible') fetchPortfolio();
     };
 
-    window.addEventListener('focus', onFocus);
+    const onFocus = () => fetchPortfolio();
+
     document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('focus', onFocus);
 
     return () => {
-      window.removeEventListener('focus', onFocus);
       document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('focus', onFocus);
     };
   }, [fetchPortfolio]);
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex flex-col gap-4">
-        {/* Dev-only quick debug: show how many option positions are present */}
-        {import.meta.env.DEV && (
-          <div className="px-4 lg:px-6 text-sm text-muted-foreground">
-            Option positions: {portfolioData?.positions?.filter((p: any) => (p.positionType || '').toUpperCase() === 'OPTION').length ?? 0}
-          </div>
-        )}
-        {/* Show loading skeleton when there is no cached data and we're fetching */}
-        {isLoading && !usePortfolioStore.getState().data ? (
-          <LoadingSkeleton />
-        ) : (
-          <SectionCards />
-        )}
-
-        {/* Portfolio trend is shown as a dedicated card in the SectionCards above */}
-        <div className="px-4 lg:px-6 grid gap-4">
-          <CashBalanceCard />
-          {/* Show an inline error banner if fetch failed */}
-          {error && (
-            <div className="mb-4 rounded-md bg-red-50 border border-red-100 p-3 text-sm text-red-800">
-              {error}
+    <SidebarProvider
+      style={
+        {
+          '--sidebar-width': 'calc(var(--spacing) * 72)',
+          '--header-height': 'calc(var(--spacing) * 13)',
+        } as React.CSSProperties
+      }
+    >
+  <AppSidebarSimple variant="inset" />
+      <SidebarInset>
+        <div className="flex flex-1 flex-col">
+          <Header />
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+              <div className="px-4 lg:px-6">
+                <PortfolioValueCard />
+              </div>
+              <SectionCards />
+              <div className="px-4 lg:px-6">
+                <PerformanceChart period="all" />
+              </div>
+              <div className="px-4 lg:px-6">
+                <TopPositionsList />
+              </div>
+              <div className="px-4 lg:px-6">
+                <RecentTransactions />
+              </div>
             </div>
-          )}
+          </div>
         </div>
+      </SidebarInset>
+    </SidebarProvider>
+  );
 
-  <TopPositionsList />
-      </div>
-    </div>
-  )
 }
+
