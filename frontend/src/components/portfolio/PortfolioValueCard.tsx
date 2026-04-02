@@ -26,7 +26,6 @@ function Skeleton() {
 
 export default function PortfolioValueCard() {
   const data = usePortfolioStore((s) => s.data);
-  const isLoading = usePortfolioStore((s) => s.isLoading);
 
   const [livePositionsValue, setLivePositionsValue] = useState<number | null>(null);
 

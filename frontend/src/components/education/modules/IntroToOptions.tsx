@@ -167,10 +167,13 @@ export default function IntroToOptions() {
         {/* Content */}
         <Section icon={<BookOpen className="size-4" />} title="What is an Options Contract?">
           <p className="text-sm text-muted-foreground leading-relaxed">
-            An options contract gives you the{' '}
-            <strong className="text-foreground">right, but not the obligation</strong>, to buy or
-            sell a stock at a specific price before a set date. You pay a fee (called a premium) for
-            this right.
+            There are two types of options: a <strong className="text-foreground">call</strong>{' '}
+            gives you the right to <strong className="text-foreground">buy</strong> shares, while a{' '}
+            <strong className="text-foreground">put</strong> gives you the right to{' '}
+            <strong className="text-foreground">sell</strong> shares. An options contract gives you
+            the <strong className="text-foreground">right, but not the obligation</strong>, to buy
+            or sell a stock at a specific price before a set date. You pay a fee (called a premium)
+            for this right.
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed mt-3">
             Each contract typically controls <strong className="text-foreground">100 shares</strong>{' '}
@@ -205,8 +208,9 @@ export default function IntroToOptions() {
             <li className="flex items-start gap-2">
               <span className="text-primary mt-0.5">→</span>
               <span>
-                <strong className="text-foreground">Income</strong> — generate premium by selling
-                options
+                <strong className="text-foreground">Income</strong> — profit from a stock rising
+                (calls) or falling (puts) with a fraction of the capital a stock purchase would
+                require
               </span>
             </li>
             <li className="flex items-start gap-2">
@@ -275,13 +279,6 @@ export default function IntroToOptions() {
             the maximum gain, but losses can be significant — or even unlimited in some strategies —
             if the stock moves against you.
           </p>
-          <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/5 px-4 py-3 mt-4">
-            <p className="text-sm text-yellow-600 dark:text-yellow-400 font-medium">⚠ Important</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Options involve risk and are not suitable for all investors. Always understand the
-              full risk of any strategy before trading.
-            </p>
-          </div>
         </Section>
 
         {/* Summary */}
@@ -311,8 +308,15 @@ export default function IntroToOptions() {
           </ul>
         </div>
 
-        {/* Complete button */}
-        <div className="flex justify-end">
+        {/* Footer nav + Complete button */}
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => navigate('/learn')}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="size-4" />
+            Back to Learn
+          </button>
           <button
             onClick={handleComplete}
             disabled={isCompleted || completing}

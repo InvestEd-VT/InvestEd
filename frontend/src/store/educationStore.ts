@@ -33,29 +33,8 @@ export const useEducationStore = create<EducationState>((set, get) => ({
     try {
       const modules = await educationService.getModules();
       set({ modules, isLoading: false, lastFetched: Date.now() });
-    } catch (err: any) {
-      const message = err?.response?.data?.message || err?.message || 'Failed to load modules';
-
-      // Dev mock so UI renders while backend is offline
-      if (import.meta.env.DEV) {
-        set({
-          modules: [
-            {
-              id: 'intro-to-options',
-              title: 'Intro to Options',
-              description:
-                'Learn the fundamentals of options contracts, key terminology, and how options differ from stocks.',
-              order: 1,
-              completed: false,
-              completedAt: null,
-            },
-          ],
-          isLoading: false,
-          lastFetched: Date.now(),
-          error: null,
-        });
-        return;
-      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to load modules';
 
       set({ error: message, isLoading: false });
     }
@@ -69,8 +48,8 @@ export const useEducationStore = create<EducationState>((set, get) => ({
           m.id === moduleId ? { ...m, completed: true, completedAt: new Date().toISOString() } : m
         ),
       }));
-    } catch (err: any) {
-      const message = err?.response?.data?.message || err?.message || 'Failed to mark complete';
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to mark complete';
       set({ error: message });
     }
   },
