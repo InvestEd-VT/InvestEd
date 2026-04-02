@@ -2,11 +2,9 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute, PublicRoute } from './components/common';
 import { ForgotPassword, Login, Register, VerifyEmail, StockDetail, ResetPassword, Dashboard } from './pages';
 import { ThemeProvider } from './components/ui/theme-provider';
-
-// ─── Placeholder pages ────────────────────────────────────────────────────────
-// Replace these with real page components as they are built
-
-// ─────────────────────────────────────────────────────────────────────────────
+import LearnLayout from '@/app/education/LearnLayout';
+import EducationDashboard from '@/app/education/EducationDashboard';
+import IntroToOptions from '@/components/education/modules/IntroToOptions';
 
 function App() {
   return (
@@ -25,6 +23,12 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/stock/:symbol" element={<StockDetail />} />
+
+          {/* Learn section — all share LearnLayout */}
+          <Route element={<LearnLayout />}>
+            <Route path="/learn" element={<EducationDashboard />} />
+            <Route path="/learn/modules/:id" element={<IntroToOptions />} />
+          </Route>
         </Route>
 
         {/* Catch-all */}

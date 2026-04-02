@@ -26,15 +26,18 @@ function Skeleton() {
 
 export default function PortfolioValueCard() {
   const data = usePortfolioStore((s) => s.data);
-  const isLoading = usePortfolioStore((s) => s.isLoading);
 
   const [livePositionsValue, setLivePositionsValue] = useState<number | null>(null);
 
   useEffect(() => {
     if (!data || !hasMassiveKey) return;
 
-    const stockPositions = (data.positions || []).filter((p: any) => (p.positionType || '').toUpperCase() === 'STOCK');
-    const symbols = stockPositions.map((p: any) => String(p.symbol || '').toUpperCase()).filter(Boolean);
+    const stockPositions = (data.positions || []).filter(
+      (p: any) => (p.positionType || '').toUpperCase() === 'STOCK'
+    );
+    const symbols = stockPositions
+      .map((p: any) => String(p.symbol || '').toUpperCase())
+      .filter(Boolean);
     if (!symbols.length) return;
 
     let mounted = true;
@@ -44,16 +47,19 @@ export default function PortfolioValueCard() {
       try {
         const map = await getMultipleStockPrev(symbols, 10);
         if (!mounted) return;
-        // compute positions value: use live close for stocks, keep marketValue for options
         let stocksValue = 0;
         for (const p of stockPositions) {
           const sym = String(p.symbol || '').toUpperCase();
           const price = map.get(sym);
           if (price) stocksValue += Number(price.close) * Number(p.quantity ?? 0);
-          else stocksValue += Number(p.marketValue ?? (p.currentPrice ? p.currentPrice * (p.quantity ?? 0) : 0));
+          else
+            stocksValue += Number(
+              p.marketValue ?? (p.currentPrice ? p.currentPrice * (p.quantity ?? 0) : 0)
+            );
         }
 
-        const optionsValue = (data.positions || []).filter((p: any) => (p.positionType || '').toUpperCase() === 'OPTION')
+        const optionsValue = (data.positions || [])
+          .filter((p: any) => (p.positionType || '').toUpperCase() === 'OPTION')
           .reduce((acc: number, p: any) => acc + (Number(p.marketValue ?? 0) || 0), 0);
 
         setLivePositionsValue(stocksValue + optionsValue);
@@ -71,17 +77,31 @@ export default function PortfolioValueCard() {
     };
   }, [data]);
 
-  // Compute totals defensively
-  const cash = data?.cashBalance ?? 0;
+  // Show skeleton until we have data
+  if (!data) {
+    return (
+      <Card className="@container/card">
+        <CardHeader>
+          <CardDescription>Total Portfolio Value</CardDescription>
+          <CardTitle>
+            <Skeleton />
+          </CardTitle>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  const cash = data.cashBalance ?? 0;
   const positionsValue =
-    livePositionsValue ?? data?.positionsValue ?? data?.positions?.reduce((acc, p) => acc + (p.marketValue ?? 0), 0) ?? 0;
-  const total = data?.totalValue ?? cash + positionsValue;
+    livePositionsValue ??
+    data.positionsValue ??
+    data.positions?.reduce((acc, p) => acc + (p.marketValue ?? 0), 0) ??
+    0;
+  const total = data.totalValue ?? cash + positionsValue;
 
   const pnl = total - STARTING_BALANCE;
   const pnlPercent = (pnl / STARTING_BALANCE) * 100;
-
   const positive = pnl >= 0;
-
   const pnlClass = positive ? 'text-emerald-600' : 'text-rose-600';
   const pnlSign = positive ? '+' : '-';
 
@@ -90,11 +110,7 @@ export default function PortfolioValueCard() {
       <CardHeader>
         <CardDescription>Total Portfolio Value</CardDescription>
         <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-          {isLoading && !data ? (
-            <Skeleton />
-          ) : (
-            <span>{total.toLocaleString(undefined, { style: 'currency', currency: 'USD' })}</span>
-          )}
+          <span>{total.toLocaleString(undefined, { style: 'currency', currency: 'USD' })}</span>
         </CardTitle>
         <CardAction>
           <Badge variant="outline">{positive ? <ArrowUpRight /> : <ArrowDownRight />}</Badge>
@@ -112,11 +128,10 @@ export default function PortfolioValueCard() {
             {Math.abs(pnlPercent).toFixed(2)}%
           </span>
         </div>
-
         <div className="text-muted-foreground">
-          Compared to starting balance of {STARTING_BALANCE.toLocaleString(undefined, { style: 'currency', currency: 'USD' })}
+          Compared to starting balance of{' '}
+          {STARTING_BALANCE.toLocaleString(undefined, { style: 'currency', currency: 'USD' })}
         </div>
-
         <div className="text-xs text-muted-foreground mt-2">Prices delayed ~15 minutes</div>
       </CardFooter>
     </Card>
