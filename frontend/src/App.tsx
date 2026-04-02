@@ -5,7 +5,10 @@ import { ForgotPassword, Login, Register, VerifyEmail, StockDetail, ResetPasswor
 import { ThemeProvider } from './components/ui/theme-provider';
 import { PageShell } from './components/layout/PageShell';
 import { StockSearch } from './components/trading/StockSearch';
-import { BookOpenIcon, SettingsIcon, HelpCircleIcon } from 'lucide-react';
+import { SettingsIcon, HelpCircleIcon } from 'lucide-react';
+import LearnLayout from '@/app/education/LearnLayout';
+import EducationDashboard from '@/app/education/EducationDashboard';
+import IntroToOptions from '@/components/education/modules/IntroToOptions';
 
 function PlaceholderPage({ title, icon: Icon, description }: { title: string; icon: React.ElementType; description: string }) {
   return (
@@ -53,7 +56,11 @@ function App() {
           <Route path="/trade" element={<Navigate to="/stock/AAPL" replace />} />
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/transactions" element={<Transactions />} />
-          <Route path="/learn" element={<PlaceholderPage title="Learn" icon={BookOpenIcon} description="Interactive options trading modules are coming soon. Learn about calls, puts, spreads, and more." />} />
+          {/* Learn section — uses LearnLayout with education header */}
+          <Route element={<LearnLayout />}>
+            <Route path="/learn" element={<EducationDashboard />} />
+            <Route path="/learn/modules/:id" element={<IntroToOptions />} />
+          </Route>
           <Route path="/settings" element={<PlaceholderPage title="Settings" icon={SettingsIcon} description="Account settings and preferences will be available here." />} />
           <Route path="/help" element={<PlaceholderPage title="Help" icon={HelpCircleIcon} description="Need help? Contact your team or check the documentation." />} />
         </Route>
