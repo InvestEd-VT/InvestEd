@@ -55,11 +55,12 @@ cp .env.example backend/.env
 docker compose up -d
 ```
 
-5. Generate Prisma client and run migrations
+5. Generate Prisma client, run migrations, and seed db
 ```bash
 cd backend
 npm run prisma:generate
 npm run prisma:migrate
+npx prisma db seed
 ```
 
 6. Start the development servers
@@ -100,6 +101,7 @@ cd frontend && npm run dev
 | `npm run test` | Run tests with Vitest |
 | `npm run prisma:generate` | Generate Prisma client |
 | `npm run prisma:migrate` | Run database migrations |
+| `npx prisma db seed` | Seed database |
 | `npm run prisma:studio` | Open Prisma Studio |
 
 ### API Endpoints
@@ -129,7 +131,7 @@ InvestEd/
 │   │   ├── services/   # Business logic
 │   │   ├── types/      # TypeScript types
 │   │   └── utils/      # Utility functions
-│   ├── prisma/         # Database schema
+│   ├── prisma/         # Database schema, migrations, and seed files
 │   └── ...
 ├── docker-compose.yml  # Database services
 └── ...
