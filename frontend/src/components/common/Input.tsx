@@ -1,19 +1,19 @@
-import * as React from 'react'
-import { Label } from '@/components/ui/label'
-import { Input as UiInput } from '@/components/ui/input'
-import { cn } from '@/lib/utils'
+import * as React from 'react';
+import { Label } from '@/components/ui/label';
+import { Input as UiInput } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 export interface InputProps extends React.ComponentProps<typeof UiInput> {
-  id?: string
-  label?: React.ReactNode
-  helperText?: React.ReactNode
-  error?: string | null
-  className?: string
+  id?: string;
+  label?: React.ReactNode;
+  helperText?: React.ReactNode;
+  error?: string | null;
+  className?: string;
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ id, label, helperText, error = null, className, ...props }, ref) => {
-    const inputId = id ?? (props.name ? String(props.name) : undefined)
+    const inputId = id ?? (props.name ? String(props.name) : undefined);
 
     return (
       <div className={cn('flex w-full flex-col', className)}>
@@ -23,12 +23,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           </Label>
         ) : null}
 
-        <UiInput
-          id={inputId}
-          ref={ref}
-          aria-invalid={!!error}
-          {...props}
-        />
+        <UiInput id={inputId} ref={ref} aria-invalid={!!error} {...props} />
 
         {error ? (
           <p className="mt-1 text-sm text-destructive" role="alert">
@@ -38,10 +33,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <p className="mt-1 text-sm text-muted-foreground">{helperText}</p>
         ) : null}
       </div>
-    )
+    );
   }
-)
+);
 
-Input.displayName = 'Input'
+Input.displayName = 'Input';
 
-export default Input
+export default Input;

@@ -11,10 +11,10 @@ export function formatCurrency(value: number, currency = 'USD', locale = undefin
       style: 'currency',
       currency,
       maximumFractionDigits: 2,
-    })
-    return formatter.format(value)
+    });
+    return formatter.format(value);
   } catch (e) {
     // Fallback
-    return `${currency} ${value.toFixed(2)}`
+    return `${currency} ${value.toFixed(2)}`;
   }
 }

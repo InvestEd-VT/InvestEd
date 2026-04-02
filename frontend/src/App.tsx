@@ -1,6 +1,14 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute, PublicRoute } from './components/common';
-import { ForgotPassword, Login, Register, VerifyEmail, StockDetail, ResetPassword, Dashboard } from './pages';
+import {
+  ForgotPassword,
+  Login,
+  Register,
+  VerifyEmail,
+  StockDetail,
+  ResetPassword,
+  Dashboard,
+} from './pages';
 import { ThemeProvider } from './components/ui/theme-provider';
 import LearnLayout from '@/app/education/LearnLayout';
 import EducationDashboard from '@/app/education/EducationDashboard';

@@ -1,7 +1,7 @@
-import * as React from 'react'
-import { NavLink } from 'react-router-dom'
-import { useAuthStore } from '@/store/authStore'
-import { NavUser } from '@/components/nav-user'
+import * as React from 'react';
+import { NavLink } from 'react-router-dom';
+import { useAuthStore } from '@/store/authStore';
+import { NavUser } from '@/components/nav-user';
 import {
   Sidebar,
   SidebarHeader,
@@ -10,17 +10,17 @@ import {
   SidebarMenuButton,
   SidebarContent,
   SidebarFooter,
-} from '@/components/ui/sidebar'
-import { LayoutDashboardIcon, CreditCardIcon, ChartBarIcon, FileTextIcon } from 'lucide-react'
+} from '@/components/ui/sidebar';
+import { LayoutDashboardIcon, CreditCardIcon, ChartBarIcon, FileTextIcon } from 'lucide-react';
 
 export function AppSidebarSimple(props: React.ComponentProps<typeof Sidebar>) {
-  const user = useAuthStore((s) => s.user)
+  const user = useAuthStore((s) => s.user);
 
   const userInfo = {
     name: `${user?.firstName ?? 'Guest'}${user?.lastName ? ` ${user.lastName}` : ''}`,
     email: user?.email ?? '',
     avatar: '/vite.svg',
-  }
+  };
 
   return (
     <Sidebar className="border-r border-zinc-900" collapsible="offcanvas" {...props}>
@@ -34,7 +34,12 @@ export function AppSidebarSimple(props: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <NavLink to="/dashboard" className={({ isActive }) => `flex items-center gap-2 ${isActive ? 'font-semibold text-primary' : ''}`}>
+              <NavLink
+                to="/dashboard"
+                className={({ isActive }) =>
+                  `flex items-center gap-2 ${isActive ? 'font-semibold text-primary' : ''}`
+                }
+              >
                 <LayoutDashboardIcon />
                 Dashboard
               </NavLink>
@@ -42,7 +47,12 @@ export function AppSidebarSimple(props: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <NavLink to="/portfolio" className={({ isActive }) => `flex items-center gap-2 ${isActive ? 'font-semibold text-primary' : ''}`}>
+              <NavLink
+                to="/portfolio"
+                className={({ isActive }) =>
+                  `flex items-center gap-2 ${isActive ? 'font-semibold text-primary' : ''}`
+                }
+              >
                 <CreditCardIcon />
                 Portfolio
               </NavLink>
@@ -50,7 +60,12 @@ export function AppSidebarSimple(props: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <NavLink to="/trade" className={({ isActive }) => `flex items-center gap-2 ${isActive ? 'font-semibold text-primary' : ''}`}>
+              <NavLink
+                to="/trade"
+                className={({ isActive }) =>
+                  `flex items-center gap-2 ${isActive ? 'font-semibold text-primary' : ''}`
+                }
+              >
                 <ChartBarIcon />
                 Trade
               </NavLink>
@@ -58,7 +73,12 @@ export function AppSidebarSimple(props: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <NavLink to="/learn" className={({ isActive }) => `flex items-center gap-2 ${isActive ? 'font-semibold text-primary' : ''}`}>
+              <NavLink
+                to="/learn"
+                className={({ isActive }) =>
+                  `flex items-center gap-2 ${isActive ? 'font-semibold text-primary' : ''}`
+                }
+              >
                 <FileTextIcon />
                 Learn
               </NavLink>
@@ -71,7 +91,7 @@ export function AppSidebarSimple(props: React.ComponentProps<typeof Sidebar>) {
         <NavUser user={userInfo} />
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }
 
-export default AppSidebarSimple
+export default AppSidebarSimple;

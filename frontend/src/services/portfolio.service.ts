@@ -19,7 +19,13 @@ const portfolioService = {
     } catch (err) {
       // If running in dev, return a mock history so charts can render while backend is offline
       if (import.meta.env.DEV) {
-        const periodMap: Record<string, number> = { '7d': 7, '30d': 30, '90d': 90, '1y': 365, all: 90 };
+        const periodMap: Record<string, number> = {
+          '7d': 7,
+          '30d': 30,
+          '90d': 90,
+          '1y': 365,
+          all: 90,
+        };
         const days = periodMap[period] || 30;
         const now = new Date();
         const history = Array.from({ length: days }).map((_, i) => {

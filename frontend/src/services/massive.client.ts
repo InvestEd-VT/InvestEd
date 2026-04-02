@@ -1,7 +1,8 @@
 // Lightweight client for Massive v3 API using apiKey query param.
 // For local/dev use only. Do NOT commit your VITE_MASSIVE_API_KEY to git.
 const API_KEY = import.meta.env.VITE_MASSIVE_API_KEY as string | undefined;
-const BASE = (import.meta.env.VITE_MASSIVE_API_BASE as string | undefined) || 'https://api.massive.com';
+const BASE =
+  (import.meta.env.VITE_MASSIVE_API_BASE as string | undefined) || 'https://api.massive.com';
 
 export const hasMassiveKey = Boolean(API_KEY);
 
@@ -76,7 +77,10 @@ export const getStockPrev = async (symbol: string): Promise<StockPrice | null> =
   }
 };
 
-export const getMultipleStockPrev = async (symbols: string[], batchSize = 5): Promise<Map<string, StockPrice>> => {
+export const getMultipleStockPrev = async (
+  symbols: string[],
+  batchSize = 5
+): Promise<Map<string, StockPrice>> => {
   const out = new Map<string, StockPrice>();
   const uniq = Array.from(new Set(symbols.map((s) => s.toUpperCase()).filter(Boolean)));
 

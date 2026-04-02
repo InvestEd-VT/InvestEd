@@ -57,7 +57,10 @@ export function ChartAreaInteractive() {
       .then((res) => {
         if (!mounted) return;
         // res.history: [{ date, cashBalance, ... }]
-        const chart = (res.history || []).map((h: any) => ({ date: new Date(h.date).toISOString(), value: Number(h.cashBalance) }));
+        const chart = (res.history || []).map((h: any) => ({
+          date: new Date(h.date).toISOString(),
+          value: Number(h.cashBalance),
+        }));
         setData(chart);
       })
       .catch(() => {
@@ -78,7 +81,9 @@ export function ChartAreaInteractive() {
       <CardHeader>
         <CardTitle>Portfolio value</CardTitle>
         <CardDescription>
-          <span className="hidden @[540px]/card:block">Transaction-based history (cash balance)</span>
+          <span className="hidden @[540px]/card:block">
+            Transaction-based history (cash balance)
+          </span>
           <span className="@[540px]/card:hidden">History</span>
         </CardDescription>
         <CardAction>
@@ -118,7 +123,9 @@ export function ChartAreaInteractive() {
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
         <ChartContainer config={chartConfig} className="aspect-auto h-62.5 w-full">
           {loading ? (
-            <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">Loading chart…</div>
+            <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">
+              Loading chart…
+            </div>
           ) : (
             <AreaChart data={data}>
               <defs>

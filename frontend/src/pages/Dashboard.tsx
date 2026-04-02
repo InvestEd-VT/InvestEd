@@ -42,7 +42,7 @@ export default function Dashboard() {
         } as React.CSSProperties
       }
     >
-  <AppSidebarSimple variant="inset" />
+      <AppSidebarSimple variant="inset" />
       <SidebarInset>
         <div className="flex flex-1 flex-col">
           <Header />
@@ -67,6 +67,4 @@ export default function Dashboard() {
       </SidebarInset>
     </SidebarProvider>
   );
-
 }
-

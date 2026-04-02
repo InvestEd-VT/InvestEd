@@ -22,7 +22,12 @@ export default function RecentTransactions() {
   // filter to option trades and sort reverse-chronological if a timestamp exists
   const optionTx = Array.isArray(transactions)
     ? transactions
-        .filter((t: any) => (t?.positionType || '').toUpperCase() === 'OPTION' || (t?.symbol || '').toString().toUpperCase().includes('C') || (t?.symbol || '').toString().toUpperCase().includes('P'))
+        .filter(
+          (t: any) =>
+            (t?.positionType || '').toUpperCase() === 'OPTION' ||
+            (t?.symbol || '').toString().toUpperCase().includes('C') ||
+            (t?.symbol || '').toString().toUpperCase().includes('P')
+        )
         .sort((a: any, b: any) => {
           const da = a?.date ? new Date(a.date).getTime() : 0;
           const db = b?.date ? new Date(b.date).getTime() : 0;
@@ -60,17 +65,29 @@ export default function RecentTransactions() {
             const strike = tx?.strikePrice ?? tx?.strike ?? '-';
             const exp = tx?.expiration ?? tx?.expirationDate ?? tx?.expiry ?? '-';
             const contracts = tx?.contracts ?? tx?.quantity ?? tx?.qty ?? '-';
-            const total = tx?.total ?? tx?.amount ?? tx?.price ? tx.price * (tx?.contracts ?? tx?.quantity ?? 1) : '-';
+            const total =
+              (tx?.total ?? tx?.amount ?? tx?.price)
+                ? tx.price * (tx?.contracts ?? tx?.quantity ?? 1)
+                : '-';
 
             return (
-              <div key={tx?.id || JSON.stringify(tx)} className="flex items-center justify-between gap-4 py-2">
+              <div
+                key={tx?.id || JSON.stringify(tx)}
+                className="flex items-center justify-between gap-4 py-2"
+              >
                 <div className="w-24 text-sm text-muted-foreground">{date}</div>
-                <div className={`w-12 text-sm font-medium ${side === 'BUY' ? 'text-emerald-600' : 'text-rose-600'}`}>{side}</div>
+                <div
+                  className={`w-12 text-sm font-medium ${side === 'BUY' ? 'text-emerald-600' : 'text-rose-600'}`}
+                >
+                  {side}
+                </div>
                 <div className="w-20 text-sm">{symbol}</div>
                 <div className="w-16 text-sm">{strike}</div>
                 <div className="w-24 text-sm">{exp}</div>
                 <div className="w-12 text-sm">{contracts}</div>
-                <div className="w-20 text-sm text-right">{typeof total === 'number' ? `$${total.toFixed(2)}` : total}</div>
+                <div className="w-20 text-sm text-right">
+                  {typeof total === 'number' ? `$${total.toFixed(2)}` : total}
+                </div>
               </div>
             );
           })}

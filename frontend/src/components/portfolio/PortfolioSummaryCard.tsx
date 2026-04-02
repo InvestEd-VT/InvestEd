@@ -1,13 +1,13 @@
 // React import not required with the automatic JSX runtime
-import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
-import { formatCurrency } from '@/lib/utils'
-import usePortfolioStore from '@/store/portfolioStore'
+import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { formatCurrency } from '@/lib/utils';
+import usePortfolioStore from '@/store/portfolioStore';
 
 export function PortfolioSummaryCard() {
-  const data = usePortfolioStore((s) => s.data)
+  const data = usePortfolioStore((s) => s.data);
 
-  const totalValue = data?.totalValue ?? 0
-  const cashBalance = data?.cashBalance ?? 0
+  const totalValue = data?.totalValue ?? 0;
+  const cashBalance = data?.cashBalance ?? 0;
 
   return (
     <Card className="@container/card">
@@ -25,7 +25,7 @@ export function PortfolioSummaryCard() {
         <div className="text-muted-foreground">Total value includes holdings and cash</div>
       </CardFooter>
     </Card>
-  )
+  );
 }
 
-export default PortfolioSummaryCard
+export default PortfolioSummaryCard;

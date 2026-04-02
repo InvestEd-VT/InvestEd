@@ -14,11 +14,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import {
-  EllipsisVerticalIcon,
-  CircleUserRoundIcon,
-  LogOutIcon,
-} from 'lucide-react';
+import { EllipsisVerticalIcon, CircleUserRoundIcon, LogOutIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { authService } from '@/services';
@@ -98,8 +94,7 @@ export function NavUser({
                 handleLogout();
               }}
             >
-              <LogOutIcon
-              />
+              <LogOutIcon />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
