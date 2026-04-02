@@ -1,14 +1,39 @@
-import { AppSidebar } from '@/components/app-sidebar';
-import { ChartAreaInteractive } from '@/components/chart-area-interactive';
-import { DataTable } from '@/components/data-table';
+import AppSidebarSimple from '@/components/layout/Sidebar';
+import Header from '@/components/layout/Header';
+import PerformanceChart from '@/components/portfolio/PerformanceChart';
+import TopPositionsList from '@/components/portfolio/TopPositionsList';
+import RecentTransactions from '@/components/portfolio/RecentTransactions';
 import { SectionCards } from '@/components/section-cards';
-import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { StockSearch } from '@/components/trading';
 
-import data from './data.json';
+// data.json removed: TopPositionsList will display real/store-driven data
+import { useEffect } from 'react';
+import usePortfolioStore from '@/store/portfolioStore';
+import PortfolioValueCard from '@/components/portfolio/PortfolioValueCard';
 
 export default function Dashboard() {
+  // Select the fetch function directly to keep a stable reference
+  const fetchPortfolio = usePortfolioStore((s) => s.fetchPortfolio);
+
+  useEffect(() => {
+    fetchPortfolio();
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') fetchPortfolio();
+    };
+
+    const onFocus = () => fetchPortfolio();
+
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('focus', onFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [fetchPortfolio]);
+
   return (
     <SidebarProvider
       style={
@@ -18,20 +43,29 @@ export default function Dashboard() {
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant="inset" />
+  <AppSidebarSimple variant="inset" />
       <SidebarInset>
-        <SiteHeader />
         <div className="flex flex-1 flex-col">
+          <Header />
           <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
-              <StockSearch />
+            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+              <div className="px-4 lg:px-6">
+                <PortfolioValueCard />
+              </div>
               <SectionCards />
-              <ChartAreaInteractive />
-              <DataTable data={data} />
+              <div className="px-4 lg:px-6">
+                <PerformanceChart period="all" />
+              </div>
+              <TopPositionsList />
+              <div className="px-4 lg:px-6">
+                <RecentTransactions />
+              </div>
             </div>
           </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
   );
+
 }
+
