@@ -14,8 +14,6 @@ import {
 import portfolioService from '@/services/portfolio.service';
 import { formatCurrency } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ChartContainer } from '@/components/ui/chart';
-import type { ChartConfig } from '@/components/ui/chart';
 
 export default function PerformanceChart({ period = 'all' }: { period?: string }) {
   const [data, setData] = React.useState<Array<{ date: string; value: number }>>([]);
@@ -29,11 +27,15 @@ export default function PerformanceChart({ period = 'all' }: { period?: string }
       .getPortfolioHistory(period)
       .then((res) => {
         if (!mounted) return;
-        // res.history: [{ date, cashBalance }]
-        const history = (res.history || []).map((h: any) => ({
-          date: new Date(h.date).toISOString(),
-          value: Number(h.cashBalance),
-        }));
+        const history = (res.history || [])
+          .map((h: any) => ({
+            date: new Date(h.date).toISOString(),
+            value: Number(h.cashBalance),
+          }))
+          .sort(
+            (a: { date: string | number | Date }, b: { date: string | number | Date }) =>
+              new Date(a.date).getTime() - new Date(b.date).getTime()
+          );
         setData(history);
         // set starting balance from first history point if available
         if (history.length > 0) setStartingBalance(history[0].value);
@@ -54,11 +56,10 @@ export default function PerformanceChart({ period = 'all' }: { period?: string }
   }, [period]);
 
   const latestValue = data.length ? data[data.length - 1].value : null;
-  // decide line color based on latest value vs starting balance
   const lineColor =
     startingBalance != null && latestValue != null && latestValue >= startingBalance
-      ? 'var(--emerald-600)'
-      : 'var(--rose-600)';
+      ? '#059669'
+      : '#e11d48';
 
   return (
     <Card className="@container/card">
@@ -67,33 +68,30 @@ export default function PerformanceChart({ period = 'all' }: { period?: string }
         <CardDescription>Portfolio value over time</CardDescription>
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-        <ChartContainer
-          className="aspect-auto h-62.5 w-full"
-          config={
-            {
-              value: { label: 'Portfolio value', color: 'var(--primary)' },
-            } as ChartConfig
-          }
-        >
-          {loading ? (
-            <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">
-              Loading chart…
-            </div>
-          ) : data.length === 0 ? (
-            <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">
-              No historical data available
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 8 }}>
+        {loading ? (
+          <div className="flex h-64 w-full items-center justify-center text-sm text-muted-foreground">
+            Loading chart…
+          </div>
+        ) : data.length === 0 ? (
+          <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">
+            No historical data available
+          </div>
+        ) : (
+          <div style={{ width: '100%', height: 280 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data} margin={{ top: 8, right: 40, left: 10, bottom: 24 }}>
                 <CartesianGrid vertical={false} />
                 <XAxis
                   dataKey="date"
                   tickLine={false}
                   axisLine={false}
+                  interval="preserveStartEnd"
                   tickFormatter={(value) => {
                     const date = new Date(value);
-                    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    return date.toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                    });
                   }}
                 />
                 <Tooltip
@@ -119,12 +117,11 @@ export default function PerformanceChart({ period = 'all' }: { period?: string }
                 {startingBalance != null && (
                   <ReferenceLine
                     y={startingBalance}
-                    stroke="var(--muted)"
+                    stroke="#94a3b8"
                     strokeDasharray="4 4"
                     label={{
                       position: 'right',
-                      value: `Start: ${formatCurrency(startingBalance, 'USD')}`,
-                      fill: 'var(--muted)',
+                      fill: '#94a3b8',
                       fontSize: 12,
                     }}
                   />
@@ -138,8 +135,8 @@ export default function PerformanceChart({ period = 'all' }: { period?: string }
                 />
               </LineChart>
             </ResponsiveContainer>
-          )}
-        </ChartContainer>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
