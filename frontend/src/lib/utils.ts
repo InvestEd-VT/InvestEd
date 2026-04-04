@@ -13,7 +13,7 @@ export function formatCurrency(value: number, currency = 'USD', locale = undefin
       maximumFractionDigits: 2,
     });
     return formatter.format(value);
-  } catch (e) {
+  } catch {
     // Fallback
     return `${currency} ${value.toFixed(2)}`;
   }

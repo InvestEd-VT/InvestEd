@@ -70,7 +70,7 @@ export const getStockPrev = async (symbol: string): Promise<StockPrice | null> =
     };
     lastKnown.set(key, price);
     return price;
-  } catch (err) {
+  } catch {
     // On any error, return cached value if available, otherwise null
     const cached = lastKnown.get(key) ?? null;
     return cached;
@@ -134,7 +134,7 @@ export const getMultipleStockPrev = async (
         }
       }
     }
-  } catch (e) {
+  } catch {
     // ignore fallback failures but return cached values if present
     for (const sym of uniq) {
       const cached = lastKnown.get(sym);

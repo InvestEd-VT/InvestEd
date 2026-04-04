@@ -27,7 +27,11 @@ import { AlertCircleIcon, TrendingUpIcon, TrendingDownIcon } from 'lucide-react'
 import { OptionsChain } from '@/components/trading/OptionsChain';
 import { TradeModal } from '@/components/trading/TradeModal';
 import { PageShell } from '@/components/layout/PageShell';
-import { computeParkinsonVolatility, setTickerVolatility, getTickerVolatility } from '@/utils/options';
+import {
+  computeParkinsonVolatility,
+  setTickerVolatility,
+  getTickerVolatility,
+} from '@/utils/options';
 
 type ChartTimeframe = '2d' | '1w' | '1m';
 type CandlePoint = CandlestickData<UTCTimestamp>;
@@ -69,16 +73,28 @@ export default function StockDetail() {
 
   // Fetch stock details
   useEffect(() => {
-    if (!symbol) { setError('No stock symbol provided'); setLoading(false); return; }
+    if (!symbol) {
+      setError('No stock symbol provided');
+      setLoading(false);
+      return;
+    }
     (async () => {
       try {
-        setLoading(true); setError(null); setIsRateLimited(false);
+        setLoading(true);
+        setError(null);
+        setIsRateLimited(false);
         const stockData = await stockService.getDetail(symbol);
         setStock(stockData);
       } catch (err) {
-        if (isAxiosError(err) && err.response?.status === 429) { setIsRateLimited(true); setError('API limit reached'); }
-        else { setError('Failed to load stock details'); }
-      } finally { setLoading(false); }
+        if (isAxiosError(err) && err.response?.status === 429) {
+          setIsRateLimited(true);
+          setError('API limit reached');
+        } else {
+          setError('Failed to load stock details');
+        }
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [symbol]);
 
@@ -91,8 +107,12 @@ export default function StockDetail() {
         const historyData = await stockService.getHistory(symbol, timeframe);
         setChartData(historyData);
       } catch (err) {
-        if (isAxiosError(err) && err.response?.status === 429) { setIsRateLimited(true); }
-      } finally { setChartLoading(false); }
+        if (isAxiosError(err) && err.response?.status === 429) {
+          setIsRateLimited(true);
+        }
+      } finally {
+        setChartLoading(false);
+      }
     })();
   }, [symbol, timeframe]);
 
@@ -108,7 +128,9 @@ export default function StockDetail() {
           const hv = computeParkinsonVolatility(highs, lows);
           setTickerVolatility(symbol, hv);
         }
-      } catch { /* non-critical */ }
+      } catch {
+        /* non-critical */
+      }
     })();
   }, [symbol]);
 
@@ -136,14 +158,20 @@ export default function StockDetail() {
       width: container.clientWidth,
       height: 400,
       layout: { textColor: '#6b7280', background: { type: ColorType.Solid, color: 'transparent' } },
-      grid: { vertLines: { color: 'rgba(229, 231, 235, 0.5)' }, horzLines: { color: 'rgba(229, 231, 235, 0.5)' } },
+      grid: {
+        vertLines: { color: 'rgba(229, 231, 235, 0.5)' },
+        horzLines: { color: 'rgba(229, 231, 235, 0.5)' },
+      },
       rightPriceScale: { borderVisible: false },
       timeScale: {
         borderVisible: false,
         tickMarkFormatter: (time: Time) => {
-          const date = typeof time === 'number' ? new Date(time * 1000)
-            : typeof time === 'string' ? new Date(time)
-            : new Date(time.year, time.month - 1, time.day);
+          const date =
+            typeof time === 'number'
+              ? new Date(time * 1000)
+              : typeof time === 'string'
+                ? new Date(time)
+                : new Date(time.year, time.month - 1, time.day);
           return `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
         },
       },
@@ -154,9 +182,12 @@ export default function StockDetail() {
     });
 
     const candleSeries = chart.addSeries(CandlestickSeries, {
-      upColor: '#16a34a', downColor: '#dc2626',
-      borderUpColor: '#16a34a', borderDownColor: '#dc2626',
-      wickUpColor: '#16a34a', wickDownColor: '#dc2626',
+      upColor: '#16a34a',
+      downColor: '#dc2626',
+      borderUpColor: '#16a34a',
+      borderDownColor: '#dc2626',
+      wickUpColor: '#16a34a',
+      wickDownColor: '#dc2626',
     });
     candleSeries.setData(candleData);
     chart.timeScale().fitContent();
@@ -167,7 +198,10 @@ export default function StockDetail() {
     });
     resizeObserver.observe(container);
 
-    return () => { resizeObserver.disconnect(); chart.remove(); };
+    return () => {
+      resizeObserver.disconnect();
+      chart.remove();
+    };
   }, [candleData, chartLoading]);
 
   const handleTickerSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -175,16 +209,23 @@ export default function StockDetail() {
     const nextSymbol = tickerQuery.trim().toUpperCase();
     if (!nextSymbol || nextSymbol === symbol?.toUpperCase()) return;
     try {
-      setTickerSearchError(null); setIsTickerSearching(true);
+      setTickerSearchError(null);
+      setIsTickerSearching(true);
       const results = await stockService.search(nextSymbol);
       if (!results.some((item) => item.symbol.toUpperCase() === nextSymbol)) {
-        setTickerSearchError(`Ticker '${nextSymbol}' was not found.`); return;
+        setTickerSearchError(`Ticker '${nextSymbol}' was not found.`);
+        return;
       }
       navigate(`/stock/${nextSymbol}`);
     } catch (err) {
-      setTickerSearchError(isAxiosError(err) && err.response?.status === 429
-        ? 'Rate limit reached.' : 'Could not verify that ticker.');
-    } finally { setIsTickerSearching(false); }
+      setTickerSearchError(
+        isAxiosError(err) && err.response?.status === 429
+          ? 'Rate limit reached.'
+          : 'Could not verify that ticker.'
+      );
+    } finally {
+      setIsTickerSearching(false);
+    }
   };
 
   const handleSelectContract = (contract: OptionsContract, theoreticalPrice: number) => {
@@ -213,39 +254,39 @@ export default function StockDetail() {
       const dist = Math.abs(strike - price) / price;
       if (price < 10) {
         if (dist < 0.15) return 0.25;
-        if (dist < 0.30) return 0.50;
-        return 1.00;
+        if (dist < 0.3) return 0.5;
+        return 1.0;
       }
       if (price < 25) {
-        if (dist < 0.10) return 0.25;
-        if (dist < 0.25) return 0.50;
-        return 1.00;
+        if (dist < 0.1) return 0.25;
+        if (dist < 0.25) return 0.5;
+        return 1.0;
       }
       if (price < 75) {
-        if (dist < 0.08) return 0.50;
-        if (dist < 0.20) return 1.00;
-        return 2.50;
+        if (dist < 0.08) return 0.5;
+        if (dist < 0.2) return 1.0;
+        return 2.5;
       }
       if (price < 200) {
-        if (dist < 0.06) return 0.50;
-        if (dist < 0.15) return 1.00;
-        return 2.50;
+        if (dist < 0.06) return 0.5;
+        if (dist < 0.15) return 1.0;
+        return 2.5;
       }
       // $200+ (AAPL, TSLA, etc.)
-      if (dist < 0.05) return 0.50;
-      if (dist < 0.12) return 1.00;
-      if (dist < 0.25) return 2.50;
-      return 5.00;
+      if (dist < 0.05) return 0.5;
+      if (dist < 0.12) return 1.0;
+      if (dist < 0.25) return 2.5;
+      return 5.0;
     }
 
     // Generate strikes from 30% below to 30% above current price
-    const low = Math.max(0.25, price * 0.70);
-    const high = price * 1.30;
+    const low = Math.max(0.25, price * 0.7);
+    const high = price * 1.3;
     const strikes: number[] = [];
 
     // Build strikes zone by zone — start from ATM and expand outward
     // This ensures proper interval transitions
-    let s = Math.round(price * 4) / 4; // nearest $0.25
+    const s = Math.round(price * 4) / 4; // nearest $0.25
 
     // Go downward from ATM
     let current = s;
@@ -310,13 +351,22 @@ export default function StockDetail() {
           </div>
           <div className="flex gap-2">
             <form onSubmit={handleTickerSubmit} className="flex items-center gap-2">
-              <Input value={tickerQuery} onChange={(e) => { setTickerQuery(e.target.value.toUpperCase()); setTickerSearchError(null); }}
-                placeholder="Search ticker" className="w-40" />
+              <Input
+                value={tickerQuery}
+                onChange={(e) => {
+                  setTickerQuery(e.target.value.toUpperCase());
+                  setTickerSearchError(null);
+                }}
+                placeholder="Search ticker"
+                className="w-40"
+              />
               <Button type="submit" variant="outline" size="sm" disabled={isTickerSearching}>
                 {isTickerSearching ? '...' : 'Go'}
               </Button>
             </form>
-            <Button onClick={() => navigate('/dashboard')} variant="secondary" size="sm">Back</Button>
+            <Button onClick={() => navigate('/dashboard')} variant="secondary" size="sm">
+              Back
+            </Button>
           </div>
         </div>
         {tickerSearchError && <p className="text-sm text-destructive">{tickerSearchError}</p>}
@@ -325,9 +375,16 @@ export default function StockDetail() {
         <Card className="p-6">
           <div className="flex items-baseline gap-4">
             <div className="text-4xl font-bold">${stock.currentPrice.toFixed(2)}</div>
-            <div className={`flex items-center gap-1 text-lg font-semibold ${isPositiveChange ? 'text-green-600' : 'text-red-600'}`}>
-              {isPositiveChange ? <TrendingUpIcon className="h-5 w-5" /> : <TrendingDownIcon className="h-5 w-5" />}
-              {isPositiveChange ? '+' : ''}{stock.priceChange.toFixed(2)} ({stock.priceChangePercent.toFixed(2)}%)
+            <div
+              className={`flex items-center gap-1 text-lg font-semibold ${isPositiveChange ? 'text-green-600' : 'text-red-600'}`}
+            >
+              {isPositiveChange ? (
+                <TrendingUpIcon className="h-5 w-5" />
+              ) : (
+                <TrendingDownIcon className="h-5 w-5" />
+              )}
+              {isPositiveChange ? '+' : ''}
+              {stock.priceChange.toFixed(2)} ({stock.priceChangePercent.toFixed(2)}%)
             </div>
           </div>
         </Card>
@@ -337,7 +394,9 @@ export default function StockDetail() {
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold">Price Chart ({TIMEFRAME_LABELS[timeframe]})</h2>
             <Select value={timeframe} onValueChange={(v) => setTimeframe(v as ChartTimeframe)}>
-              <SelectTrigger className="w-35"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-35">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="2d">2 Day</SelectItem>
                 <SelectItem value="1w">1 Week</SelectItem>
@@ -345,15 +404,27 @@ export default function StockDetail() {
               </SelectContent>
             </Select>
           </div>
-          {chartLoading ? <Skeleton className="h-[400px] w-full" />
-            : candleData.length > 0 ? <div ref={chartContainerRef} className="relative h-[400px] w-full" />
-            : <p className="text-sm text-muted-foreground py-8 text-center">No chart data available</p>}
+          {chartLoading ? (
+            <Skeleton className="h-[400px] w-full" />
+          ) : candleData.length > 0 ? (
+            <div ref={chartContainerRef} className="relative h-[400px] w-full" />
+          ) : (
+            <p className="text-sm text-muted-foreground py-8 text-center">
+              No chart data available
+            </p>
+          )}
         </Card>
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="p-4"><p className="text-sm text-muted-foreground">Volume</p><p className="text-2xl font-semibold">{(stock.volume / 1e6).toFixed(1)}M</p></Card>
-          <Card className="p-4"><p className="text-sm text-muted-foreground">Market Cap</p><p className="text-2xl font-semibold">${(stock.marketCap / 1e9).toFixed(2)}B</p></Card>
+          <Card className="p-4">
+            <p className="text-sm text-muted-foreground">Volume</p>
+            <p className="text-2xl font-semibold">{(stock.volume / 1e6).toFixed(1)}M</p>
+          </Card>
+          <Card className="p-4">
+            <p className="text-sm text-muted-foreground">Market Cap</p>
+            <p className="text-2xl font-semibold">${(stock.marketCap / 1e9).toFixed(2)}B</p>
+          </Card>
         </div>
 
         {/* Options Chain */}
@@ -364,7 +435,9 @@ export default function StockDetail() {
                 {stock.symbol}{' '}
                 <span className="text-muted-foreground">
                   {tradeMode} {activeTab === 'calls' ? 'Call' : 'Put'}
-                  <span className="ml-1.5 text-sm font-normal">· {selectedDte === 0 ? '0DTE' : `${selectedDte}DTE`}</span>
+                  <span className="ml-1.5 text-sm font-normal">
+                    · {selectedDte === 0 ? '0DTE' : `${selectedDte}DTE`}
+                  </span>
                 </span>
               </h2>
             </div>
@@ -372,23 +445,31 @@ export default function StockDetail() {
             {/* Toggles */}
             <div className="flex flex-wrap items-center gap-3">
               <div className="inline-flex rounded-lg border p-0.5">
-                <button onClick={() => setTradeMode('buy')}
-                  className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${tradeMode === 'buy' ? 'bg-green-500 text-white' : 'text-muted-foreground'}`}>
+                <button
+                  onClick={() => setTradeMode('buy')}
+                  className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${tradeMode === 'buy' ? 'bg-green-500 text-white' : 'text-muted-foreground'}`}
+                >
                   Buy
                 </button>
-                <button onClick={() => setTradeMode('sell')}
-                  className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${tradeMode === 'sell' ? 'bg-orange-500 text-white' : 'text-muted-foreground'}`}>
+                <button
+                  onClick={() => setTradeMode('sell')}
+                  className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${tradeMode === 'sell' ? 'bg-orange-500 text-white' : 'text-muted-foreground'}`}
+                >
                   Sell
                 </button>
               </div>
 
               <div className="inline-flex rounded-lg border p-0.5">
-                <button onClick={() => setActiveTab('calls')}
-                  className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${activeTab === 'calls' ? 'bg-green-500 text-white' : 'text-muted-foreground'}`}>
+                <button
+                  onClick={() => setActiveTab('calls')}
+                  className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${activeTab === 'calls' ? 'bg-green-500 text-white' : 'text-muted-foreground'}`}
+                >
                   Call
                 </button>
-                <button onClick={() => setActiveTab('puts')}
-                  className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${activeTab === 'puts' ? 'bg-orange-500 text-white' : 'text-muted-foreground'}`}>
+                <button
+                  onClick={() => setActiveTab('puts')}
+                  className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${activeTab === 'puts' ? 'bg-orange-500 text-white' : 'text-muted-foreground'}`}
+                >
                   Put
                 </button>
               </div>

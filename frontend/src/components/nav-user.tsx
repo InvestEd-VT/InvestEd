@@ -36,18 +36,6 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar();
   const navigate = useNavigate();
-  const logout = useAuthStore((state) => state.logout);
-
-  const handleLogout = async () => {
-    try {
-      await authService.logout();
-    } catch (error) {
-      console.error('Logout failed:', error);
-    } finally {
-      logout();
-      navigate('/login', { replace: true });
-    }
-  };
 
   return (
     <SidebarMenu>
@@ -106,16 +94,11 @@ export function NavUser({
             <DropdownMenuItem
               onClick={async () => {
                 try {
-                  // Call backend to invalidate session / clear server cookies
                   await authService.logout();
                 } catch (error) {
-                  // Still clear local state even if backend call fails
                   console.error('Logout request failed', error);
                 } finally {
-                  // Clear local auth state and redirect to login
                   useAuthStore.getState().logout();
-                  // navigate to login page
-                  // eslint-disable-next-line @typescript-eslint/no-floating-promises
                   navigate('/login');
                 }
               }}
