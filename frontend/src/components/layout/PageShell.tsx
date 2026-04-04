@@ -1,19 +1,8 @@
-import { Outlet } from 'react-router-dom';
 import { AppSidebar } from '@/components/app-sidebar';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import { useEffect } from 'react';
-import { useEducationStore } from '@/store/educationStore';
 
-export default function LearnLayout() {
-  const fetchModules = useEducationStore((s) => s.fetchModules);
-
-  // Fetch modules once at layout level so both the header search
-  // and the child pages share the same already-loaded data
-  useEffect(() => {
-    fetchModules();
-  }, [fetchModules]);
-
+export function PageShell({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider
       style={
@@ -46,11 +35,11 @@ export default function LearnLayout() {
           '--popover-foreground': 'oklch(0.145 0 0)',
         } as React.CSSProperties}
       >
+        <SiteHeader />
         <div className="flex flex-1 flex-col">
-          <SiteHeader />
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
-              <Outlet />
+              {children}
             </div>
           </div>
         </div>

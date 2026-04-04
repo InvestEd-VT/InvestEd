@@ -48,11 +48,13 @@ export const buyOption = async (
     });
 
     // Create or update position
+    // First check for an OPEN position to add to
     const existingPosition = await tx.position.findFirst({
       where: {
         portfolioId: portfolio.id,
         symbol: data.symbol,
         positionType: 'OPTION',
+        optionType: data.optionType,
         strikePrice: data.strikePrice,
         expirationDate: new Date(data.expirationDate),
         status: 'OPEN',
@@ -74,20 +76,47 @@ export const buyOption = async (
         },
       });
     } else {
-      position = await tx.position.create({
-        data: {
+      // Check for a CLOSED position with same key (unique constraint includes
+      // [portfolioId, symbol, positionType, strikePrice, expirationDate])
+      // — if found, reopen it instead of creating a duplicate row.
+      const closedPosition = await tx.position.findFirst({
+        where: {
+          portfolioId: portfolio.id,
           symbol: data.symbol,
-          quantity: data.quantity,
-          avgCost: data.price,
           positionType: 'OPTION',
-          optionType: data.optionType,
           strikePrice: data.strikePrice,
           expirationDate: new Date(data.expirationDate),
-          contractSymbol: data.contractSymbol,
-          status: 'OPEN',
-          portfolioId: portfolio.id,
+          status: { not: 'OPEN' },
         },
       });
+
+      if (closedPosition) {
+        position = await tx.position.update({
+          where: { id: closedPosition.id },
+          data: {
+            quantity: data.quantity,
+            avgCost: data.price,
+            optionType: data.optionType,
+            contractSymbol: data.contractSymbol,
+            status: 'OPEN',
+          },
+        });
+      } else {
+        position = await tx.position.create({
+          data: {
+            symbol: data.symbol,
+            quantity: data.quantity,
+            avgCost: data.price,
+            positionType: 'OPTION',
+            optionType: data.optionType,
+            strikePrice: data.strikePrice,
+            expirationDate: new Date(data.expirationDate),
+            contractSymbol: data.contractSymbol,
+            status: 'OPEN',
+            portfolioId: portfolio.id,
+          },
+        });
+      }
     }
 
     // Record transaction
@@ -144,6 +173,7 @@ export const sellOption = async (
       portfolioId: portfolio.id,
       symbol: data.symbol,
       positionType: 'OPTION',
+      optionType: data.optionType,
       strikePrice: data.strikePrice,
       expirationDate: new Date(data.expirationDate),
       status: 'OPEN',

@@ -14,7 +14,13 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { EllipsisVerticalIcon, CircleUserRoundIcon, LogOutIcon } from 'lucide-react';
+import {
+  EllipsisVerticalIcon,
+  CircleUserRoundIcon,
+  CreditCardIcon,
+  BellIcon,
+  LogOutIcon,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { authService } from '@/services';
@@ -87,11 +93,31 @@ export function NavUser({
                 <CircleUserRoundIcon />
                 Account
               </DropdownMenuItem>
+              <DropdownMenuItem>
+                <CreditCardIcon />
+                Billing
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <BellIcon />
+                Notifications
+              </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={async () => {
-                handleLogout();
+                try {
+                  // Call backend to invalidate session / clear server cookies
+                  await authService.logout();
+                } catch (error) {
+                  // Still clear local state even if backend call fails
+                  console.error('Logout request failed', error);
+                } finally {
+                  // Clear local auth state and redirect to login
+                  useAuthStore.getState().logout();
+                  // navigate to login page
+                  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                  navigate('/login');
+                }
               }}
             >
               <LogOutIcon />

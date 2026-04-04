@@ -42,6 +42,22 @@ const portfolioService = {
       throw err;
     }
   },
+  /**
+   * GET /api/v1/portfolio/transactions
+   */
+  getTransactions: async (params?: Record<string, string | number>): Promise<{
+    transactions: import('../types').Transaction[];
+    total: number;
+    limit: number;
+    offset: number;
+  }> => api.get('/portfolio/transactions', { params }).then((res) => res.data),
+
+  /**
+   * POST /api/v1/portfolio/reset
+   */
+  resetPortfolio: async (): Promise<{ message: string; cashBalance: number }> =>
+    api.post('/portfolio/reset', { confirm: 'RESET' }).then((res) => res.data),
 };
 
+export { portfolioService };
 export default portfolioService;

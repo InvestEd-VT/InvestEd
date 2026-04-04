@@ -118,9 +118,11 @@ const Login = () => {
 
         <CardFooter className="flex flex-col">
           <CardAction>
-            <span className="text-zinc-500 pr-1">Don't have an account?</span>
-            <Link to="/register" className="text-zinc-400 underline-offset-2 hover:underline">
-              Sign Up
+            <span className="text-zinc-500 pr-2">Don't have an account?</span>
+            <Link to="/register">
+              <Button className="bg-zinc-50 text-zinc-900 hover:bg-zinc-200 active:bg-zinc-300 transition-colors">
+                Sign Up
+              </Button>
             </Link>
           </CardAction>
         </CardFooter>
