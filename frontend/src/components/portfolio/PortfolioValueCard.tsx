@@ -21,6 +21,7 @@ function Skeleton() {
       <div className="h-6 bg-gray-100 rounded w-3/5" />
       <div className="h-10 bg-gray-100 rounded w-4/5" />
       <div className="h-4 bg-gray-100 rounded w-1/3" />
+      <p className="sr-only">Loading portfolio</p>
     </div>
   );
 }
@@ -28,6 +29,8 @@ function Skeleton() {
 export default function PortfolioValueCard() {
   const data = usePortfolioStore((s) => s.data);
   const isLoading = usePortfolioStore((s) => s.isLoading);
+  const error = usePortfolioStore((s) => s.error);
+  const fetchPortfolio = usePortfolioStore((s) => s.fetchPortfolio);
 
   const [livePositionsValue, setLivePositionsValue] = useState<number | null>(null);
 
@@ -97,6 +100,28 @@ export default function PortfolioValueCard() {
   const pnlClass = positive ? 'text-emerald-600' : 'text-rose-600';
   const pnlSign = positive ? '+' : '-';
 
+  // Error state
+  if (error && !data) {
+    return (
+      <Card className="@container/card">
+        <CardHeader>
+          <CardDescription>Total Portfolio Value</CardDescription>
+          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+            <div className="text-sm text-rose-600">
+              <p>Unable to load portfolio value</p>
+              <p className="text-xs text-muted-foreground">{error}</p>
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardFooter className="flex-col items-start gap-1.5 text-sm">
+          <button onClick={() => fetchPortfolio()} className="text-sm text-primary underline">
+            Retry
+          </button>
+        </CardFooter>
+      </Card>
+    );
+  }
+
   return (
     <Card className="@container/card">
       <CardHeader>
@@ -114,6 +139,9 @@ export default function PortfolioValueCard() {
       </CardHeader>
 
       <CardFooter className="flex-col items-start gap-1.5 text-sm">
+        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+          Overall P&L
+        </div>
         <div className={`flex items-baseline gap-3 font-medium ${pnlClass}`}>
           <span className="text-lg tabular-nums">
             {pnlSign}
