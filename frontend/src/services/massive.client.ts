@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Lightweight client for Massive v3 API using apiKey query param.
 // For local/dev use only. Do NOT commit your VITE_MASSIVE_API_KEY to git.
 const API_KEY = import.meta.env.VITE_MASSIVE_API_KEY as string | undefined;

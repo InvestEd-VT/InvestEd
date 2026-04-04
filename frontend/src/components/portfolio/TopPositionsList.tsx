@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // React import not required with automatic JSX runtime
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -96,7 +97,7 @@ export default function TopPositionsList() {
                 try {
                   const d = new Date(expiration);
                   if (!isNaN(d.getTime())) return d.toLocaleDateString();
-                } catch (e) {
+                } catch {
                   return String(expiration);
                 }
                 return String(expiration);

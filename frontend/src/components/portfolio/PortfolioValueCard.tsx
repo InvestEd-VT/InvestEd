@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Badge } from '@/components/ui/badge';
 import {
   Card,
@@ -33,8 +34,12 @@ export default function PortfolioValueCard() {
   useEffect(() => {
     if (!data || !hasMassiveKey) return;
 
-    const stockPositions = (data.positions || []).filter((p: any) => (p.positionType || '').toUpperCase() === 'STOCK');
-    const symbols = stockPositions.map((p: any) => String(p.symbol || '').toUpperCase()).filter(Boolean);
+    const stockPositions = (data.positions || []).filter(
+      (p: any) => (p.positionType || '').toUpperCase() === 'STOCK'
+    );
+    const symbols = stockPositions
+      .map((p: any) => String(p.symbol || '').toUpperCase())
+      .filter(Boolean);
     if (!symbols.length) return;
 
     let mounted = true;
@@ -50,14 +55,18 @@ export default function PortfolioValueCard() {
           const sym = String(p.symbol || '').toUpperCase();
           const price = map.get(sym);
           if (price) stocksValue += Number(price.close) * Number(p.quantity ?? 0);
-          else stocksValue += Number(p.marketValue ?? (p.currentPrice ? p.currentPrice * (p.quantity ?? 0) : 0));
+          else
+            stocksValue += Number(
+              p.marketValue ?? (p.currentPrice ? p.currentPrice * (p.quantity ?? 0) : 0)
+            );
         }
 
-        const optionsValue = (data.positions || []).filter((p: any) => (p.positionType || '').toUpperCase() === 'OPTION')
+        const optionsValue = (data.positions || [])
+          .filter((p: any) => (p.positionType || '').toUpperCase() === 'OPTION')
           .reduce((acc: number, p: any) => acc + (Number(p.marketValue ?? 0) || 0), 0);
 
         setLivePositionsValue(stocksValue + optionsValue);
-      } catch (e) {
+      } catch {
         // ignore; keep previous livePositionsValue if any
       }
     };
@@ -74,7 +83,10 @@ export default function PortfolioValueCard() {
   // Compute totals defensively
   const cash = data?.cashBalance ?? 0;
   const positionsValue =
-    livePositionsValue ?? data?.positionsValue ?? data?.positions?.reduce((acc, p) => acc + (p.marketValue ?? 0), 0) ?? 0;
+    livePositionsValue ??
+    data?.positionsValue ??
+    data?.positions?.reduce((acc, p) => acc + (p.marketValue ?? 0), 0) ??
+    0;
   const total = data?.totalValue ?? cash + positionsValue;
 
   const pnl = total - STARTING_BALANCE;
@@ -114,7 +126,8 @@ export default function PortfolioValueCard() {
         </div>
 
         <div className="text-muted-foreground">
-          Compared to starting balance of {STARTING_BALANCE.toLocaleString(undefined, { style: 'currency', currency: 'USD' })}
+          Compared to starting balance of{' '}
+          {STARTING_BALANCE.toLocaleString(undefined, { style: 'currency', currency: 'USD' })}
         </div>
 
         <div className="text-xs text-muted-foreground mt-2">Prices delayed ~15 minutes</div>

@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 
 // Mutable store impl so tests can change returned state per-case
@@ -15,7 +15,6 @@ vi.mock('@/store/portfolioStore', () => ({
 }));
 
 import CashBalanceCard from '../CashBalanceCard';
-import usePortfolioStore from '@/store/portfolioStore';
 
 describe('CashBalanceCard', () => {
   afterEach(() => vi.resetAllMocks());

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // React import not required with automatic JSX runtime
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -7,13 +8,12 @@ import { useEffect, useState } from 'react';
 // formatCurrency not used here
 
 export default function PortfolioTrendCard({ defaultRange = '30d' }: { defaultRange?: string }) {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [data, setData] = useState<Array<{ date: string; value: number }>>([]);
   const [range] = useState(defaultRange);
 
   useEffect(() => {
     let mounted = true;
-    setLoading(true);
     portfolioService
       .getPortfolioHistory(range)
       .then((res) => {

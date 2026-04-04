@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { OptionsContract } from '@/types';
@@ -34,13 +35,23 @@ export function OptionsChain({
   const pricedContracts = useMemo<PricedContract[]>(() => {
     if (!currentPrice || contracts.length === 0) {
       return contracts.map((c) => ({
-        contract: c, premium: 0, totalCost: 0, delta: 0, iv: 0,
+        contract: c,
+        premium: 0,
+        totalCost: 0,
+        delta: 0,
+        iv: 0,
         dte: daysToExpiry(c.expiration_date),
       }));
     }
 
     return contracts.map((c) => {
-      const premium = priceOption(currentPrice, c.strike_price, c.expiration_date, c.contract_type, ticker);
+      const premium = priceOption(
+        currentPrice,
+        c.strike_price,
+        c.expiration_date,
+        c.contract_type,
+        ticker
+      );
       const g = greeks(currentPrice, c.strike_price, c.expiration_date, c.contract_type, ticker);
       return {
         contract: c,
@@ -59,7 +70,10 @@ export function OptionsChain({
     if (currentPrice < contracts[0].strike_price) return 0;
     if (currentPrice >= contracts[contracts.length - 1].strike_price) return -1;
     for (let i = 0; i < contracts.length - 1; i++) {
-      if (contracts[i].strike_price <= currentPrice && contracts[i + 1].strike_price > currentPrice) {
+      if (
+        contracts[i].strike_price <= currentPrice &&
+        contracts[i + 1].strike_price > currentPrice
+      ) {
         return i + 1;
       }
     }
@@ -77,9 +91,7 @@ export function OptionsChain({
   }
 
   if (contracts.length === 0) {
-    return (
-      <p className="text-center py-12 text-gray-400 text-sm">No contracts available</p>
-    );
+    return <p className="text-center py-12 text-gray-400 text-sm">No contracts available</p>;
   }
 
   const isGreen = accentColor === 'emerald';
@@ -125,9 +137,13 @@ export function OptionsChain({
               onClick={() => onSelectContract(contract, premium)}
               className={`grid grid-cols-7 items-center w-full px-4 py-2.5 text-sm text-left transition-colors border-b border-gray-50 ${hoverBg} cursor-pointer`}
             >
-              <span className={`font-semibold ${
-                currentPrice && isITM(contract.strike_price, contract.contract_type) ? 'text-blue-600' : ''
-              }`}>
+              <span
+                className={`font-semibold ${
+                  currentPrice && isITM(contract.strike_price, contract.contract_type)
+                    ? 'text-blue-600'
+                    : ''
+                }`}
+              >
                 {formatCurrency(contract.strike_price)}
               </span>
 
@@ -135,19 +151,18 @@ export function OptionsChain({
                 ${premium.toFixed(2)}
               </span>
 
-              <span className="text-gray-600">
-                {formatCurrency(totalCost)}
-              </span>
+              <span className="text-gray-600">{formatCurrency(totalCost)}</span>
 
               <span className="text-gray-500 text-xs font-mono">
-                {delta > 0 ? '+' : ''}{delta.toFixed(2)}
+                {delta > 0 ? '+' : ''}
+                {delta.toFixed(2)}
               </span>
 
-              <span className="text-gray-500 text-xs font-mono">
-                {(iv * 100).toFixed(1)}%
-              </span>
+              <span className="text-gray-500 text-xs font-mono">{(iv * 100).toFixed(1)}%</span>
 
-              <span className={`text-xs ${dte === 0 ? 'text-red-500 font-semibold' : 'text-gray-500'}`}>
+              <span
+                className={`text-xs ${dte === 0 ? 'text-red-500 font-semibold' : 'text-gray-500'}`}
+              >
                 {dte === 0 ? '0DTE' : `${dte}d`}
               </span>
 
