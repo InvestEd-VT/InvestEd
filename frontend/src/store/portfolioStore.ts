@@ -44,7 +44,9 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
           try {
             const detail = await stockService.getDetail(sym);
             prices.set(sym, detail.currentPrice);
-          } catch { /* rate limited */ }
+          } catch {
+            /* rate limited */
+          }
         }
 
         let totalLiveValue = 0;
@@ -58,10 +60,11 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
             pos.marketValue = livePrice * pos.quantity * 100;
             pos.costBasis = pos.avgCost * pos.quantity * 100;
             pos.unrealizedPnL = pos.marketValue - pos.costBasis;
-            pos.unrealizedPnLPercent = pos.costBasis > 0 ? (pos.unrealizedPnL / pos.costBasis) * 100 : 0;
+            pos.unrealizedPnLPercent =
+              pos.costBasis > 0 ? (pos.unrealizedPnL / pos.costBasis) * 100 : 0;
             totalLiveValue += pos.marketValue;
           } else {
-            totalLiveValue += (pos.marketValue ?? pos.avgCost * pos.quantity * 100);
+            totalLiveValue += pos.marketValue ?? pos.avgCost * pos.quantity * 100;
           }
         }
 
@@ -74,9 +77,11 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
       set({ data, isLoading: false, lastFetched: Date.now() });
     } catch (err: unknown) {
       console.error('Failed to fetch portfolio', err);
-      const message = (err as { response?: { data?: { message?: string } }; message?: string })?.response?.data?.message
-        || (err as { message?: string })?.message
-        || 'Failed to load portfolio';
+      const message =
+        (err as { response?: { data?: { message?: string } }; message?: string })?.response?.data
+          ?.message ||
+        (err as { message?: string })?.message ||
+        'Failed to load portfolio';
       set({ error: message, isLoading: false });
     }
   },

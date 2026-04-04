@@ -1,5 +1,13 @@
 import { useMemo } from 'react';
-import { Area, AreaChart, XAxis, YAxis, ResponsiveContainer, Tooltip, ReferenceLine } from 'recharts';
+import {
+  Area,
+  AreaChart,
+  XAxis,
+  YAxis,
+  ResponsiveContainer,
+  Tooltip,
+  ReferenceLine,
+} from 'recharts';
 import { calculatePayoff, breakeven, maxProfitLoss } from '@/utils/options';
 import { formatCurrency } from '@/utils/format';
 
@@ -22,12 +30,12 @@ export function PayoffChart({
 }: PayoffChartProps) {
   const data = useMemo(
     () => calculatePayoff(type, strikePrice, premium, quantity, mode),
-    [type, strikePrice, premium, quantity, mode],
+    [type, strikePrice, premium, quantity, mode]
   );
 
   const stats = useMemo(
     () => maxProfitLoss(type, strikePrice, premium, quantity),
-    [type, strikePrice, premium, quantity],
+    [type, strikePrice, premium, quantity]
   );
 
   const be = useMemo(() => breakeven(type, strikePrice, premium), [type, strikePrice, premium]);

@@ -1,10 +1,5 @@
 import { useState, useEffect } from 'react';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { tradeService, portfolioService } from '@/services';
@@ -22,7 +17,14 @@ interface TradeModalProps {
   defaultPremium?: number;
 }
 
-export function TradeModal({ open, onClose, contract, stockPrice, mode, defaultPremium }: TradeModalProps) {
+export function TradeModal({
+  open,
+  onClose,
+  contract,
+  stockPrice,
+  mode,
+  defaultPremium,
+}: TradeModalProps) {
   const [quantity, setQuantity] = useState(1);
   const [price, setPrice] = useState(defaultPremium ?? 1);
   const [cashBalance, setCashBalance] = useState<number | null>(null);
@@ -31,9 +33,20 @@ export function TradeModal({ open, onClose, contract, stockPrice, mode, defaultP
   const [success, setSuccess] = useState(false);
 
   const isCall = contract.contract_type === 'call';
-  const accent = mode === 'buy'
-    ? { bg: 'bg-green-500', hover: 'hover:bg-green-600', text: 'text-green-500', light: 'bg-green-50' }
-    : { bg: 'bg-orange-500', hover: 'hover:bg-orange-600', text: 'text-orange-500', light: 'bg-orange-50' };
+  const accent =
+    mode === 'buy'
+      ? {
+          bg: 'bg-green-500',
+          hover: 'hover:bg-green-600',
+          text: 'text-green-500',
+          light: 'bg-green-50',
+        }
+      : {
+          bg: 'bg-orange-500',
+          hover: 'hover:bg-orange-600',
+          text: 'text-orange-500',
+          light: 'bg-orange-50',
+        };
 
   useEffect(() => {
     if (open) {
@@ -41,7 +54,10 @@ export function TradeModal({ open, onClose, contract, stockPrice, mode, defaultP
       setPrice(defaultPremium ?? 1);
       setErrors([]);
       setSuccess(false);
-      portfolioService.getPortfolio().then((p) => setCashBalance(p.cashBalance)).catch(() => {});
+      portfolioService
+        .getPortfolio()
+        .then((p) => setCashBalance(p.cashBalance))
+        .catch(() => {});
     }
   }, [open, stockPrice]);
 

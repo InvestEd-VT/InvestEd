@@ -63,7 +63,13 @@ export default function Transactions() {
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
-          <Select value={typeFilter} onValueChange={(v) => { setTypeFilter(v); setOffset(0); }}>
+          <Select
+            value={typeFilter}
+            onValueChange={(v) => {
+              setTypeFilter(v);
+              setOffset(0);
+            }}
+          >
             <SelectTrigger className="w-[130px] h-9 bg-white border-gray-200 text-sm">
               <SelectValue />
             </SelectTrigger>
@@ -106,7 +112,10 @@ export default function Transactions() {
 
             {/* Rows */}
             {transactions.map((tx) => (
-              <div key={tx.id} className="grid grid-cols-2 sm:grid-cols-6 items-center px-4 py-3.5 text-sm">
+              <div
+                key={tx.id}
+                className="grid grid-cols-2 sm:grid-cols-6 items-center px-4 py-3.5 text-sm"
+              >
                 <span className="text-xs text-gray-400">
                   {new Date(tx.executedAt).toLocaleDateString('en-US', {
                     month: 'short',
@@ -129,9 +138,8 @@ export default function Transactions() {
                 </span>
                 <span className="font-semibold">{tx.symbol}</span>
                 <span className="text-gray-500 text-xs">
-                  {tx.optionType ?? '—'}{' '}
-                  {tx.strikePrice ? formatCurrency(tx.strikePrice) : ''}{' '}
-                  x{tx.quantity}
+                  {tx.optionType ?? '—'} {tx.strikePrice ? formatCurrency(tx.strikePrice) : ''} x
+                  {tx.quantity}
                 </span>
                 <span className="text-right text-gray-500">{formatCurrency(tx.price)}</span>
                 <span className="text-right font-semibold">

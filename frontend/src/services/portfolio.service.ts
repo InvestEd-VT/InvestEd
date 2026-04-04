@@ -45,7 +45,9 @@ const portfolioService = {
   /**
    * GET /api/v1/portfolio/transactions
    */
-  getTransactions: async (params?: Record<string, string | number>): Promise<{
+  getTransactions: async (
+    params?: Record<string, string | number>
+  ): Promise<{
     transactions: import('../types').Transaction[];
     total: number;
     limit: number;

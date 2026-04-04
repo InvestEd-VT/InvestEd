@@ -14,11 +14,11 @@ import { AlertTriangleIcon } from 'lucide-react';
 
 // Per-position P&L calculated from live stock price + Black-Scholes
 interface EnrichedPosition extends Position {
-  stockPrice: number;   // current underlying stock price
-  livePrice: number;    // current theoretical option value per share
-  liveValue: number;    // livePrice × quantity × 100
-  pnl: number;          // liveValue - costBasis
-  pnlPercent: number;   // pnl / costBasis × 100
+  stockPrice: number; // current underlying stock price
+  livePrice: number; // current theoretical option value per share
+  liveValue: number; // livePrice × quantity × 100
+  pnl: number; // liveValue - costBasis
+  pnlPercent: number; // pnl / costBasis × 100
 }
 
 export default function Portfolio() {
@@ -51,7 +51,9 @@ export default function Portfolio() {
           try {
             const detail = await stockService.getDetail(sym);
             prices.set(sym, detail.currentPrice);
-          } catch { /* rate limited — use avgCost as fallback */ }
+          } catch {
+            /* rate limited — use avgCost as fallback */
+          }
         }
 
         for (const pos of data.positions) {
@@ -167,7 +169,13 @@ export default function Portfolio() {
         </div>
 
         {/* Reset Portfolio Modal */}
-        <Sheet open={showReset} onOpenChange={(open) => { setShowReset(open); if (!open) setResetInput(''); }}>
+        <Sheet
+          open={showReset}
+          onOpenChange={(open) => {
+            setShowReset(open);
+            if (!open) setResetInput('');
+          }}
+        >
           <SheetContent className="sm:max-w-[400px]">
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2 text-red-500">
@@ -177,9 +185,12 @@ export default function Portfolio() {
             </SheetHeader>
             <div className="space-y-5 py-6 px-1">
               <div className="rounded-lg bg-red-50 border border-red-200 p-4">
-                <p className="text-sm text-red-600 font-medium mb-1">This action cannot be undone</p>
+                <p className="text-sm text-red-600 font-medium mb-1">
+                  This action cannot be undone
+                </p>
                 <p className="text-sm text-red-500">
-                  All open positions will be closed and your cash balance will be reset to $10,000.00. Transaction history will be preserved.
+                  All open positions will be closed and your cash balance will be reset to
+                  $10,000.00. Transaction history will be preserved.
                 </p>
               </div>
               <div className="space-y-2">
@@ -193,7 +204,14 @@ export default function Portfolio() {
                 />
               </div>
               <div className="flex gap-3">
-                <Button variant="outline" className="flex-1" onClick={() => { setShowReset(false); setResetInput(''); }}>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    setShowReset(false);
+                    setResetInput('');
+                  }}
+                >
                   Cancel
                 </Button>
                 <Button
@@ -227,7 +245,9 @@ export default function Portfolio() {
           <div className="grid grid-cols-3 gap-4">
             <div className="rounded-xl bg-gray-50 p-4">
               <p className="text-[11px] text-gray-400 uppercase tracking-wide">Cash</p>
-              <p className="text-lg font-semibold mt-1 text-gray-900">{formatCurrency(portfolio.cashBalance)}</p>
+              <p className="text-lg font-semibold mt-1 text-gray-900">
+                {formatCurrency(portfolio.cashBalance)}
+              </p>
             </div>
             <div className="rounded-xl bg-gray-50 p-4">
               <p className="text-[11px] text-gray-400 uppercase tracking-wide">Positions</p>
@@ -291,17 +311,26 @@ export default function Portfolio() {
                       )}
                     </div>
                     <p className="text-xs text-gray-400 mt-0.5">
-                      {position.quantity} contract{position.quantity > 1 ? 's' : ''} @ {formatCurrency(position.avgCost)} avg
-                      {position.expirationDate && (() => {
-                        const exp = new Date(position.expirationDate!);
-                        const dte = Math.max(0, Math.round((exp.getTime() - Date.now()) / 86400000));
-                        return (
-                          <span className="ml-2">
-                            · Exp {exp.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                            <span className={dte <= 7 ? ' text-red-500 font-medium' : ''}> ({dte}DTE)</span>
-                          </span>
-                        );
-                      })()}
+                      {position.quantity} contract{position.quantity > 1 ? 's' : ''} @{' '}
+                      {formatCurrency(position.avgCost)} avg
+                      {position.expirationDate &&
+                        (() => {
+                          const exp = new Date(position.expirationDate!);
+                          const dte = Math.max(
+                            0,
+                            Math.round((exp.getTime() - Date.now()) / 86400000)
+                          );
+                          return (
+                            <span className="ml-2">
+                              · Exp{' '}
+                              {exp.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                              <span className={dte <= 7 ? ' text-red-500 font-medium' : ''}>
+                                {' '}
+                                ({dte}DTE)
+                              </span>
+                            </span>
+                          );
+                        })()}
                     </p>
                   </div>
 

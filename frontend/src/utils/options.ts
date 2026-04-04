@@ -17,8 +17,12 @@
 
 /** Standard normal CDF (Abramowitz & Stegun) */
 function cdf(x: number): number {
-  const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741;
-  const a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911;
+  const a1 = 0.254829592,
+    a2 = -0.284496736,
+    a3 = 1.421413741;
+  const a4 = -1.453152027,
+    a5 = 1.061405429,
+    p = 0.3275911;
   const sign = x < 0 ? -1 : 1;
   const ax = Math.abs(x) / Math.SQRT2;
   const t = 1.0 / (1.0 + p * ax);
@@ -41,7 +45,7 @@ function pdf(x: number): number {
  * @returns Annualized HV as decimal (e.g. 0.28 = 28%)
  */
 export function computeHistoricalVolatility(closes: number[]): number {
-  if (closes.length < 5) return 0.30; // not enough data, use reasonable default
+  if (closes.length < 5) return 0.3; // not enough data, use reasonable default
 
   // Calculate daily log returns
   const logReturns: number[] = [];
@@ -51,7 +55,7 @@ export function computeHistoricalVolatility(closes: number[]): number {
     }
   }
 
-  if (logReturns.length < 3) return 0.30;
+  if (logReturns.length < 3) return 0.3;
 
   // Mean of log returns
   const mean = logReturns.reduce((s, r) => s + r, 0) / logReturns.length;
@@ -80,7 +84,7 @@ export function computeHistoricalVolatility(closes: number[]): number {
  */
 export function computeParkinsonVolatility(highs: number[], lows: number[]): number {
   const n = Math.min(highs.length, lows.length);
-  if (n < 3) return 0.30;
+  if (n < 3) return 0.3;
 
   let sumSq = 0;
   for (let i = 0; i < n; i++) {
@@ -125,13 +129,32 @@ export const RISK_FREE_RATE = 0.043;
 
 /** Approximate dividend yields for common tickers */
 const DIVIDEND_YIELDS: Record<string, number> = {
-  SPY: 0.013, QQQ: 0.006, IWM: 0.012, DIA: 0.018,
-  AAPL: 0.005, MSFT: 0.007, GOOGL: 0.005, GOOG: 0.005,
-  AMZN: 0.000, META: 0.004, TSLA: 0.000, NVDA: 0.000,
-  AMD: 0.000, NFLX: 0.000, JPM: 0.022, BAC: 0.025,
-  WMT: 0.013, KO: 0.028, PEP: 0.026, JNJ: 0.030,
-  DIS: 0.008, BA: 0.000, V: 0.007, MA: 0.005,
-  COIN: 0.000, MARA: 0.000,
+  SPY: 0.013,
+  QQQ: 0.006,
+  IWM: 0.012,
+  DIA: 0.018,
+  AAPL: 0.005,
+  MSFT: 0.007,
+  GOOGL: 0.005,
+  GOOG: 0.005,
+  AMZN: 0.0,
+  META: 0.004,
+  TSLA: 0.0,
+  NVDA: 0.0,
+  AMD: 0.0,
+  NFLX: 0.0,
+  JPM: 0.022,
+  BAC: 0.025,
+  WMT: 0.013,
+  KO: 0.028,
+  PEP: 0.026,
+  JNJ: 0.03,
+  DIS: 0.008,
+  BA: 0.0,
+  V: 0.007,
+  MA: 0.005,
+  COIN: 0.0,
+  MARA: 0.0,
 };
 
 function getDividendYield(ticker: string): number {
@@ -146,13 +169,13 @@ function getDividendYield(ticker: string): number {
  */
 function getSkewParams(baseHV: number): { slope: number; curve: number } {
   // High-vol stocks (HV > 50%): flatter skew, more smile
-  if (baseHV > 0.50) return { slope: -0.08, curve: 0.14 };
+  if (baseHV > 0.5) return { slope: -0.08, curve: 0.14 };
   // Medium-vol (30-50%): moderate skew
-  if (baseHV > 0.30) return { slope: -0.12, curve: 0.10 };
+  if (baseHV > 0.3) return { slope: -0.12, curve: 0.1 };
   // Low-vol large-cap (20-30%): steeper put skew
-  if (baseHV > 0.20) return { slope: -0.15, curve: 0.08 };
+  if (baseHV > 0.2) return { slope: -0.15, curve: 0.08 };
   // Very low-vol / index (<20%): steepest skew
-  return { slope: -0.20, curve: 0.10 };
+  return { slope: -0.2, curve: 0.1 };
 }
 
 // ─── IV adjustment engine ──────────────────────────────────────────────────────
@@ -174,7 +197,7 @@ export function getAdjustedIV(
   ticker: string,
   stockPrice: number,
   strikePrice: number,
-  dte: number,
+  dte: number
 ): number {
   // 1. Get base volatility: real HV from cache, or estimate from price level
   let baseHV = getTickerVolatility(ticker);
@@ -205,10 +228,10 @@ export function getAdjustedIV(
   let termMultiplier: number;
   if (clampedDte <= 3) {
     // 0-3 DTE: elevated IV due to gamma risk + market maker hedging costs
-    termMultiplier = 1.0 + 0.15 * (3 - clampedDte) / 3;
+    termMultiplier = 1.0 + (0.15 * (3 - clampedDte)) / 3;
   } else if (clampedDte <= 7) {
     // 4-7 DTE: slightly elevated
-    termMultiplier = 1.0 + 0.05 * (7 - clampedDte) / 4;
+    termMultiplier = 1.0 + (0.05 * (7 - clampedDte)) / 4;
   } else {
     // 8+ DTE: normal contango, longer = slightly higher IV
     termMultiplier = Math.pow(30 / clampedDte, 0.06);
@@ -236,8 +259,12 @@ export function daysToExpiry(expirationDate: string): number {
 // ─── Black-Scholes with dividends ──────────────────────────────────────────────
 
 interface BSInputs {
-  S: number; K: number; T: number;
-  r: number; q: number; sigma: number;
+  S: number;
+  K: number;
+  T: number;
+  r: number;
+  q: number;
+  sigma: number;
 }
 
 function bsPrice(inputs: BSInputs, type: 'call' | 'put'): number {
@@ -245,7 +272,7 @@ function bsPrice(inputs: BSInputs, type: 'call' | 'put'): number {
   if (T <= 0) return type === 'call' ? Math.max(0, S - K) : Math.max(0, K - S);
 
   const sqrtT = Math.sqrt(T);
-  const d1 = (Math.log(S / K) + (r - q + sigma * sigma / 2) * T) / (sigma * sqrtT);
+  const d1 = (Math.log(S / K) + (r - q + (sigma * sigma) / 2) * T) / (sigma * sqrtT);
   const d2 = d1 - sigma * sqrtT;
 
   if (type === 'call') {
@@ -265,7 +292,7 @@ export function priceOption(
   strikePrice: number,
   expirationDate: string,
   type: 'call' | 'put',
-  ticker = '',
+  ticker = ''
 ): number {
   const dte = daysToExpiry(expirationDate);
   const T = timeToExpiry(expirationDate);
@@ -284,7 +311,7 @@ export function greeks(
   strikePrice: number,
   expirationDate: string,
   type: 'call' | 'put',
-  ticker = '',
+  ticker = ''
 ) {
   const dte = daysToExpiry(expirationDate);
   const T = timeToExpiry(expirationDate);
@@ -300,7 +327,7 @@ export function greeks(
   }
 
   const sqrtT = Math.sqrt(T);
-  const d1 = (Math.log(S / K) + (r - q + sigma * sigma / 2) * T) / (sigma * sqrtT);
+  const d1 = (Math.log(S / K) + (r - q + (sigma * sigma) / 2) * T) / (sigma * sqrtT);
   const d2 = d1 - sigma * sqrtT;
   const eqT = Math.exp(-q * T);
   const erT = Math.exp(-r * T);
@@ -308,12 +335,12 @@ export function greeks(
 
   const delta = type === 'call' ? eqT * cdf(d1) : eqT * (cdf(d1) - 1);
   const gamma = (eqT * nd1) / (S * sigma * sqrtT);
-  const theta = (
-    -(S * eqT * nd1 * sigma) / (2 * sqrtT)
-    - r * K * erT * (type === 'call' ? cdf(d2) : cdf(-d2))
-    + q * S * eqT * (type === 'call' ? cdf(d1) : cdf(-d1))
-  ) / 365;
-  const vega = S * eqT * sqrtT * nd1 / 100;
+  const theta =
+    (-(S * eqT * nd1 * sigma) / (2 * sqrtT) -
+      r * K * erT * (type === 'call' ? cdf(d2) : cdf(-d2)) +
+      q * S * eqT * (type === 'call' ? cdf(d1) : cdf(-d1))) /
+    365;
+  const vega = (S * eqT * sqrtT * nd1) / 100;
 
   return {
     delta: Math.round(delta * 1000) / 1000,
@@ -327,27 +354,54 @@ export function greeks(
 // ─── Legacy export ─────────────────────────────────────────────────────────────
 
 export function blackScholes(
-  inputs: { stockPrice: number; strikePrice: number; timeToExpiry: number; riskFreeRate: number; volatility: number },
-  type: 'call' | 'put',
+  inputs: {
+    stockPrice: number;
+    strikePrice: number;
+    timeToExpiry: number;
+    riskFreeRate: number;
+    volatility: number;
+  },
+  type: 'call' | 'put'
 ): number {
-  return bsPrice({ S: inputs.stockPrice, K: inputs.strikePrice, T: inputs.timeToExpiry, r: inputs.riskFreeRate, q: 0, sigma: inputs.volatility }, type);
+  return bsPrice(
+    {
+      S: inputs.stockPrice,
+      K: inputs.strikePrice,
+      T: inputs.timeToExpiry,
+      r: inputs.riskFreeRate,
+      q: 0,
+      sigma: inputs.volatility,
+    },
+    type
+  );
 }
 
 // ─── Payoff calculations ───────────────────────────────────────────────────────
 
-interface PayoffPoint { price: number; profit: number; }
+interface PayoffPoint {
+  price: number;
+  profit: number;
+}
 
 export function calculatePayoff(
-  type: 'call' | 'put', strikePrice: number, premium: number,
-  quantity: number, mode: 'buy' | 'sell', numPoints = 60,
+  type: 'call' | 'put',
+  strikePrice: number,
+  premium: number,
+  quantity: number,
+  mode: 'buy' | 'sell',
+  numPoints = 60
 ): PayoffPoint[] {
   const mult = 100;
-  const low = strikePrice * 0.7, high = strikePrice * 1.3;
+  const low = strikePrice * 0.7,
+    high = strikePrice * 1.3;
   const step = (high - low) / numPoints;
   const points: PayoffPoint[] = [];
   for (let p = low; p <= high; p += step) {
     const intrinsic = type === 'call' ? Math.max(0, p - strikePrice) : Math.max(0, strikePrice - p);
-    const profit = mode === 'buy' ? (intrinsic - premium) * quantity * mult : (premium - intrinsic) * quantity * mult;
+    const profit =
+      mode === 'buy'
+        ? (intrinsic - premium) * quantity * mult
+        : (premium - intrinsic) * quantity * mult;
     points.push({ price: Math.round(p * 100) / 100, profit: Math.round(profit * 100) / 100 });
   }
   return points;
@@ -357,8 +411,18 @@ export function breakeven(type: 'call' | 'put', strikePrice: number, premium: nu
   return type === 'call' ? strikePrice + premium : strikePrice - premium;
 }
 
-export function maxProfitLoss(type: 'call' | 'put', strikePrice: number, premium: number, quantity: number) {
-  const mult = 100, maxLoss = premium * quantity * mult;
+export function maxProfitLoss(
+  type: 'call' | 'put',
+  strikePrice: number,
+  premium: number,
+  quantity: number
+) {
+  const mult = 100,
+    maxLoss = premium * quantity * mult;
   if (type === 'call') return { maxProfit: Infinity, maxLoss, breakeven: strikePrice + premium };
-  return { maxProfit: (strikePrice - premium) * quantity * mult, maxLoss, breakeven: strikePrice - premium };
+  return {
+    maxProfit: (strikePrice - premium) * quantity * mult,
+    maxLoss,
+    breakeven: strikePrice - premium,
+  };
 }
