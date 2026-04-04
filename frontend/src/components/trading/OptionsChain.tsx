@@ -62,7 +62,7 @@ export function OptionsChain({
         dte: daysToExpiry(c.expiration_date),
       };
     });
-  }, [contracts, currentPrice]);
+  }, [contracts, currentPrice, ticker]);
 
   // Find marker index for current price line
   const markerIndex = useMemo(() => {

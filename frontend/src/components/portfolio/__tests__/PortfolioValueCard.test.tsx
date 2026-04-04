@@ -18,7 +18,6 @@ vi.mock('@/store/portfolioStore', () => ({
 
 // Import after mocking
 import PortfolioValueCard from '../PortfolioValueCard';
-import usePortfolioStore from '@/store/portfolioStore';
 
 describe('PortfolioValueCard', () => {
   afterEach(() => {
