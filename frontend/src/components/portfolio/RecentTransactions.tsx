@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Button } from '@/components/ui/button';
 import { portfolioService } from '@/services';
 import type { Transaction } from '@/types';
+import { formatCurrency } from '@/lib/utils';
 
 function SkeletonRow({ keyIdx }: { keyIdx: number }) {
   return (
@@ -29,10 +30,10 @@ export default function RecentTransactions() {
   useEffect(() => {
     let mounted = true;
     portfolioService
-      .getTransactions({ limit: 5, offset: 0 })
+      .getTransactions({ limit: 3, offset: 0 })
       .then((res) => {
         if (!mounted) return;
-        setTransactions(res.transactions ?? []);
+        setTransactions((res.transactions ?? []).slice(0, 3));
       })
       .catch(() => {
         if (!mounted) return;
@@ -64,7 +65,7 @@ export default function RecentTransactions() {
 
         {isLoading ? (
           <div className="space-y-0">
-            {Array.from({ length: 5 }).map((_, i) => (
+            {Array.from({ length: 3 }).map((_, i) => (
               <SkeletonRow keyIdx={i} key={i} />
             ))}
           </div>
@@ -80,10 +81,10 @@ export default function RecentTransactions() {
               const symbol = tx.symbol ?? '-';
               const strike = tx.strikePrice ? Number(tx.strikePrice).toFixed(2) : '-';
               const contracts = tx.quantity ?? '-';
-              const total =
-                typeof tx.price === 'number' && typeof tx.quantity === 'number'
-                  ? tx.price * tx.quantity * 100
-                  : '-';
+              const price = typeof tx.price === 'string' ? parseFloat(tx.price) : Number(tx.price);
+              const qty =
+                typeof tx.quantity === 'string' ? parseFloat(tx.quantity) : Number(tx.quantity);
+              const total = !isNaN(price) && !isNaN(qty) ? price * qty * 100 : '-';
 
               return (
                 <div
@@ -102,7 +103,7 @@ export default function RecentTransactions() {
                   <div className="col-span-2 text-sm">{strike}</div>
                   <div className="col-span-1 text-sm">{contracts}</div>
                   <div className="col-span-2 text-sm text-right font-mono font-medium">
-                    {typeof total === 'number' ? `$${total.toFixed(2)}` : total}
+                    {typeof total === 'number' ? formatCurrency(total, 'USD') : total}
                   </div>
                 </div>
               );
