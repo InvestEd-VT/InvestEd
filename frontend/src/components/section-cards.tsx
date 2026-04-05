@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { TrendingUpIcon, TrendingDownIcon } from 'lucide-react';
-import PortfolioValueCard from '@/components/portfolio/PortfolioValueCard';
 import PortfolioTrendCard from '@/components/portfolio/PortfolioTrendCard';
 import usePortfolioStore from '@/store/portfolioStore';
 import CashBalanceCard from '@/components/portfolio/CashBalanceCard';
