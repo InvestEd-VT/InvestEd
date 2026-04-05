@@ -157,6 +157,10 @@ export const login = async (data: LoginRequestBody): Promise<AuthResponse> => {
     throw new AppError('Invalid email or password', 401);
   }
 
+  if (!user.emailVerified) {
+    throw new AppError('Please verify your email before logging in', 401);
+  }
+
   const accessToken = generateAccessToken(user.id);
   const refreshToken = generateRefreshToken(user.id);
 

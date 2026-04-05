@@ -38,6 +38,7 @@ const createTestUser = async (): Promise<RegisterPayload> => {
       passwordHash,
       firstName: payload.firstName,
       lastName: payload.lastName,
+      emailVerified: true,
       portfolios: {
         create: {
           name: 'My Portfolio',
