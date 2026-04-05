@@ -25,6 +25,7 @@ const createTestUserAndLogin = async () => {
       passwordHash,
       firstName: 'Trade',
       lastName: 'Test',
+      emailVerified: true,
       portfolios: {
         create: { name: 'My Portfolio', cashBalance: 10000 },
       },
