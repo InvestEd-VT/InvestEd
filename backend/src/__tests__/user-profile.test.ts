@@ -23,6 +23,7 @@ beforeAll(async () => {
       passwordHash: pw,
       firstName: 'Profile',
       lastName: 'Test',
+      emailVerified: true,
       portfolios: { create: { name: 'My Portfolio' } },
     },
   });
@@ -53,7 +54,7 @@ describe('User Profile API', () => {
         id: testUserId,
         firstName: 'Profile',
         lastName: 'Test',
-        emailVerified: false,
+        emailVerified: true,
       });
       // Should not expose sensitive fields
       expect(response.body.passwordHash).toBeUndefined();
