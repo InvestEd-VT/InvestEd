@@ -52,7 +52,9 @@ export const hashToken = (token: string): string => {
  * Expires in 15 minutes
  */
 export const generateAccessToken = (userId: string): string => {
-  return jwt.sign({ userId }, env.JWT_SECRET, { expiresIn: '15m' });
+  return jwt.sign({ userId, jti: crypto.randomUUID() }, env.JWT_SECRET, {
+    expiresIn: '15m',
+  });
 };
 
 /**
@@ -60,7 +62,9 @@ export const generateAccessToken = (userId: string): string => {
  * Expires in 7 days
  */
 export const generateRefreshToken = (userId: string): string => {
-  return jwt.sign({ userId }, env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
+  return jwt.sign({ userId, jti: crypto.randomUUID() }, env.JWT_REFRESH_SECRET, {
+    expiresIn: '7d',
+  });
 };
 
 // ─── TOKEN VERIFICATION ───────────────────────────────
@@ -153,11 +157,16 @@ export const login = async (data: LoginRequestBody): Promise<AuthResponse> => {
     throw new AppError('Invalid email or password', 401);
   }
 
+  if (!user.emailVerified) {
+    throw new AppError('Please verify your email before logging in', 401);
+  }
+
   const accessToken = generateAccessToken(user.id);
   const refreshToken = generateRefreshToken(user.id);
 
-  // Store hashed refresh token in database
-  const hashedRefresh = await hashPassword(refreshToken);
+  // Store a deterministic hash so the full token value is validated.
+  // bcrypt truncates inputs after 72 bytes, which is unsafe for JWT refresh tokens.
+  const hashedRefresh = hashToken(refreshToken);
   await prisma.user.update({
     where: { id: user.id },
     data: { refreshToken: hashedRefresh },
@@ -201,16 +210,17 @@ export const refresh = async (token: string) => {
     throw new AppError('Invalid refresh token', 401);
   }
 
-  // Verify the provided token matches the stored hash
-  const valid = await comparePassword(token, user.refreshToken);
-  if (!valid) {
+  // Verify the provided token matches the stored hash.
+  // Use SHA-256 instead of bcrypt because JWTs are longer than bcrypt's 72-byte input limit.
+  const hashedToken = hashToken(token);
+  if (hashedToken !== user.refreshToken) {
     throw new AppError('Invalid refresh token', 401);
   }
 
   // Rotate: issue new tokens and store new refresh hash
   const newAccessToken = generateAccessToken(user.id);
   const newRefreshToken = generateRefreshToken(user.id);
-  const hashedRefresh = await hashPassword(newRefreshToken);
+  const hashedRefresh = hashToken(newRefreshToken);
 
   await prisma.user.update({
     where: { id: user.id },
