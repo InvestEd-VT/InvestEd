@@ -22,7 +22,6 @@ export default function Transactions() {
   const [offset, setOffset] = useState(0);
   const [typeFilter, setTypeFilter] = useState('ALL');
   const [symbolFilter, setSymbolFilter] = useState('');
-  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchTransactions = async () => {
@@ -31,7 +30,6 @@ export default function Transactions() {
       const params: Record<string, string | number> = {
         limit: PAGE_SIZE,
         offset,
-        sort: sortOrder,
       };
       if (typeFilter !== 'ALL') params.type = typeFilter;
       if (symbolFilter.trim()) params.symbol = symbolFilter.trim().toUpperCase();
@@ -48,7 +46,7 @@ export default function Transactions() {
 
   useEffect(() => {
     fetchTransactions();
-  }, [offset, typeFilter, sortOrder]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [offset, typeFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -76,25 +74,9 @@ export default function Transactions() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">All types</SelectItem>
+              <SelectItem value="ALL">All Types</SelectItem>
               <SelectItem value="BUY">Buy</SelectItem>
               <SelectItem value="SELL">Sell</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select
-            value={sortOrder}
-            onValueChange={(v: 'desc' | 'asc') => {
-              setSortOrder(v);
-              setOffset(0);
-            }}
-          >
-            <SelectTrigger className="w-[150px] h-9 bg-white border-gray-200 text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="desc">Most recent</SelectItem>
-              <SelectItem value="asc">Oldest first</SelectItem>
             </SelectContent>
           </Select>
 
