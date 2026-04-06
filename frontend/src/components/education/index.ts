@@ -1,2 +1,2 @@
 // Educational content components
-export {};
+export { default as ModuleRouter } from './ModuleRouter';
