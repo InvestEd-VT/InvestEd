@@ -13,7 +13,11 @@ const pageTitles: Record<string, string> = {
   '/search': 'Search',
 };
 
-export function SiteHeader() {
+interface SiteHeaderProps {
+  searchOverride?: React.ReactNode;
+}
+
+export function SiteHeader({ searchOverride }: SiteHeaderProps) {
   const location = useLocation();
   const title =
     pageTitles[location.pathname] ||
@@ -26,9 +30,9 @@ export function SiteHeader() {
         <Separator orientation="vertical" className="mx-2 data-[orientation=vertical]:h-4" />
         <h1 className="text-sm font-medium text-gray-500">{title}</h1>
 
-        {/* Stock search bar — centered */}
+        {/* Search bar — stock search by default, overridable per layout */}
         <div className="hidden md:flex flex-1 justify-center max-w-md mx-auto">
-          <StockSearch />
+          {searchOverride ?? <StockSearch />}
         </div>
       </div>
     </header>
