@@ -10,6 +10,9 @@ import {
   DollarSign,
   Calendar,
   Layers,
+  ExternalLink,
+  ArrowRight,
+  Info,
 } from 'lucide-react';
 
 // ── Key term callout ──────────────────────────────────────────────────────────
@@ -43,13 +46,34 @@ function Section({
   );
 }
 
+// ── Scope callout ─────────────────────────────────────────────────────────────
+function ScopeCallout() {
+  return (
+    <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 px-4 py-3 mb-8 flex items-start gap-3">
+      <Info className="size-4 text-blue-500 mt-0.5 shrink-0" />
+      <div>
+        <p className="text-sm font-semibold text-blue-500">Buying vs. Selling Options</p>
+        <p className="text-sm text-muted-foreground mt-0.5">
+          Options contracts can be either bought or sold. When you{' '}
+          <strong className="text-foreground">buy</strong> a call or put, you are paying the premium
+          in exchange for the right it provides. When you{' '}
+          <strong className="text-foreground">sell</strong> a contract, you take on obligations
+          rather than rights — an entirely different risk profile. This module focuses on{' '}
+          <strong className="text-foreground">buying</strong> options contracts. Selling will be
+          covered in a later module.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ── Options vs Stocks comparison diagram ─────────────────────────────────────
 function ComparisonDiagram() {
   const rows = [
     { label: 'Ownership', stock: 'Share of company', option: 'Right to buy/sell shares' },
     { label: 'Cost', stock: 'Full share price', option: 'Premium only' },
     { label: 'Expiry', stock: 'No expiration', option: 'Fixed expiration date' },
-    { label: 'Risk', stock: 'Can go to $0', option: 'Max loss = premium paid' },
+    { label: 'Risk (Buyer)', stock: 'Can go to $0', option: 'Max loss = premium paid' },
     { label: 'Leverage', stock: 'None', option: 'Controls 100 shares' },
   ];
 
@@ -80,17 +104,17 @@ function ContractDiagram() {
     {
       icon: <Layers className="size-4" />,
       label: 'Underlying',
-      desc: 'The stock the option is based on (e.g. AAPL)',
+      desc: 'The stock or ETF the option is based on (e.g. AAPL)',
     },
     {
       icon: <DollarSign className="size-4" />,
       label: 'Strike Price',
-      desc: 'The price at which you can buy or sell the stock',
+      desc: 'The price at which you can buy (call) or sell (put) the stock upon exercise',
     },
     {
       icon: <Calendar className="size-4" />,
-      label: 'Expiration',
-      desc: 'The date the option contract expires',
+      label: 'Expiration Date',
+      desc: 'The date the option contract expires. After this date, the option ceases to exist.',
     },
     {
       icon: <TrendingUp className="size-4" />,
@@ -100,7 +124,7 @@ function ContractDiagram() {
     {
       icon: <Shield className="size-4" />,
       label: 'Premium',
-      desc: 'The price you pay for the option contract',
+      desc: 'The price paid for the option contract, quoted on a per-share basis',
     },
   ];
 
@@ -115,6 +139,62 @@ function ContractDiagram() {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+// ── Next module callout ───────────────────────────────────────────────────────
+function NextModuleCallout() {
+  return (
+    <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-4 mb-8 flex items-start gap-3">
+      <ArrowRight className="size-4 text-primary mt-0.5 shrink-0" />
+      <div>
+        <p className="text-sm font-semibold text-primary">Up Next: Calls &amp; Puts</p>
+        <p className="text-sm text-muted-foreground mt-0.5">
+          In the next module we'll take a deeper look at call and put options — including how to
+          read them, when to use each, and what it means for an option to be in the money, at the
+          money, or out of the money.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ── Attribution footer ────────────────────────────────────────────────────────
+function Attribution() {
+  return (
+    <div className="rounded-lg border border-border bg-muted/30 px-4 py-3 mt-10 flex items-start gap-3">
+      <ExternalLink className="size-4 text-muted-foreground mt-0.5 shrink-0" />
+      <p className="text-xs text-muted-foreground leading-relaxed">
+        Content adapted from{' '}
+        <a
+          href="https://www.optionseducation.org/optionsoverview/what-is-an-option"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-foreground transition-colors"
+        >
+          What is an Option?
+        </a>{' '}
+        and{' '}
+        <a
+          href="https://www.optionseducation.org/optionsoverview/options-basics"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-foreground transition-colors"
+        >
+          Options Basics
+        </a>{' '}
+        by{' '}
+        <a
+          href="https://www.optionseducation.org"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-foreground transition-colors"
+        >
+          The Options Industry Council (OIC)
+        </a>
+        . Used for educational purposes.
+      </p>
     </div>
   );
 }
@@ -164,60 +244,68 @@ export default function IntroToOptions() {
           </p>
         </div>
 
+        {/* Scope callout */}
+        <ScopeCallout />
+
         {/* Content */}
         <Section icon={<BookOpen className="size-4" />} title="What is an Options Contract?">
           <p className="text-sm text-muted-foreground leading-relaxed">
-            There are two types of options: a <strong className="text-foreground">call</strong>{' '}
-            gives you the right to <strong className="text-foreground">buy</strong> shares, while a{' '}
-            <strong className="text-foreground">put</strong> gives you the right to{' '}
-            <strong className="text-foreground">sell</strong> shares. An options contract gives you
-            the <strong className="text-foreground">right, but not the obligation</strong>, to buy
-            or sell a stock at a specific price before a set date. You pay a fee (called a premium)
-            for this right.
+            An equity option is a contract that conveys to its holder the{' '}
+            <strong className="text-foreground">right, but not the obligation</strong>, to buy or
+            sell shares of an underlying stock at a specified price — called the{' '}
+            <strong className="text-foreground">strike price</strong> — on or before a given date
+            called the <strong className="text-foreground">expiration date</strong>. After that
+            date, the option ceases to exist.
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed mt-3">
-            Each contract typically controls <strong className="text-foreground">100 shares</strong>{' '}
-            of the underlying stock, giving you significant exposure for a fraction of the cost of
-            buying shares outright.
+            There are two types of options contracts:{' '}
+            <strong className="text-foreground">calls</strong> and{' '}
+            <strong className="text-foreground">puts</strong>. A call gives you the right to{' '}
+            <strong className="text-foreground">buy</strong> shares, while a put gives you the right
+            to <strong className="text-foreground">sell</strong> shares. Either type can itself be
+            bought or sold — when you buy a call or put, you pay the premium to obtain that right.
+            Equity option contracts typically represent{' '}
+            <strong className="text-foreground">100 shares</strong> of the underlying stock.
           </p>
           <Term
             word="Options Contract"
-            definition="An agreement that gives the buyer the right (not obligation) to buy or sell 100 shares of a stock at a specified price on or before the expiration date."
+            definition="A contract that conveys the right, but not the obligation, to buy (call) or sell (put) 100 shares of an underlying stock at a specified strike price on or before the expiration date."
           />
         </Section>
 
         <Section icon={<TrendingUp className="size-4" />} title="Why Traders Use Options">
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Options are versatile tools used for several purposes:
+            Options are versatile instruments used for several purposes:
           </p>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
             <li className="flex items-start gap-2">
               <span className="text-primary mt-0.5">→</span>
               <span>
-                <strong className="text-foreground">Leverage</strong> — control large positions with
-                less capital
+                <strong className="text-foreground">Leverage</strong> — control a large position
+                (100 shares) with a fraction of the capital required to buy shares outright
               </span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-primary mt-0.5">→</span>
               <span>
-                <strong className="text-foreground">Hedging</strong> — protect existing stock
-                positions from downside
+                <strong className="text-foreground">Hedging</strong> — use put options as insurance
+                to protect an existing stock position against an unfavorable price move, while
+                maintaining stock ownership
               </span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-primary mt-0.5">→</span>
               <span>
-                <strong className="text-foreground">Income</strong> — profit from a stock rising
-                (calls) or falling (puts) with a fraction of the capital a stock purchase would
-                require
+                <strong className="text-foreground">Income</strong> — buying a call can generate
+                profit if the stock rises above the strike price, and buying a put can generate
+                profit if the stock falls below it, all while risking only the premium paid
               </span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-primary mt-0.5">→</span>
               <span>
-                <strong className="text-foreground">Speculation</strong> — profit from directional
-                price moves with limited risk
+                <strong className="text-foreground">Speculation</strong> — take a position on the
+                direction of a stock's price with initial investment limited to the premium paid
               </span>
             </li>
           </ul>
@@ -226,35 +314,40 @@ export default function IntroToOptions() {
         <Section icon={<Layers className="size-4" />} title="Key Terminology">
           <Term
             word="Premium"
-            definition="The price you pay to buy an options contract. This is your maximum loss if you only buy options."
+            definition="The price of an options contract, quoted on a per-share basis. When you buy a contract, the premium is your total cost and the maximum you can lose."
           />
           <Term
             word="Strike Price"
-            definition="The price at which you can buy (call) or sell (put) the underlying stock if you exercise the option."
+            definition="The specified price at which you can buy (call) or sell (put) the underlying stock if you choose to exercise the contract. Also called the exercise price."
           />
           <Term
             word="Expiration Date"
-            definition="The date the option contract expires. After this date, the option is worthless if not exercised."
+            definition="The date on which the option contract expires. After this date, the option no longer has value and no longer exists."
           />
           <Term
             word="Underlying"
-            definition="The stock or asset that the option contract is based on (e.g., AAPL, TSLA)."
+            definition="The stock or ETF that the option contract is based on (e.g., AAPL, TSLA)."
           />
           <Term
             word="Call Option"
-            definition="Gives you the right to BUY the underlying stock at the strike price. Profitable when the stock goes up."
+            definition="A contract that gives you the right to BUY 100 shares of the underlying stock at the strike price, anytime before expiration."
           />
           <Term
             word="Put Option"
-            definition="Gives you the right to SELL the underlying stock at the strike price. Profitable when the stock goes down."
+            definition="A contract that gives you the right to SELL 100 shares of the underlying stock at the strike price, anytime before expiration."
           />
         </Section>
 
         <Section icon={<Shield className="size-4" />} title="Options vs. Stocks">
           <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-            Understanding the key differences helps you decide when to use each instrument.
+            Understanding the key differences helps you decide when each instrument is appropriate.
           </p>
           <ComparisonDiagram />
+          <p className="text-sm text-muted-foreground leading-relaxed mt-3">
+            Note: Unlike stockholders, option holders do not receive voting rights or dividends. A
+            call holder must exercise the option and take ownership of the shares to be eligible for
+            those rights.
+          </p>
         </Section>
 
         <Section icon={<DollarSign className="size-4" />} title="Anatomy of an Options Contract">
@@ -264,22 +357,49 @@ export default function IntroToOptions() {
           <ContractDiagram />
           <p className="text-sm text-muted-foreground leading-relaxed mt-3">
             Example: An <strong className="text-foreground">AAPL Jan 2026 $200 Call</strong> gives
-            you the right to buy 100 shares of Apple at $200 per share, expiring in January 2026.
+            the holder the right to buy 100 shares of Apple at $200 per share at any time before the
+            January 2026 expiration date.
           </p>
         </Section>
 
         <Section icon={<TrendingUp className="size-4" />} title="Risk & Reward Overview">
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            For option <strong className="text-foreground">buyers</strong>, the maximum loss is
-            limited to the premium paid. The potential gain can be substantial if the stock moves in
-            your favor.
+          <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+            The potential profit or loss from buying an options contract depends on how the stock
+            moves relative to the strike price before expiration.
           </p>
-          <p className="text-sm text-muted-foreground leading-relaxed mt-3">
-            For option <strong className="text-foreground">sellers</strong>, the premium received is
-            the maximum gain, but losses can be significant — or even unlimited in some strategies —
-            if the stock moves against you.
-          </p>
+
+          <div className="rounded-lg border bg-card p-4 mb-3">
+            <p className="text-sm font-semibold mb-2">Buying a Call</p>
+            <p className="text-sm text-muted-foreground">
+              When you buy a call, you profit if the stock rises above the strike price — you have
+              the right to buy shares at a lower agreed-upon price than what the market is currently
+              charging. The further the stock rises above the strike price, the greater the
+              potential profit.
+            </p>
+          </div>
+
+          <div className="rounded-lg border bg-card p-4 mb-4">
+            <p className="text-sm font-semibold mb-2">Buying a Put</p>
+            <p className="text-sm text-muted-foreground">
+              When you buy a put, you profit if the stock falls below the strike price — you have
+              the right to sell shares at a higher agreed-upon price than what the market is
+              currently paying. The further the stock falls below the strike price, the greater the
+              potential profit.
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4">
+            <p className="text-sm font-semibold mb-2">Risk</p>
+            <p className="text-sm text-muted-foreground">
+              For both calls and puts, your maximum loss is always limited to the premium paid. If
+              the stock does not move favorably before expiration, the option expires worthless and
+              the premium is the only loss.
+            </p>
+          </div>
         </Section>
+
+        {/* Next module callout */}
+        <NextModuleCallout />
 
         {/* Summary */}
         <div className="rounded-xl border bg-card p-5 mb-8">
@@ -287,23 +407,27 @@ export default function IntroToOptions() {
           <ul className="space-y-1.5 text-sm text-muted-foreground">
             <li className="flex items-start gap-2">
               <CheckCircle2 className="size-4 text-primary mt-0.5 shrink-0" />
-              Options give you the right (not obligation) to buy or sell shares
+              Options contracts come in two types — calls (right to buy) and puts (right to sell)
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle2 className="size-4 text-primary mt-0.5 shrink-0" />
-              Calls profit when stock rises; puts profit when stock falls
+              Either type can be bought or sold — this module covers buying only
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle2 className="size-4 text-primary mt-0.5 shrink-0" />
-              Each contract controls 100 shares
+              Each contract represents 100 shares of the underlying stock
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle2 className="size-4 text-primary mt-0.5 shrink-0" />
-              Max loss for buyers is the premium paid
+              Buying a call profits when the stock rises; buying a put profits when the stock falls
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle2 className="size-4 text-primary mt-0.5 shrink-0" />
-              Key terms: premium, strike price, expiration, underlying
+              The maximum loss when buying an option is always limited to the premium paid
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckCircle2 className="size-4 text-primary mt-0.5 shrink-0" />
+              Key terms: premium, strike price, expiration date, underlying, call, put
             </li>
           </ul>
         </div>
@@ -338,6 +462,9 @@ export default function IntroToOptions() {
             )}
           </button>
         </div>
+
+        {/* Attribution */}
+        <Attribution />
       </div>
     </div>
   );
