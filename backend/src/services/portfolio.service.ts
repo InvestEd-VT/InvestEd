@@ -111,6 +111,7 @@ export const getTransactions = async (
     to?: string;
     limit?: number;
     offset?: number;
+    sort?: 'asc' | 'desc';
   } = {}
 ) => {
   const portfolio = await prisma.portfolio.findFirst({ where: { userId } });
@@ -129,7 +130,7 @@ export const getTransactions = async (
   const [transactions, total] = await Promise.all([
     prisma.transaction.findMany({
       where,
-      orderBy: { executedAt: 'desc' },
+      orderBy: { executedAt: filters.sort === 'asc' ? 'asc' : 'desc' },
       take: filters.limit || 50,
       skip: filters.offset || 0,
     }),

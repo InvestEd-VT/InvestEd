@@ -59,6 +59,7 @@ export const getTransactions = async (
       to: req.query.to as string,
       limit: req.query.limit ? parseInt(req.query.limit as string) : undefined,
       offset: req.query.offset ? parseInt(req.query.offset as string) : undefined,
+      sort: req.query.sort as 'asc' | 'desc',
     });
     res.json(result);
   } catch (error) {
