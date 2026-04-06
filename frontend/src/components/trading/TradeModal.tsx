@@ -59,7 +59,7 @@ export function TradeModal({
         .then((p) => setCashBalance(p.cashBalance))
         .catch(() => {});
     }
-  }, [open, stockPrice]);
+  }, [open, stockPrice, defaultPremium]);
 
   const multiplier = contract.shares_per_contract || 100;
   const total = quantity * price * multiplier;
