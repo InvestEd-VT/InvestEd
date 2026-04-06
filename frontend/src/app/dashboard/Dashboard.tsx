@@ -74,7 +74,7 @@ export default function Dashboard() {
               </div>
               <SectionCards />
               <div className="px-4 lg:px-6">
-                <PerformanceChart period="all" />
+                <PerformanceChart />
               </div>
               <TopPositionsList />
               <div className="px-4 lg:px-6">
