@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useEducationStore } from '@/store/educationStore';
+import { useParams } from 'react-router-dom';
+import ModuleNavigation from '@/components/education/ModuleNavigation';
 import {
   ArrowLeft,
   ArrowRight,
@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   ExternalLink,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 // ── Key term callout ──────────────────────────────────────────────────────────
 function Term({ word, definition }: { word: string; definition: string }) {
@@ -126,9 +127,7 @@ function MoneynessDiagram({ type }: { type: 'call' | 'put' }) {
         {isCall ? 'Call Option' : 'Put Option'} — Strike Price: $150
       </p>
 
-      {/* Price line */}
       <div className="relative mb-6">
-        {/* Track */}
         <div className="flex h-8 rounded-lg overflow-hidden">
           <div
             className={`flex-1 flex items-center justify-center text-xs font-semibold ${
@@ -151,7 +150,6 @@ function MoneynessDiagram({ type }: { type: 'call' | 'put' }) {
           </div>
         </div>
 
-        {/* Labels */}
         <div className="flex justify-between mt-2 text-xs text-muted-foreground">
           <span>Stock below $150</span>
           <span className="font-medium text-foreground">$150 strike</span>
@@ -159,7 +157,6 @@ function MoneynessDiagram({ type }: { type: 'call' | 'put' }) {
         </div>
       </div>
 
-      {/* Zone explanations */}
       <div className="grid grid-cols-3 gap-2 text-xs">
         <div className={`rounded-lg p-2.5 ${isCall ? 'bg-destructive/5' : 'bg-emerald-500/5'}`}>
           <p className="font-semibold mb-1">{isCall ? 'Out of the Money' : 'In the Money'}</p>
@@ -299,19 +296,6 @@ function Attribution() {
 export default function CallsAndPuts() {
   const navigate = useNavigate();
   const { id: moduleId } = useParams<{ id: string }>();
-  const { modules, markComplete } = useEducationStore();
-  const [completing, setCompleting] = useState(false);
-
-  const mod = modules.find((m) => m.id === moduleId);
-  const isCompleted = mod?.completed ?? false;
-
-  const handleComplete = async () => {
-    if (!moduleId || isCompleted || completing) return;
-    setCompleting(true);
-    await markComplete(moduleId);
-    setCompleting(false);
-    navigate('/learn');
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -352,7 +336,6 @@ export default function CallsAndPuts() {
             you expect the stock price to <strong className="text-foreground">rise</strong>.
           </p>
 
-          {/* Buying a call */}
           <div className="rounded-lg border bg-card p-4 mt-4 mb-3">
             <p className="text-sm font-semibold mb-2">Buying a Call</p>
             <p className="text-sm text-muted-foreground">
@@ -364,7 +347,6 @@ export default function CallsAndPuts() {
             </p>
           </div>
 
-          {/* Selling a call */}
           <div className="rounded-lg border bg-card p-4 mb-4">
             <p className="text-sm font-semibold mb-2">Selling a Call</p>
             <p className="text-sm text-muted-foreground">
@@ -376,7 +358,6 @@ export default function CallsAndPuts() {
             </p>
           </div>
 
-          {/* AAPL Call Example */}
           <div className="rounded-lg border border-border bg-muted/20 p-4">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
               Example — AAPL Call
@@ -415,7 +396,6 @@ export default function CallsAndPuts() {
             expect the stock price to <strong className="text-foreground">fall</strong>.
           </p>
 
-          {/* Buying a put */}
           <div className="rounded-lg border bg-card p-4 mt-4 mb-3">
             <p className="text-sm font-semibold mb-2">Buying a Put</p>
             <p className="text-sm text-muted-foreground">
@@ -427,7 +407,6 @@ export default function CallsAndPuts() {
             </p>
           </div>
 
-          {/* Selling a put */}
           <div className="rounded-lg border bg-card p-4 mb-4">
             <p className="text-sm font-semibold mb-2">Selling a Put</p>
             <p className="text-sm text-muted-foreground">
@@ -439,7 +418,6 @@ export default function CallsAndPuts() {
             </p>
           </div>
 
-          {/* AAPL Put Example */}
           <div className="rounded-lg border border-border bg-muted/20 p-4">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
               Example — AAPL Put
@@ -576,36 +554,8 @@ export default function CallsAndPuts() {
         {/* Next module callout */}
         <NextModuleCallout />
 
-        {/* Footer nav + Complete button */}
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => navigate('/learn')}
-            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="size-4" />
-            Back to Learn
-          </button>
-          <button
-            onClick={handleComplete}
-            disabled={isCompleted || completing}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold transition-all
-              ${
-                isCompleted
-                  ? 'bg-primary/10 text-primary cursor-default'
-                  : 'bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 cursor-pointer'
-              }`}
-          >
-            {isCompleted ? (
-              <>
-                <CheckCircle2 className="size-4" /> Completed
-              </>
-            ) : completing ? (
-              'Saving...'
-            ) : (
-              'Mark as Complete'
-            )}
-          </button>
-        </div>
+        {/* Module navigation */}
+        <ModuleNavigation moduleId={moduleId ?? ''} />
 
         {/* Attribution */}
         <Attribution />
