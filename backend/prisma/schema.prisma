@@ -39,8 +39,23 @@ model Portfolio {
   transactions Transaction[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+  snapshots    PortfolioSnapshot[]
 
   @@index([userId])
+}
+
+model PortfolioSnapshot {
+  id             String    @id @default(uuid())
+  portfolioId    String
+  portfolio      Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  totalValue     Decimal   @db.Decimal(18, 2)
+  cashBalance    Decimal   @db.Decimal(18, 2)
+  positionsValue Decimal   @db.Decimal(18, 2)
+  recordedAt     DateTime  @default(now())
+
+  @@unique([portfolioId, recordedAt])
+  @@index([portfolioId])
+  @@index([recordedAt])
 }
 
 model Position {
