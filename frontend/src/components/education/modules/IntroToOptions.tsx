@@ -52,15 +52,14 @@ function ScopeCallout() {
     <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 px-4 py-3 mb-8 flex items-start gap-3">
       <Info className="size-4 text-blue-500 mt-0.5 shrink-0" />
       <div>
-        <p className="text-sm font-semibold text-blue-500">Buying vs. Selling Options</p>
+        <p className="text-sm font-semibold text-blue-500">What This Module Covers</p>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Options contracts can be either bought or sold. When you{' '}
-          <strong className="text-foreground">buy</strong> a call or put, you are paying the premium
-          in exchange for the right it provides. When you{' '}
-          <strong className="text-foreground">sell</strong> a contract, you take on obligations
-          rather than rights — an entirely different risk profile. This module focuses on{' '}
-          <strong className="text-foreground">buying</strong> options contracts. Selling will be
-          covered in a later module.
+          This module introduces options at a high level — what they are, how they work, and the
+          core terminology you'll need going forward. It focuses on{' '}
+          <strong className="text-foreground">buying</strong> options contracts and the rights that
+          come with that. The next module will introduce the other side of the contract:{' '}
+          <strong className="text-foreground">selling</strong> options, and the important
+          terminology that comes with it.
         </p>
       </div>
     </div>
@@ -149,11 +148,11 @@ function NextModuleCallout() {
     <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-4 mb-8 flex items-start gap-3">
       <ArrowRight className="size-4 text-primary mt-0.5 shrink-0" />
       <div>
-        <p className="text-sm font-semibold text-primary">Up Next: Calls &amp; Puts</p>
+        <p className="text-sm font-semibold text-primary">Up Next: Intro to Selling Options</p>
         <p className="text-sm text-muted-foreground mt-0.5">
-          In the next module we'll take a deeper look at call and put options — including how to
-          read them, when to use each, and what it means for an option to be in the money, at the
-          money, or out of the money.
+          In the next module we'll introduce the seller's side of options contracts — including what
+          it means to write an option, the obligations that come with it, and the key terminology
+          you'll need before diving into calls and puts.
         </p>
       </div>
     </div>
@@ -398,9 +397,6 @@ export default function IntroToOptions() {
           </div>
         </Section>
 
-        {/* Next module callout */}
-        <NextModuleCallout />
-
         {/* Summary */}
         <div className="rounded-xl border bg-card p-5 mb-8">
           <h3 className="font-semibold mb-3">Summary</h3>
@@ -431,6 +427,9 @@ export default function IntroToOptions() {
             </li>
           </ul>
         </div>
+
+        {/* Next module callout */}
+        <NextModuleCallout />
 
         {/* Footer nav + Complete button */}
         <div className="flex items-center justify-between">
