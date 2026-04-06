@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { PageShell } from '@/components/layout/PageShell';
+import PageHeader from '@/components/ui/PageHeader';
 import { TradeModal } from '@/components/trading/TradeModal';
 import { portfolioService, stockService } from '@/services';
 import type { Portfolio as PortfolioType, Position, OptionsContract } from '@/types';
@@ -159,7 +160,7 @@ export default function Portfolio() {
       <div className="max-w-5xl space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold tracking-tight">Portfolio</h1>
+          <PageHeader title="Portfolio" />
           <button
             onClick={() => setShowReset(!showReset)}
             className="text-xs text-gray-400 hover:text-red-500 transition-colors"

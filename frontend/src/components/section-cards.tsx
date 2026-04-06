@@ -33,9 +33,11 @@ export function SectionCards() {
             {positionsCount}
           </CardTitle>
           <CardAction>
-            <Badge variant="outline">
-              <TrendingDownIcon />
-            </Badge>
+            <a href="/portfolio" aria-label="View open positions">
+              <Badge variant="outline">
+                <TrendingDownIcon />
+              </Badge>
+            </a>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
@@ -52,9 +54,11 @@ export function SectionCards() {
             {Math.abs(totalPnL).toLocaleString(undefined, { style: 'currency', currency: 'USD' })}
           </CardTitle>
           <CardAction>
-            <Badge variant="outline">
-              <TrendingUpIcon />
-            </Badge>
+            <a href="/portfolio" aria-label="View portfolio P&L">
+              <Badge variant="outline">
+                <TrendingUpIcon />
+              </Badge>
+            </a>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">

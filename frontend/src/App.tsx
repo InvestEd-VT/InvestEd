@@ -11,6 +11,7 @@ import {
   Portfolio,
   Transactions,
 } from './pages';
+import PageHeader from '@/components/ui/PageHeader';
 import { ThemeProvider } from './components/ui/theme-provider';
 import { PageShell } from './components/layout/PageShell';
 import { StockSearch } from './components/trading/StockSearch';
@@ -19,7 +20,7 @@ import LearnLayout from '@/app/education/LearnLayout';
 import EducationDashboard from '@/app/education/EducationDashboard';
 import IntroToOptions from '@/components/education/modules/IntroToOptions';
 
-function PlaceholderPage({
+  function PlaceholderPage({
   title,
   icon: Icon,
   description,
@@ -32,8 +33,8 @@ function PlaceholderPage({
     <PageShell>
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <Icon className="size-12 text-gray-300 mb-4" />
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">{title}</h1>
-        <p className="text-gray-500 text-sm max-w-md">{description}</p>
+          <PageHeader title={title} className="mb-2 text-gray-900" />
+          <p className="text-gray-500 text-sm max-w-md">{description}</p>
       </div>
     </PageShell>
   );
@@ -65,7 +66,7 @@ function App() {
               <PageShell>
                 <div className="max-w-2xl mx-auto space-y-6">
                   <div>
-                    <h1 className="text-2xl font-bold">Search Stocks</h1>
+                    <PageHeader title="Search Stocks" />
                     <p className="text-sm text-gray-500 mt-1">Find stocks and trade options</p>
                   </div>
                   <StockSearch />
