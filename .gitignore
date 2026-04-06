@@ -44,6 +44,10 @@ dist-ssr
 
 # Claude
 .claude/
+
+# Keep environment variables out of version control
+.env
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

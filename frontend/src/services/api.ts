@@ -43,6 +43,11 @@ api.interceptors.response.use(
 
   async (error) => {
     const originalRequest = error.config;
+    console.debug('[api] response error', {
+      url: originalRequest?.url || error.request?.responseURL,
+      status: error.response?.status,
+      message: error.message,
+    });
 
     // Only attempt refresh on 401 errors.
     // _retry flag prevents infinite loops if the refresh request itself returns 401.
@@ -67,10 +72,23 @@ api.interceptors.response.use(
     try {
       const { refreshToken, setTokens } = useAuthStore.getState();
 
+      // If we don't have a refresh token, there's no point calling the refresh
+      // endpoint (the backend expects a token in the body and will return 400).
+      // Immediately force a logout and redirect to the login page.
+      if (!refreshToken) {
+        console.warn('[api] no refreshToken available, aborting refresh');
+        refreshQueue = [];
+        useAuthStore.getState().logout();
+        window.location.href = '/login';
+        return Promise.reject(error);
+      }
+
+      console.debug('[api] attempting token refresh');
       // Call the refresh endpoint with the current refresh token
       const response = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken });
       const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data;
 
+      console.debug('[api] refresh successful, updating tokens');
       // Persist the new tokens in the store (and localStorage via persist middleware)
       setTokens(newAccessToken, newRefreshToken);
 
@@ -80,12 +98,13 @@ api.interceptors.response.use(
       // Retry the original failed request with the new token
       originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
       return api(originalRequest);
-    } catch {
+    } catch (err) {
+      console.error('[api] refresh failed', err);
       // Refresh failed — session is invalid, force the user to log in again
       refreshQueue = [];
       useAuthStore.getState().logout();
       window.location.href = '/login';
-      return Promise.reject(error);
+      return Promise.reject(err || error);
     } finally {
       isRefreshing = false;
     }

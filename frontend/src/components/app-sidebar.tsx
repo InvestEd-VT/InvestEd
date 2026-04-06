@@ -1,6 +1,5 @@
 import * as React from 'react';
 
-import { NavDocuments } from '@/components/nav-documents';
 import { NavMain } from '@/components/nav-main';
 import { NavSecondary } from '@/components/nav-secondary';
 import { NavUser } from '@/components/nav-user';
@@ -15,148 +14,77 @@ import {
 } from '@/components/ui/sidebar';
 import {
   LayoutDashboardIcon,
-  ListIcon,
+  BriefcaseIcon,
   ChartBarIcon,
-  FolderIcon,
-  UsersIcon,
-  CameraIcon,
-  FileTextIcon,
+  ListIcon,
+  BookOpenIcon,
   Settings2Icon,
   CircleHelpIcon,
-  SearchIcon,
-  DatabaseIcon,
-  FileChartColumnIcon,
-  FileIcon,
-  CommandIcon,
+  TrendingUpIcon,
 } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
 
 const data = {
-  user: {
-    name: 'shadcn',
-    email: 'm@example.com',
-    avatar: '/avatars/shadcn.jpg',
-  },
   navMain: [
     {
       title: 'Dashboard',
-      url: '#',
+      url: '/dashboard',
       icon: <LayoutDashboardIcon />,
     },
     {
-      title: 'Lifecycle',
-      url: '#',
-      icon: <ListIcon />,
+      title: 'Portfolio',
+      url: '/portfolio',
+      icon: <BriefcaseIcon />,
     },
     {
-      title: 'Analytics',
-      url: '#',
+      title: 'Trade',
+      url: '/stock/AAPL',
       icon: <ChartBarIcon />,
     },
     {
-      title: 'Projects',
-      url: '#',
-      icon: <FolderIcon />,
+      title: 'Transactions',
+      url: '/transactions',
+      icon: <ListIcon />,
     },
     {
-      title: 'Team',
-      url: '#',
-      icon: <UsersIcon />,
-    },
-  ],
-  navClouds: [
-    {
-      title: 'Capture',
-      icon: <CameraIcon />,
-      isActive: true,
-      url: '#',
-      items: [
-        {
-          title: 'Active Proposals',
-          url: '#',
-        },
-        {
-          title: 'Archived',
-          url: '#',
-        },
-      ],
-    },
-    {
-      title: 'Proposal',
-      icon: <FileTextIcon />,
-      url: '#',
-      items: [
-        {
-          title: 'Active Proposals',
-          url: '#',
-        },
-        {
-          title: 'Archived',
-          url: '#',
-        },
-      ],
-    },
-    {
-      title: 'Prompts',
-      icon: <FileTextIcon />,
-      url: '#',
-      items: [
-        {
-          title: 'Active Proposals',
-          url: '#',
-        },
-        {
-          title: 'Archived',
-          url: '#',
-        },
-      ],
+      title: 'Learn',
+      url: '/learn',
+      icon: <BookOpenIcon />,
     },
   ],
   navSecondary: [
     {
       title: 'Settings',
-      url: '#',
+      url: '/settings',
       icon: <Settings2Icon />,
     },
     {
       title: 'Get Help',
-      url: '#',
+      url: '/help',
       icon: <CircleHelpIcon />,
-    },
-    {
-      title: 'Search',
-      url: '#',
-      icon: <SearchIcon />,
-    },
-  ],
-  documents: [
-    {
-      name: 'Data Library',
-      url: '#',
-      icon: <DatabaseIcon />,
-    },
-    {
-      name: 'Reports',
-      url: '#',
-      icon: <FileChartColumnIcon />,
-    },
-    {
-      name: 'Word Assistant',
-      url: '#',
-      icon: <FileIcon />,
     },
   ],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const user = useAuthStore((s) => s.user);
+
+  const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ');
+  const userData = {
+    name: fullName || user?.email?.split('@')[0] || 'User',
+    email: user?.email ?? '',
+    avatar: '',
+  };
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:p-1.5!">
-              <a href="#">
-                <CommandIcon className="size-5!" />
-                <span className="text-base font-semibold">Acme Inc.</span>
+              <a href="/dashboard">
+                <TrendingUpIcon className="size-5!" />
+                <span className="text-base font-semibold">InvestEd</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -164,11 +92,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={userData} />
       </SidebarFooter>
     </Sidebar>
   );
