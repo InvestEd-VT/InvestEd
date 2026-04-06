@@ -1,9 +1,8 @@
-import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useEducationStore } from '@/store/educationStore';
+import ModuleNavigation from '@/components/education/ModuleNavigation';
 import {
   ArrowLeft,
-  CheckCircle2,
+  ArrowRight,
   BookOpen,
   TrendingUp,
   Shield,
@@ -11,8 +10,8 @@ import {
   Calendar,
   Layers,
   ExternalLink,
-  ArrowRight,
   Info,
+  CheckCircle2,
 } from 'lucide-react';
 
 // ── Key term callout ──────────────────────────────────────────────────────────
@@ -202,19 +201,6 @@ function Attribution() {
 export default function IntroToOptions() {
   const navigate = useNavigate();
   const { id: moduleId } = useParams<{ id: string }>();
-  const { modules, markComplete } = useEducationStore();
-  const [completing, setCompleting] = useState(false);
-
-  const mod = modules.find((m) => m.id === moduleId);
-  const isCompleted = mod?.completed ?? false;
-
-  const handleComplete = async () => {
-    if (!moduleId || isCompleted || completing) return;
-    setCompleting(true);
-    await markComplete(moduleId);
-    setCompleting(false);
-    navigate('/learn');
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -431,36 +417,8 @@ export default function IntroToOptions() {
         {/* Next module callout */}
         <NextModuleCallout />
 
-        {/* Footer nav + Complete button */}
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => navigate('/learn')}
-            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="size-4" />
-            Back to Learn
-          </button>
-          <button
-            onClick={handleComplete}
-            disabled={isCompleted || completing}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold transition-all
-              ${
-                isCompleted
-                  ? 'bg-primary/10 text-primary cursor-default'
-                  : 'bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 cursor-pointer'
-              }`}
-          >
-            {isCompleted ? (
-              <>
-                <CheckCircle2 className="size-4" /> Completed
-              </>
-            ) : completing ? (
-              'Saving...'
-            ) : (
-              'Mark as Complete'
-            )}
-          </button>
-        </div>
+        {/* Module navigation */}
+        <ModuleNavigation moduleId={moduleId ?? ''} />
 
         {/* Attribution */}
         <Attribution />
