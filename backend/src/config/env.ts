@@ -26,5 +26,5 @@ export const env = {
   BACKEND_URL: process.env.BACKEND_URL || 'http://localhost:5001',
   EMAIL_USER: process.env.EMAIL_USER || '',
   EMAIL_PASS: process.env.EMAIL_PASS || '',
-  MASSIVE_API_KEY: process.env.MASSIVE_API_KEY || 'iLtU0emdAJxYXgMiZWm5uTmtUvhT5fti',
+  MASSIVE_API_KEY: process.env.MASSIVE_API_KEY || '',
 };
