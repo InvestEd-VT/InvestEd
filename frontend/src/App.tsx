@@ -17,7 +17,8 @@ import { StockSearch } from './components/trading/StockSearch';
 import { SettingsIcon, HelpCircleIcon } from 'lucide-react';
 import LearnLayout from '@/app/education/LearnLayout';
 import EducationDashboard from '@/app/education/EducationDashboard';
-import IntroToOptions from '@/components/education/modules/IntroToOptions';
+import ModuleRouter from '@/components/education/ModuleRouter';
+import LockedModuleGuard from '@/components/education/LockedModuleGuard';
 
 function PlaceholderPage({
   title,
@@ -79,7 +80,14 @@ function App() {
           {/* Learn section — uses LearnLayout with education header */}
           <Route element={<LearnLayout />}>
             <Route path="/learn" element={<EducationDashboard />} />
-            <Route path="/learn/modules/:id" element={<IntroToOptions />} />
+            <Route
+              path="/learn/modules/:id"
+              element={
+                <LockedModuleGuard>
+                  <ModuleRouter />
+                </LockedModuleGuard>
+              }
+            />
           </Route>
           <Route
             path="/settings"
