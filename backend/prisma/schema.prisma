@@ -26,6 +26,7 @@ model User {
   updatedAt          DateTime    @updatedAt
   portfolios         Portfolio[]
   progress           ModuleProgress[]
+  notifications    Notification[]
 }
 
 model Portfolio {
@@ -126,6 +127,23 @@ model ModuleProgress {
   @@index([userId])
 }
 
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  read      Boolean          @default(false)
+  data      Json?
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([userId])
+  @@index([read])
+  @@index([createdAt])
+}
+
 enum PositionType {
   STOCK
   OPTION
@@ -149,4 +167,12 @@ enum TransactionType {
   EXERCISE
   EXPIRED_WORTHLESS
   EXPIRATION
+}
+
+enum NotificationType {
+  OPTION_EXPIRED
+  OPTION_EXERCISED
+  OPTION_EXPIRING_SOON
+  TRADE_EXECUTED
+  PORTFOLIO_RESET
 }
