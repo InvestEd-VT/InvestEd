@@ -158,6 +158,16 @@ export const resetPortfolio = async (userId: string) => {
       data: { status: 'CLOSED' },
     });
 
+    // Delete all transactions
+    await tx.transaction.deleteMany({
+      where: { portfolioId: portfolio.id },
+    });
+
+    // Delete all snapshots
+    await tx.portfolioSnapshot.deleteMany({
+      where: { portfolioId: portfolio.id },
+    });
+
     // Reset cash balance
     await tx.portfolio.update({
       where: { id: portfolio.id },
