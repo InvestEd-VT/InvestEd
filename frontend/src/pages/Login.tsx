@@ -31,7 +31,15 @@ const Login = () => {
       setIsLoading(true);
       const response = await authService.login({ email, password });
       authStore.login(response.user, response.accessToken, response.refreshToken);
-      navigate('/dashboard');
+
+      // Show welcome screen on first login per device/browser.
+      const WELCOME_KEY = 'invested_welcome_v1';
+      const hasSeenWelcome = typeof window !== 'undefined' && localStorage.getItem(WELCOME_KEY);
+      if (!hasSeenWelcome) {
+        navigate('/welcome');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (error) {
       if (error instanceof Error) {
         setErrors([error.message]);
