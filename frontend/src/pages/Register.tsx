@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import PageHeader from '@/components/ui/PageHeader';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
@@ -55,7 +54,7 @@ const Register = () => {
   return (
     <div className="flex flex-col md:flex-row min-h-screen items-center justify-between px-[5vw] md:px-[17vw] bg-zinc-950">
       <div className="text-left mb-[5vh]">
-        <PageHeader title="Register" size="xl" className="text-white mb-4" />
+        <h1 className="text-4xl font-bold text-white mb-4">Register</h1>
         <p className="text-lg text-gray-400 mb-3">Already have an account?</p>
         <Link to="/login">
           <Button

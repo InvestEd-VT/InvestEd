@@ -10,7 +10,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { PageShell } from '@/components/layout/PageShell';
-import PageHeader from '@/components/ui/PageHeader';
 import { portfolioService } from '@/services';
 import type { Transaction } from '@/types';
 import { formatCurrency } from '@/utils/format';
@@ -60,7 +59,7 @@ export default function Transactions() {
   return (
     <PageShell>
       <div className="max-w-5xl space-y-6">
-        <PageHeader title="Transactions" />
+        <h1 className="text-2xl font-bold tracking-tight">Transactions</h1>
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">

@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import { useEducationStore } from '@/store/educationStore';
-import PageHeader from '@/components/ui/PageHeader';
 import { CheckCircle2, Circle, BookOpen, ChevronRight } from 'lucide-react';
 
 export default function EducationDashboard() {
@@ -15,7 +14,7 @@ export default function EducationDashboard() {
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <BookOpen className="size-6 text-primary" />
-          <PageHeader title="Learn" />
+          <h1 className="text-2xl font-bold tracking-tight">Learn</h1>
         </div>
         <p className="text-muted-foreground text-sm">
           Build your options trading knowledge one module at a time.

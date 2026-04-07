@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
-import PageHeader from '@/components/ui/PageHeader';
 import { authService } from '../services';
 
 type Status = 'idle' | 'loading' | 'success' | 'error';
@@ -59,7 +58,7 @@ const VerifyEmail = () => {
         {/* no verification email sent yet */}
         {status === 'idle' && (
           <div className="flex flex-col gap-4">
-            <PageHeader title="Check Your Email" size="md" className="text-blue-400" />
+            <h1 className="text-2xl font-semibold text-blue-400">Check Your Email</h1>
             <p className="text-zinc-300 text-sm">
               A verification link has been sent to your email.
             </p>
@@ -83,7 +82,7 @@ const VerifyEmail = () => {
         {/* verification success */}
         {status === 'success' && (
           <div className="flex flex-col gap-4">
-            <PageHeader title="Email Verified" size="md" className="text-green-400" />
+            <h1 className="text-2xl font-semibold text-green-400">Email Verified</h1>
             <p className="text-zinc-300 text-sm">{message}</p>
             <p className="text-xs text-zinc-500">Redirecting to login...</p>
             <Link
@@ -98,7 +97,7 @@ const VerifyEmail = () => {
         {/* verification failed */}
         {status === 'error' && (
           <div className="flex flex-col gap-4">
-            <PageHeader title="Verification Failed" size="md" className="text-red-400" />
+            <h1 className="text-2xl font-semibold text-red-400">Verification Failed</h1>
             <p className="text-zinc-300 text-sm">{message}</p>
             <button
               onClick={handleResend}
