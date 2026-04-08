@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, Transaction } from '@prisma/client';
 import prisma from '../config/database.js';
 import { AppError } from '../utils/AppError.js';
 
@@ -25,8 +25,150 @@ export const createDefaultPortfolio = async (
 };
 
 /**
- * Gets a user's portfolio with positions and calculates total value and P&L
- * Returns portfolio summary including cash balance, positions value, and total value
+ * Builds a cost basis map keyed by contractSymbol or symbol from BUY transactions
+ * Used by both calculateRealizedPnL and calculateWinRate to avoid duplicate logic
+ */
+const buildCostBasisMap = (buyTransactions: Transaction[]): Map<string, number> => {
+  const costBasisMap = new Map<string, number>();
+  for (const tx of buyTransactions) {
+    const key = tx.contractSymbol ?? tx.symbol;
+    const amount =
+      Number(tx.price) * Number(tx.quantity) * (tx.positionType === 'OPTION' ? 100 : 1);
+    costBasisMap.set(key, (costBasisMap.get(key) ?? 0) + amount);
+  }
+  return costBasisMap;
+};
+
+/**
+ * INVESTED-322: Calculate realized P&L from closed transactions
+ * Proceeds minus cost basis for SELL and EXERCISE transactions
+ * Full premium lost for EXPIRED_WORTHLESS transactions
+ * Accepts pre-fetched transactions to avoid duplicate DB calls
+ */
+const calculateRealizedPnL = (
+  closedTransactions: Transaction[],
+  buyTransactions: Transaction[]
+): number => {
+  const costBasisMap = buildCostBasisMap(buyTransactions);
+
+  return closedTransactions.reduce((total, tx) => {
+    const quantity = Number(tx.quantity);
+    const price = Number(tx.price);
+    const multiplier = tx.positionType === 'OPTION' ? 100 : 1;
+    const key = tx.contractSymbol ?? tx.symbol;
+    const costBasis = costBasisMap.get(key) ?? 0;
+
+    if (tx.type === 'SELL' || tx.type === 'EXERCISE') {
+      // Realized P&L = proceeds - what was originally paid
+      return total + price * quantity * multiplier - costBasis;
+    } else {
+      // EXPIRED_WORTHLESS: entire cost basis is lost, no proceeds
+      return total - costBasis;
+    }
+  }, 0);
+};
+
+/**
+ * INVESTED-323: Calculate win rate from closed trades
+ * A win is a SELL or EXERCISE transaction where proceeds exceeded cost basis
+ * EXPIRED_WORTHLESS transactions always count as losses
+ * Returns null if no closed trades exist
+ * Accepts pre-fetched transactions to avoid duplicate DB calls
+ */
+const calculateWinRate = (
+  closedTransactions: Transaction[],
+  buyTransactions: Transaction[]
+): number | null => {
+  if (closedTransactions.length === 0) return null;
+
+  const costBasisMap = buildCostBasisMap(buyTransactions);
+
+  let wins = 0;
+  for (const tx of closedTransactions) {
+    if (tx.type === 'EXPIRED_WORTHLESS') {
+      // Expired worthless always counts as a loss, skip win check
+      continue;
+    }
+
+    const key = tx.contractSymbol ?? tx.symbol;
+    const proceeds =
+      Number(tx.price) * Number(tx.quantity) * (tx.positionType === 'OPTION' ? 100 : 1);
+    const costBasis = costBasisMap.get(key) ?? 0;
+
+    if (proceeds > costBasis) wins++;
+  }
+
+  // closedTransactions.length already includes all types, no need to split and re-sum
+  return Math.round((wins / closedTransactions.length) * 100);
+};
+
+/**
+ * INVESTED-324: Calculate P&L breakdown by underlying symbol
+ * Combines realized P&L from closed transactions and unrealized P&L from open positions
+ * Ordered by absolute total P&L descending for display in the bar chart
+ * Accepts pre-fetched transactions to avoid duplicate DB calls
+ */
+const calculatePnLBySymbol = (
+  closedTransactions: Transaction[],
+  buyTransactions: Transaction[],
+  openPositions: Array<{ symbol: string; unrealizedPnL: number }>
+): Array<{ symbol: string; realizedPnL: number; unrealizedPnL: number; totalPnL: number }> => {
+  const costBasisMap = buildCostBasisMap(buyTransactions);
+  const realizedBySymbol = new Map<string, number>();
+
+  for (const tx of closedTransactions) {
+    const symbol = tx.symbol;
+    const multiplier = tx.positionType === 'OPTION' ? 100 : 1;
+    const key = tx.contractSymbol ?? tx.symbol;
+    const costBasis = costBasisMap.get(key) ?? 0;
+    let pnl = 0;
+
+    if (tx.type === 'SELL' || tx.type === 'EXERCISE') {
+      // Realized P&L = proceeds - cost basis
+      pnl = Number(tx.price) * Number(tx.quantity) * multiplier - costBasis;
+    } else {
+      // EXPIRED_WORTHLESS: full cost basis lost
+      pnl = -costBasis;
+    }
+
+    realizedBySymbol.set(symbol, (realizedBySymbol.get(symbol) ?? 0) + pnl);
+  }
+
+  // Aggregate unrealized P&L from open positions by symbol
+  const unrealizedBySymbol = new Map<string, number>();
+  for (const pos of openPositions) {
+    unrealizedBySymbol.set(
+      pos.symbol,
+      (unrealizedBySymbol.get(pos.symbol) ?? 0) + pos.unrealizedPnL
+    );
+  }
+
+  // Merge all symbols from both realized and unrealized maps
+  const allSymbols = new Set([...realizedBySymbol.keys(), ...unrealizedBySymbol.keys()]);
+
+  const result = Array.from(allSymbols).map((symbol) => {
+    const realizedPnL = realizedBySymbol.get(symbol) ?? 0;
+    const unrealizedPnL = unrealizedBySymbol.get(symbol) ?? 0;
+    return {
+      symbol,
+      realizedPnL,
+      unrealizedPnL,
+      totalPnL: realizedPnL + unrealizedPnL,
+    };
+  });
+
+  return result.sort((a, b) => Math.abs(b.totalPnL) - Math.abs(a.totalPnL));
+};
+
+/**
+ * INVESTED-325: Gets a user's portfolio with positions and all P&L calculations
+ * Returns portfolio summary including:
+ * - realizedPnL: locked-in profit/loss from closed trades
+ * - winRate: percentage of closed trades that were profitable (null if no closed trades)
+ * - pnlBySymbol: P&L breakdown per underlying for bar chart display
+ * - positions: open positions with unrealized P&L
+ * Fetches BUY and closed transactions once and passes them to sub-calculations
+ * to avoid redundant DB calls
  */
 export const getPortfolio = async (userId: string) => {
   const portfolio = await prisma.portfolio.findFirst({
@@ -47,12 +189,31 @@ export const getPortfolio = async (userId: string) => {
     portfolio.positions
   );
 
+  // Fetch BUY and closed transactions once, shared across all three P&L calculations
+  // to avoid three separate DB round trips for the same data
+  const [buyTransactions, closedTransactions] = await Promise.all([
+    prisma.transaction.findMany({
+      where: { portfolioId: portfolio.id, type: 'BUY' },
+    }),
+    prisma.transaction.findMany({
+      where: {
+        portfolioId: portfolio.id,
+        type: { in: ['SELL', 'EXERCISE', 'EXPIRED_WORTHLESS'] },
+      },
+    }),
+  ]);
+
+  const realizedPnL = calculateRealizedPnL(closedTransactions, buyTransactions);
+  const winRate = calculateWinRate(closedTransactions, buyTransactions);
+  const pnlBySymbol = calculatePnLBySymbol(closedTransactions, buyTransactions, positionsWithPnL);
+
   return {
     id: portfolio.id,
     name: portfolio.name,
     cashBalance: portfolio.cashBalance,
     positionsValue: totalPositionsValue,
     totalValue: portfolio.cashBalance + totalPositionsValue,
+    // totalPnL is unrealized only, open positions valued at avgCost until live prices are added
     totalPnL,
     totalPnLPercent:
       DEFAULT_PORTFOLIO_CASH_BALANCE > 0
@@ -60,6 +221,9 @@ export const getPortfolio = async (userId: string) => {
             DEFAULT_PORTFOLIO_CASH_BALANCE) *
           100
         : 0,
+    realizedPnL,
+    winRate,
+    pnlBySymbol,
     positions: positionsWithPnL,
     createdAt: portfolio.createdAt,
     updatedAt: portfolio.updatedAt,
@@ -67,7 +231,8 @@ export const getPortfolio = async (userId: string) => {
 };
 
 /**
- * Gets all positions for a portfolio (open positions only by default)
+ * Gets all positions for a portfolio
+ * Defaults to OPEN positions, pass status param to filter by other states
  */
 export const getPositions = async (
   userId: string,
@@ -93,13 +258,9 @@ export const getPositions = async (
 };
 
 /**
- * Calculates total value and P&L for a set of positions
- * Note: Uses avgCost as current value placeholder until Massive API integration (INVESTED-150)
- * Once live prices are available, this will fetch real-time prices per position
- */
-/**
- * Gets transaction history for a portfolio
- * INVESTED-146: transactionService.getTransactions()
+ * Gets transaction history for a portfolio with optional filtering and sorting
+ * Supports filtering by type, symbol, positionType, and date range
+ * Supports sorting by executedAt asc or desc (defaults to desc)
  */
 export const getTransactions = async (
   userId: string,
@@ -111,6 +272,7 @@ export const getTransactions = async (
     to?: string;
     limit?: number;
     offset?: number;
+    sort?: 'asc' | 'desc';
   } = {}
 ) => {
   const portfolio = await prisma.portfolio.findFirst({ where: { userId } });
@@ -129,7 +291,7 @@ export const getTransactions = async (
   const [transactions, total] = await Promise.all([
     prisma.transaction.findMany({
       where,
-      orderBy: { executedAt: 'desc' },
+      orderBy: { executedAt: filters.sort === 'asc' ? 'asc' : 'desc' },
       take: filters.limit || 50,
       skip: filters.offset || 0,
     }),
@@ -141,7 +303,8 @@ export const getTransactions = async (
 
 /**
  * Resets a portfolio back to $10,000 with no positions
- * INVESTED-265: POST /api/v1/portfolio/reset
+ * Deletes all transactions and snapshots so history starts fresh
+ * Closes all open positions rather than deleting them to preserve audit trail
  */
 export const resetPortfolio = async (userId: string) => {
   const portfolio = await prisma.portfolio.findFirst({
@@ -180,8 +343,8 @@ export const resetPortfolio = async (userId: string) => {
 
 /**
  * Gets portfolio value history for charting
- * INVESTED-292: GET /api/v1/portfolio/history
- * Note: Returns transaction-based history until daily snapshots (INVESTED-291) are implemented
+ * Returns daily snapshots taken by the portfolio snapshot cron job
+ * Supports period filtering: 7d, 30d, 90d, 1y, all
  */
 export const getPortfolioHistory = async (userId: string, period: string = '30d') => {
   const portfolio = await prisma.portfolio.findFirst({ where: { userId } });
@@ -223,6 +386,11 @@ export const getPortfolioHistory = async (userId: string, period: string = '30d'
   return { history, currentCash: portfolio.cashBalance };
 };
 
+/**
+ * Calculates total value and unrealized P&L for a set of open positions
+ * NOTE: Uses avgCost as current price placeholder, unrealizedPnL will always be $0
+ * until live prices are integrated via Massive API (INVESTED-150)
+ */
 const calculatePortfolioValue = (
   positions: Array<{
     symbol: string;
@@ -241,7 +409,7 @@ const calculatePortfolioValue = (
     const avgCost = Number(position.avgCost);
     const multiplier = position.positionType === 'OPTION' ? 100 : 1;
 
-    // TODO: Replace with live price from Massive API (INVESTED-150)
+    // TODO: Replace currentPrice with live price from Massive API (INVESTED-150)
     const currentPrice = avgCost;
     const marketValue = currentPrice * quantity * multiplier;
     const costBasis = avgCost * quantity * multiplier;
