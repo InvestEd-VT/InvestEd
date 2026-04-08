@@ -33,30 +33,37 @@ export const calculateSettlement = (
 export const processPositionExpiration = async (positionId: string): Promise<void> => {
   const position = await prisma.position.findUnique({
     where: { id: positionId },
-    include: { portfolio: true },
   });
 
   if (!position) throw new AppError('Position not found', 404);
   if (position.status !== 'OPEN') throw new AppError('Position is not open', 400);
   if (!position.expirationDate) throw new AppError('Position has no expiration date', 400);
 
+  if (!position.optionType) {
+    throw new AppError(
+      `Position ${positionId} has null optionType — cannot calculate settlement`,
+      400
+    );
+  }
+
   const quantity = Number(position.quantity);
   const avgCost = Number(position.avgCost);
   const strikePrice = Number(position.strikePrice ?? 0);
   const costBasis = avgCost * quantity * 100;
-  const optionType = position.optionType ?? 'CALL';
+  const optionType = position.optionType;
 
-  // Fetch current stock price to determine ITM vs OTM
-  let stockPrice = 0;
+  let stockPrice: number;
   try {
     const priceData = await getStockPrice(position.symbol);
     stockPrice = priceData.close;
   } catch {
-    console.warn(`[exercise] Could not fetch price for ${position.symbol} — expiring worthless`);
+    throw new AppError(
+      `Failed to fetch price for ${position.symbol} — position will be retried on next run`,
+      503
+    );
   }
 
-  // ITM auto-exercise/ OTM expiration
-  const { settlementValue, isITM } = calculateSettlement(
+  const { intrinsicValue, settlementValue, isITM } = calculateSettlement(
     optionType,
     strikePrice,
     stockPrice,
@@ -68,13 +75,13 @@ export const processPositionExpiration = async (positionId: string): Promise<voi
   const newStatus = isITM ? 'EXERCISED' : 'EXPIRED';
 
   await prisma.$transaction(async (tx) => {
-    // Update position status
-    await tx.position.update({
-      where: { id: position.id },
+    const updated = await tx.position.updateMany({
+      where: { id: position.id, status: 'OPEN' },
       data: { status: newStatus },
     });
 
-    // Update portfolio cash balance
+    if (updated.count === 0) throw new AppError('Position already processed', 409);
+
     if (settlementValue > 0) {
       await tx.portfolio.update({
         where: { id: position.portfolioId },
@@ -88,7 +95,7 @@ export const processPositionExpiration = async (positionId: string): Promise<voi
         type: transactionType,
         symbol: position.symbol,
         quantity: position.quantity,
-        price: isITM ? settlementValue / (quantity * 100) : 0,
+        price: isITM ? intrinsicValue : avgCost,
         positionType: 'OPTION',
         optionType: position.optionType,
         strikePrice: position.strikePrice,
