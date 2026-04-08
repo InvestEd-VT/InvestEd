@@ -37,7 +37,7 @@ export const processExpiredOptions = async (): Promise<void> => {
     }
   }
 
-  // INVESTED-258: Archive expired/exercised positions after all are processed
+  // Archive expired/exercised positions after all are processed
   for (const portfolioId of portfolioIds) {
     try {
       const archived = await archiveExpiredPositions(portfolioId);
