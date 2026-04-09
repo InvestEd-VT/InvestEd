@@ -26,21 +26,22 @@ export const processExpiredOptions = async (): Promise<void> => {
 
   console.log(`[expiration] Processing ${expiredPositions.length} expired position(s)...`);
 
-  const portfolioIds = new Set<string>();
+  const portfolioPositions = new Map<string, string[]>();
 
   for (const position of expiredPositions) {
-    portfolioIds.add(position.portfolioId);
     try {
       await processPositionExpiration(position.id);
+      const ids = portfolioPositions.get(position.portfolioId) ?? [];
+      ids.push(position.id);
+      portfolioPositions.set(position.portfolioId, ids);
     } catch (err) {
       console.error(`[expiration] Failed to process position ${position.id}:`, err);
     }
   }
 
-  // Archive expired/exercised positions after all are processed
-  for (const portfolioId of portfolioIds) {
+  for (const [portfolioId, positionIds] of portfolioPositions) {
     try {
-      const archived = await archiveExpiredPositions(portfolioId);
+      const archived = await archiveExpiredPositions(portfolioId, positionIds);
       console.log(`[expiration] Archived ${archived} position(s) for portfolio ${portfolioId}`);
     } catch (err) {
       console.error(`[expiration] Failed to archive positions for portfolio ${portfolioId}:`, err);

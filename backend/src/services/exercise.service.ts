@@ -31,9 +31,13 @@ export const calculateSettlement = (
  * Archive expired and exercised positions
  * Marks all EXPIRED and EXERCISED positions as CLOSED for cleanup
  */
-export const archiveExpiredPositions = async (portfolioId: string): Promise<number> => {
+export const archiveExpiredPositions = async (
+  portfolioId: string,
+  positionIds: string[]
+): Promise<number> => {
   const result = await prisma.position.updateMany({
     where: {
+      id: { in: positionIds },
       portfolioId,
       status: { in: ['EXPIRED', 'EXERCISED'] },
     },
