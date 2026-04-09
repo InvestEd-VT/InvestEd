@@ -29,9 +29,9 @@ export const processExpiredOptions = async (): Promise<void> => {
   const portfolioIds = new Set<string>();
 
   for (const position of expiredPositions) {
+    portfolioIds.add(position.portfolioId);
     try {
       await processPositionExpiration(position.id);
-      portfolioIds.add(position.portfolioId);
     } catch (err) {
       console.error(`[expiration] Failed to process position ${position.id}:`, err);
     }
