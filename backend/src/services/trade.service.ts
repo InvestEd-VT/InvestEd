@@ -1,6 +1,7 @@
 import prisma from '../config/database.js';
 import { AppError } from '../utils/AppError.js';
 import * as massiveService from './massive.service.js';
+import * as notificationService from './notification.service.js';
 
 /**
  * Buys an options contract
@@ -138,6 +139,14 @@ export const buyOption = async (
     return { position, transaction, cashBalance: updatedPortfolio.cashBalance };
   });
 
+  // Create notification for successful purchase
+  await notificationService.createNotification(
+    userId,
+    'TRADE_EXECUTED',
+    'Trade Executed',
+    `Bought ${data.quantity} ${data.optionType} contract(s) for ${data.symbol} at $${data.price.toFixed(2)}/contract`
+  );
+
   return result;
 };
 
@@ -235,6 +244,14 @@ export const sellOption = async (
 
     return { position, transaction, cashBalance: updatedPortfolio.cashBalance };
   });
+
+  // Create notification for successful sale
+  await notificationService.createNotification(
+    userId,
+    'TRADE_EXECUTED',
+    'Trade Executed',
+    `Sold ${data.quantity} ${data.optionType} contract(s) for ${data.symbol} at $${data.price.toFixed(2)}/contract`
+  );
 
   return result;
 };
