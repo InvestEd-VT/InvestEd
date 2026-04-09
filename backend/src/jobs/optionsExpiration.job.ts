@@ -1,6 +1,9 @@
 import cron from 'node-cron';
 import prisma from '../config/database.js';
-import { processPositionExpiration } from '../services/exercise.service.js';
+import {
+  processPositionExpiration,
+  archiveExpiredPositions,
+} from '../services/exercise.service.js';
 
 /**
  * Find and process all expired options positions
@@ -23,11 +26,25 @@ export const processExpiredOptions = async (): Promise<void> => {
 
   console.log(`[expiration] Processing ${expiredPositions.length} expired position(s)...`);
 
+  const portfolioPositions = new Map<string, string[]>();
+
   for (const position of expiredPositions) {
     try {
       await processPositionExpiration(position.id);
+      const ids = portfolioPositions.get(position.portfolioId) ?? [];
+      ids.push(position.id);
+      portfolioPositions.set(position.portfolioId, ids);
     } catch (err) {
       console.error(`[expiration] Failed to process position ${position.id}:`, err);
+    }
+  }
+
+  for (const [portfolioId, positionIds] of portfolioPositions) {
+    try {
+      const archived = await archiveExpiredPositions(portfolioId, positionIds);
+      console.log(`[expiration] Archived ${archived} position(s) for portfolio ${portfolioId}`);
+    } catch (err) {
+      console.error(`[expiration] Failed to archive positions for portfolio ${portfolioId}:`, err);
     }
   }
 
