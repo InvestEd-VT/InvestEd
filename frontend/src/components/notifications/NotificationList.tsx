@@ -59,7 +59,7 @@ export function NotificationList({ notifications, onMarkAsRead, onDelete }: Noti
         >
           <div className="flex items-start gap-3">
             {!notification.read && (
-              <div className="h-2 w-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0" />
+              <div className="h-2 w-2 bg-blue-500 rounded-full mt-1.5 shrink-0" />
             )}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
@@ -72,7 +72,7 @@ export function NotificationList({ notifications, onMarkAsRead, onDelete }: Noti
               </span>
             </div>
 
-            <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center gap-1 shrink-0">
               <Button
                 variant="ghost"
                 size="sm"

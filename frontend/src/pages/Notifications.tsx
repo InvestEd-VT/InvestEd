@@ -280,7 +280,7 @@ export default function Notifications() {
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex items-center gap-2 shrink-0">
                         <Button
                           variant="ghost"
                           size="sm"
