@@ -10,6 +10,7 @@ import {
   ResetPassword,
   Portfolio,
   Transactions,
+  Notifications,
 } from './pages';
 import { ThemeProvider } from './components/ui/theme-provider';
 import { PageShell } from './components/layout/PageShell';
@@ -77,6 +78,7 @@ function App() {
           <Route path="/trade" element={<Navigate to="/stock/AAPL" replace />} />
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/transactions" element={<Transactions />} />
+          <Route path="/notifications" element={<Notifications />} />
           {/* Learn section — uses LearnLayout with education header */}
           <Route element={<LearnLayout />}>
             <Route path="/learn" element={<EducationDashboard />} />

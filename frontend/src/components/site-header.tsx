@@ -2,11 +2,13 @@ import { useLocation } from 'react-router-dom';
 import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { StockSearch } from '@/components/trading/StockSearch';
+import { NotificationBell } from '@/components/notifications';
 
 const pageTitles: Record<string, string> = {
   '/dashboard': 'Dashboard',
   '/portfolio': 'Portfolio',
   '/transactions': 'Transactions',
+  '/notifications': 'Notifications',
   '/learn': 'Learn',
   '/settings': 'Settings',
   '/help': 'Help',
@@ -33,6 +35,11 @@ export function SiteHeader({ searchOverride }: SiteHeaderProps) {
         {/* Search bar — stock search by default, overridable per layout */}
         <div className="hidden md:flex flex-1 justify-center max-w-md mx-auto">
           {searchOverride ?? <StockSearch />}
+        </div>
+
+        {/* Notification Bell */}
+        <div className="ml-auto">
+          <NotificationBell />
         </div>
       </div>
     </header>
