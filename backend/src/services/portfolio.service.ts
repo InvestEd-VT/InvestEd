@@ -159,6 +159,16 @@ export const resetPortfolio = async (userId: string) => {
       data: { status: 'CLOSED' },
     });
 
+    // Delete all transactions
+    await tx.transaction.deleteMany({
+      where: { portfolioId: portfolio.id },
+    });
+
+    // Delete all snapshots
+    await tx.portfolioSnapshot.deleteMany({
+      where: { portfolioId: portfolio.id },
+    });
+
     // Reset cash balance
     await tx.portfolio.update({
       where: { id: portfolio.id },
@@ -185,33 +195,31 @@ export const getPortfolioHistory = async (userId: string, period: string = '30d'
     '1y': 365,
     all: 3650,
   };
+
   const days = periodDays[period] || 30;
   const since = new Date();
   since.setDate(since.getDate() - days);
 
-  const transactions = await prisma.transaction.findMany({
+  const snapshots = await prisma.portfolioSnapshot.findMany({
     where: {
       portfolioId: portfolio.id,
-      executedAt: { gte: since },
+      recordedAt: { gte: since },
     },
-    orderBy: { executedAt: 'asc' },
+    orderBy: { recordedAt: 'asc' },
+    select: {
+      recordedAt: true,
+      totalValue: true,
+      cashBalance: true,
+      positionsValue: true,
+    },
   });
 
-  // Build a simple history from transactions
-  let runningCash = DEFAULT_PORTFOLIO_CASH_BALANCE;
-  const history = transactions.map((tx) => {
-    const amount =
-      Number(tx.price) * Number(tx.quantity) * (tx.positionType === 'OPTION' ? 100 : 1);
-    if (tx.type === 'BUY') runningCash -= amount;
-    else if (tx.type === 'SELL') runningCash += amount;
-
-    return {
-      date: tx.executedAt,
-      cashBalance: runningCash,
-      type: tx.type,
-      symbol: tx.symbol,
-    };
-  });
+  const history = snapshots.map((s) => ({
+    date: s.recordedAt,
+    totalValue: Number(s.totalValue),
+    cashBalance: Number(s.cashBalance),
+    positionsValue: Number(s.positionsValue),
+  }));
 
   return { history, currentCash: portfolio.cashBalance };
 };
