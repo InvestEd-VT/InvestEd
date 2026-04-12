@@ -31,7 +31,8 @@
     "morgan": "^1.10.1",
     "node-cron": "^4.2.1",
     "nodemailer": "^8.0.2",
-    "prisma": "^6.19.2"
+    "prisma": "^6.19.2",
+    "express-rate-limit": "^8.3.2"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

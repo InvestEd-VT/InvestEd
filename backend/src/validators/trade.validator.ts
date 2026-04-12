@@ -32,11 +32,7 @@ const quantityValidation = body('quantity')
  */
 const priceValidation = body('price')
   .isFloat({ min: 0.01 })
-  .withMessage('Price must be a positive number')
-  .custom((value) => {
-    if (!isFinite(value)) throw new Error('Price cannot be Infinity or NaN');
-    return true;
-  });
+  .withMessage('Price must be a positive number');
 
 /**
  * Strike price validation — positive number
@@ -51,7 +47,6 @@ const strikePriceValidation = body('strikePrice')
 const expirationDateValidation = body('expirationDate')
   .isString()
   .trim()
-  .escape()
   .isISO8601()
   .withMessage('Expiration date must be a valid ISO date')
   .custom((value) => {

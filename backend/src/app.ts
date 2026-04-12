@@ -13,6 +13,11 @@ const app = express();
 // helmet provides XSS protection headers including X-XSS-Protection and Content-Security-Policy
 app.use(helmet());
 
+// Validate FRONTEND_URL is set before configuring CORS in production
+if (env.NODE_ENV === 'production' && !env.FRONTEND_URL) {
+  throw new Error('FRONTEND_URL environment variable must be set in production');
+}
+
 // CORS configuration
 // In development allows localhost origins, in production restricts to FRONTEND_URL only
 const corsOptions = {
