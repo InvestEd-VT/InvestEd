@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import { env } from './config/env.js';
 import routes from './routes/index.js';
 import { errorMiddleware } from './middleware/error.middleware.js';
+import { apiLimiter, authLimiter } from './middleware/rateLimiter.middleware.js';
 
 const app = express();
 
@@ -22,5 +23,9 @@ app.use('/', routes);
 
 // Error handling
 app.use(errorMiddleware);
+
+// Rate limiting
+app.use('/api/', apiLimiter);
+app.use('/api/v1/auth/', authLimiter);
 
 export default app;
