@@ -10,6 +10,7 @@ import { apiLimiter, authLimiter } from './middleware/rateLimiter.middleware.js'
 const app = express();
 
 // Middleware
+// helmet provides XSS protection headers including X-XSS-Protection and Content-Security-Policy
 app.use(helmet());
 
 // CORS configuration
