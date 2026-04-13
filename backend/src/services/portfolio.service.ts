@@ -151,7 +151,7 @@ export const resetPortfolio = async (userId: string) => {
 
   if (!portfolio) throw new AppError('Portfolio not found', 404);
 
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     // Close all open positions
     await tx.position.updateMany({
       where: { portfolioId: portfolio.id, status: 'OPEN' },
@@ -213,12 +213,19 @@ export const getPortfolioHistory = async (userId: string, period: string = '30d'
     },
   });
 
-  const history = snapshots.map((s) => ({
-    date: s.recordedAt,
-    totalValue: Number(s.totalValue),
-    cashBalance: Number(s.cashBalance),
-    positionsValue: Number(s.positionsValue),
-  }));
+  const history = snapshots.map(
+    (s: {
+      recordedAt: Date;
+      totalValue: Prisma.Decimal;
+      cashBalance: Prisma.Decimal;
+      positionsValue: Prisma.Decimal;
+    }) => ({
+      date: s.recordedAt,
+      totalValue: Number(s.totalValue),
+      cashBalance: Number(s.cashBalance),
+      positionsValue: Number(s.positionsValue),
+    })
+  );
 
   return { history, currentCash: portfolio.cashBalance };
 };

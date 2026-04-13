@@ -1,5 +1,6 @@
 import cron from 'node-cron';
-import prisma from '../config/database';
+import prisma from '../config/database.js';
+import { Prisma } from '@prisma/client';
 
 export const takePortfolioSnapshot = async () => {
   const portfolios = await prisma.portfolio.findMany({
@@ -7,9 +8,12 @@ export const takePortfolioSnapshot = async () => {
   });
 
   for (const portfolio of portfolios) {
-    const positionsValue = portfolio.positions.reduce((sum, p) => {
-      return sum + Number(p.quantity) * Number(p.avgCost);
-    }, 0);
+    const positionsValue = portfolio.positions.reduce(
+      (sum: number, p: { quantity: Prisma.Decimal; avgCost: Prisma.Decimal }) => {
+        return sum + Number(p.quantity) * Number(p.avgCost);
+      },
+      0
+    );
 
     await prisma.portfolioSnapshot.create({
       data: {

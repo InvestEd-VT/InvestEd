@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import prisma from '../config/database.js';
 import { AppError } from '../utils/AppError.js';
 import * as massiveService from './massive.service.js';
@@ -40,7 +41,7 @@ export const buyOption = async (
   }
 
   // INVESTED-184: Update position and deduct cash in a transaction
-  const result = await prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     // Deduct cash
     const updatedPortfolio = await tx.portfolio.update({
       where: { id: portfolio.id },
@@ -195,7 +196,7 @@ export const sellOption = async (
   const totalProceeds = data.price * data.quantity * contractMultiplier;
 
   // INVESTED-191: Update position and add cash
-  const result = await prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     // Add cash
     const updatedPortfolio = await tx.portfolio.update({
       where: { id: portfolio.id },

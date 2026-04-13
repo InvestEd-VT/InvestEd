@@ -1,4 +1,5 @@
 import prisma from '../config/database.js';
+import { Prisma } from '@prisma/client';
 import { getStockPrice } from './massive.service.js';
 import { AppError } from '../utils/AppError.js';
 import { createNotification } from './notification.service.js';
@@ -98,7 +99,7 @@ export const processPositionExpiration = async (positionId: string): Promise<voi
   const transactionType = isITM ? 'EXERCISE' : 'EXPIRED_WORTHLESS';
   const newStatus = isITM ? 'EXERCISED' : 'EXPIRED';
 
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const updated = await tx.position.updateMany({
       where: { id: position.id, status: 'OPEN' },
       data: { status: newStatus },
