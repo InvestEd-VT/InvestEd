@@ -9,18 +9,15 @@ import { apiLimiter, authLimiter } from './middleware/rateLimiter.middleware.js'
 
 const app = express();
 
-// Middleware
 // helmet provides XSS protection headers including X-XSS-Protection and Content-Security-Policy
 app.use(helmet());
 
-// Validate FRONTEND_URL is set before configuring CORS in production
 if (env.NODE_ENV === 'production' && !env.FRONTEND_URL) {
   throw new Error('FRONTEND_URL environment variable must be set in production');
 }
 
 // CORS configuration
 // In development allows localhost origins, in production restricts to FRONTEND_URL only
-
 const allowedOrigins = env.ALLOWED_ORIGINS.split(',').map((o) => o.trim());
 
 const corsOptions = {
@@ -35,8 +32,12 @@ if (env.NODE_ENV !== 'test') {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Strict limiter on auth routes to prevent brute force
-// General limiter on all API routes
+// Health check endpoint for Docker and Railway
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Auth limiter registered before general limiter so auth routes get the stricter limit
 app.use('/api/v1/auth/', authLimiter);
 app.use('/api/', apiLimiter);
 
