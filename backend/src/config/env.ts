@@ -27,4 +27,5 @@ export const env = {
   EMAIL_USER: process.env.EMAIL_USER || '',
   EMAIL_PASS: process.env.EMAIL_PASS || '',
   MASSIVE_API_KEY: process.env.MASSIVE_API_KEY || '',
+  ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS || 'http://localhost:3000,http://localhost:5173',
 };
