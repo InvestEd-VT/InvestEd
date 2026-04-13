@@ -1,9 +1,14 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useEducationStore } from '@/store/educationStore';
+<<<<<<< HEAD
 import { CheckCircle2, Circle, BookOpen, ChevronRight, Lock } from 'lucide-react';
 
 const LOCKED_MSG_COOLDOWN = 4000;
+=======
+import PageHeader from '@/components/ui/PageHeader';
+import { CheckCircle2, Circle, BookOpen, ChevronRight } from 'lucide-react';
+>>>>>>> 712eb9a (minor bug fixes for dashbaord)
 
 export default function EducationDashboard() {
   const navigate = useNavigate();
@@ -39,7 +44,7 @@ export default function EducationDashboard() {
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <BookOpen className="size-6 text-primary" />
-          <h1 className="text-2xl font-bold tracking-tight">Learn</h1>
+          <PageHeader title="Learn" />
         </div>
         <p className="text-muted-foreground text-sm">
           Build your options trading knowledge one module at a time.
