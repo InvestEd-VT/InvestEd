@@ -45,6 +45,9 @@ function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <Routes>
+        {/* Dev-only preview route so designers/devs can view the Welcome screen without logging in */}
+        {import.meta.env.DEV && <Route path="/preview/welcome" element={<Welcome />} />}
+
         {/* Public routes */}
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<Login />} />

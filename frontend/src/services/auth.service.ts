@@ -31,6 +31,18 @@ const authService = {
 
   resetPassword: (data: ResetPasswordRequest): Promise<{ message: string }> =>
     api.post('/auth/reset-password', data).then((response) => response.data),
+
+  // Try to mark welcome as seen for the current user. Not all backends will
+  // support this; the call is best-effort and callers should ignore failures.
+  setWelcomeSeen: async (): Promise<void> => {
+    try {
+      // Attempt to PATCH the current user record with a hasSeenWelcome flag.
+      // If the backend doesn't support it, this will throw and we silently ignore.
+      await api.patch('/users/me', { hasSeenWelcome: true });
+    } catch (e) {
+      // ignore - backend may not support this endpoint/field
+    }
+  },
 };
 
 export default authService;

@@ -32,13 +32,31 @@ const Login = () => {
       const response = await authService.login({ email, password });
       authStore.login(response.user, response.accessToken, response.refreshToken);
 
-      // Show welcome screen on first login per device/browser.
+      // Determine whether we should show the one-time welcome screen.
+      // Prefer a server-side flag (hasSeenWelcome) if available; otherwise fall
+      // back to a per-browser localStorage key.
       const WELCOME_KEY = 'invested_welcome_v1';
-      const hasSeenWelcome = typeof window !== 'undefined' && localStorage.getItem(WELCOME_KEY);
-      if (!hasSeenWelcome) {
+      let seenServer: boolean | undefined = undefined;
+      try {
+        // Try to fetch the user's latest profile to read a persistent flag.
+        const me = await authService.getMe();
+        seenServer = !!me.hasSeenWelcome;
+      } catch {
+        // ignore — backend may not expose this or the call may fail
+      }
+
+      const seenLocal = typeof window !== 'undefined' && !!localStorage.getItem(WELCOME_KEY);
+
+      if (seenServer === false) {
+        // Server explicitly says user hasn't seen welcome
         navigate('/welcome');
-      } else {
+      } else if (seenServer === true) {
+        // Server says welcome already seen
         navigate('/dashboard');
+      } else {
+        // No server info available — fall back to local flag
+        if (!seenLocal) navigate('/welcome');
+        else navigate('/dashboard');
       }
     } catch (error) {
       if (error instanceof Error) {

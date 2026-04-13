@@ -17,12 +17,25 @@ export default function Welcome() {
     } catch {
       /* ignore */
     }
+    // Best-effort: tell server the welcome was seen so it won't show again on
+    // other devices. Backend may ignore this if not supported.
+    try {
+      // import at top would create cycle; use dynamic import to avoid issues
+      import('@/services').then(({ authService }) => authService.setWelcomeSeen());
+    } catch {
+      /* ignore */
+    }
     navigate('/dashboard');
   };
 
   const handleSkip = () => {
     try {
       localStorage.setItem(WELCOME_KEY, '1');
+    } catch {
+      /* ignore */
+    }
+    try {
+      import('@/services').then(({ authService }) => authService.setWelcomeSeen());
     } catch {
       /* ignore */
     }
@@ -36,6 +49,11 @@ export default function Welcome() {
   const finishTour = () => {
     try {
       localStorage.setItem(WELCOME_KEY, '1');
+    } catch {
+      /* ignore */
+    }
+    try {
+      import('@/services').then(({ authService }) => authService.setWelcomeSeen());
     } catch {
       /* ignore */
     }
