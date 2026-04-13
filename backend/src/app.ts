@@ -20,11 +20,11 @@ if (env.NODE_ENV === 'production' && !env.FRONTEND_URL) {
 
 // CORS configuration
 // In development allows localhost origins, in production restricts to FRONTEND_URL only
+
+const allowedOrigins = env.ALLOWED_ORIGINS.split(',').map((o) => o.trim());
+
 const corsOptions = {
-  origin:
-    env.NODE_ENV === 'production'
-      ? env.FRONTEND_URL
-      : [env.FRONTEND_URL, 'http://localhost:3000', 'http://localhost:5173'],
+  origin: env.NODE_ENV === 'production' ? env.FRONTEND_URL : allowedOrigins,
   credentials: true,
 };
 app.use(cors(corsOptions));
