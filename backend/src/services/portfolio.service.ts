@@ -26,21 +26,29 @@ export const createDefaultPortfolio = async (
 
 /**
  * Builds a cost basis map keyed by contractSymbol or symbol from BUY transactions
- * Used by both calculateRealizedPnL and calculateWinRate to avoid duplicate logic
+ * Tracks total cost and total quantity separately to calculate average cost per unit
+ * This allows proportional cost basis calculation when closing partial positions
  */
-const buildCostBasisMap = (buyTransactions: Transaction[]): Map<string, number> => {
-  const costBasisMap = new Map<string, number>();
+const buildCostBasisMap = (
+  buyTransactions: Transaction[]
+): Map<string, { totalCost: number; totalQty: number }> => {
+  const costBasisMap = new Map<string, { totalCost: number; totalQty: number }>();
   for (const tx of buyTransactions) {
     const key = tx.contractSymbol ?? tx.symbol;
-    const amount =
-      Number(tx.price) * Number(tx.quantity) * (tx.positionType === 'OPTION' ? 100 : 1);
-    costBasisMap.set(key, (costBasisMap.get(key) ?? 0) + amount);
+    const multiplier = tx.positionType === 'OPTION' ? 100 : 1;
+    const cost = Number(tx.price) * Number(tx.quantity) * multiplier;
+    const qty = Number(tx.quantity);
+    const existing = costBasisMap.get(key) ?? { totalCost: 0, totalQty: 0 };
+    costBasisMap.set(key, {
+      totalCost: existing.totalCost + cost,
+      totalQty: existing.totalQty + qty,
+    });
   }
   return costBasisMap;
 };
 
 /**
- * INVESTED-322: Calculate realized P&L from closed transactions
+ * Calculate realized P&L from closed transactions
  * Proceeds minus cost basis for SELL and EXERCISE transactions
  * Full premium lost for EXPIRED_WORTHLESS transactions
  * Accepts pre-fetched transactions to avoid duplicate DB calls
@@ -56,20 +64,25 @@ const calculateRealizedPnL = (
     const price = Number(tx.price);
     const multiplier = tx.positionType === 'OPTION' ? 100 : 1;
     const key = tx.contractSymbol ?? tx.symbol;
-    const costBasis = costBasisMap.get(key) ?? 0;
+    const entry = costBasisMap.get(key);
+
+    // Calculate proportional cost basis for the quantity being closed
+    // avgCostPerUnit * closedQuantity gives only the cost of what was actually closed
+    const avgCostPerUnit = entry ? entry.totalCost / entry.totalQty : 0;
+    const proportionalCost = avgCostPerUnit * quantity;
 
     if (tx.type === 'SELL' || tx.type === 'EXERCISE') {
-      // Realized P&L = proceeds - what was originally paid
-      return total + price * quantity * multiplier - costBasis;
+      // Realized P&L = proceeds - proportional cost of closed contracts
+      return total + price * quantity * multiplier - proportionalCost;
     } else {
-      // EXPIRED_WORTHLESS: entire cost basis is lost, no proceeds
-      return total - costBasis;
+      // EXPIRED_WORTHLESS: proportional cost of expired contracts is lost
+      return total - proportionalCost;
     }
   }, 0);
 };
 
 /**
- * INVESTED-323: Calculate win rate from closed trades
+ * Calculate win rate from closed trades
  * A win is a SELL or EXERCISE transaction where proceeds exceeded cost basis
  * EXPIRED_WORTHLESS transactions always count as losses
  * Returns null if no closed trades exist
@@ -85,25 +98,23 @@ const calculateWinRate = (
 
   let wins = 0;
   for (const tx of closedTransactions) {
-    if (tx.type === 'EXPIRED_WORTHLESS') {
-      // Expired worthless always counts as a loss, skip win check
-      continue;
-    }
+    if (tx.type === 'EXPIRED_WORTHLESS') continue;
 
     const key = tx.contractSymbol ?? tx.symbol;
+    const entry = costBasisMap.get(key);
+    const avgCostPerUnit = entry ? entry.totalCost / entry.totalQty : 0;
+    const proportionalCost = avgCostPerUnit * Number(tx.quantity);
     const proceeds =
       Number(tx.price) * Number(tx.quantity) * (tx.positionType === 'OPTION' ? 100 : 1);
-    const costBasis = costBasisMap.get(key) ?? 0;
 
-    if (proceeds > costBasis) wins++;
+    if (proceeds > proportionalCost) wins++;
   }
 
-  // closedTransactions.length already includes all types, no need to split and re-sum
   return Math.round((wins / closedTransactions.length) * 100);
 };
 
 /**
- * INVESTED-324: Calculate P&L breakdown by underlying symbol
+ * Calculate P&L breakdown by underlying symbol
  * Combines realized P&L from closed transactions and unrealized P&L from open positions
  * Ordered by absolute total P&L descending for display in the bar chart
  * Accepts pre-fetched transactions to avoid duplicate DB calls
@@ -120,21 +131,24 @@ const calculatePnLBySymbol = (
     const symbol = tx.symbol;
     const multiplier = tx.positionType === 'OPTION' ? 100 : 1;
     const key = tx.contractSymbol ?? tx.symbol;
-    const costBasis = costBasisMap.get(key) ?? 0;
+    const entry = costBasisMap.get(key);
+
+    // Proportional cost basis for quantity being closed
+    const avgCostPerUnit = entry ? entry.totalCost / entry.totalQty : 0;
+    const proportionalCost = avgCostPerUnit * Number(tx.quantity);
     let pnl = 0;
 
     if (tx.type === 'SELL' || tx.type === 'EXERCISE') {
-      // Realized P&L = proceeds - cost basis
-      pnl = Number(tx.price) * Number(tx.quantity) * multiplier - costBasis;
+      // Realized P&L = proceeds - proportional cost basis
+      pnl = Number(tx.price) * Number(tx.quantity) * multiplier - proportionalCost;
     } else {
-      // EXPIRED_WORTHLESS: full cost basis lost
-      pnl = -costBasis;
+      // EXPIRED_WORTHLESS: proportional cost of expired position lost
+      pnl = -proportionalCost;
     }
 
     realizedBySymbol.set(symbol, (realizedBySymbol.get(symbol) ?? 0) + pnl);
   }
 
-  // Aggregate unrealized P&L from open positions by symbol
   const unrealizedBySymbol = new Map<string, number>();
   for (const pos of openPositions) {
     unrealizedBySymbol.set(
@@ -143,25 +157,18 @@ const calculatePnLBySymbol = (
     );
   }
 
-  // Merge all symbols from both realized and unrealized maps
   const allSymbols = new Set([...realizedBySymbol.keys(), ...unrealizedBySymbol.keys()]);
 
   const result = Array.from(allSymbols).map((symbol) => {
     const realizedPnL = realizedBySymbol.get(symbol) ?? 0;
     const unrealizedPnL = unrealizedBySymbol.get(symbol) ?? 0;
-    return {
-      symbol,
-      realizedPnL,
-      unrealizedPnL,
-      totalPnL: realizedPnL + unrealizedPnL,
-    };
+    return { symbol, realizedPnL, unrealizedPnL, totalPnL: realizedPnL + unrealizedPnL };
   });
 
   return result.sort((a, b) => Math.abs(b.totalPnL) - Math.abs(a.totalPnL));
 };
 
 /**
- * INVESTED-325: Gets a user's portfolio with positions and all P&L calculations
  * Returns portfolio summary including:
  * - realizedPnL: locked-in profit/loss from closed trades
  * - winRate: percentage of closed trades that were profitable (null if no closed trades)
