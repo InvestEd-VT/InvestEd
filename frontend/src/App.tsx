@@ -11,6 +11,8 @@ import {
   Portfolio,
   PositionDetail,
   Transactions,
+  // Welcome page shown once after first login
+  Welcome,
 } from './pages';
 import { ThemeProvider } from './components/ui/theme-provider';
 import { PageShell } from './components/layout/PageShell';
@@ -45,6 +47,9 @@ function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <Routes>
+        {/* Dev-only preview route so designers/devs can view the Welcome screen without logging in */}
+        {import.meta.env.DEV && <Route path="/preview/welcome" element={<Welcome />} />}
+
         {/* Public routes */}
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<Login />} />
@@ -78,6 +83,7 @@ function App() {
           <Route path="/trade" element={<Navigate to="/stock/AAPL" replace />} />
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/portfolio/positions/:positionId" element={<PositionDetail />} />
+          <Route path="/welcome" element={<Welcome />} />
           <Route path="/transactions" element={<Transactions />} />
           {/* Learn section — uses LearnLayout with education header */}
           <Route element={<LearnLayout />}>

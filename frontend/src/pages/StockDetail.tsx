@@ -31,6 +31,7 @@ import {
   computeParkinsonVolatility,
   setTickerVolatility,
   getTickerVolatility,
+  priceOption,
 } from '@/utils/options';
 
 type ChartTimeframe = '2d' | '1w' | '1m';
@@ -431,6 +432,32 @@ export default function StockDetail() {
       shares_per_contract: 100,
     }));
   }, [symbol, stock?.currentPrice, activeTab, syntheticExpiration]);
+
+  // Auto-open trade sheet when navigated from onboarding CTA
+  const location = useLocation();
+  const autoOpenedRef = useRef(false);
+
+  useEffect(() => {
+    const state = (location.state as any) ?? {};
+    if (autoOpenedRef.current) return;
+    if (state.openTrade && contracts.length > 0 && stock?.currentPrice) {
+      const idx = Math.floor(contracts.length / 2);
+      const contract = contracts[idx];
+      if (contract) {
+        const theoretical = priceOption(
+          stock.currentPrice,
+          contract.strike_price,
+          contract.expiration_date,
+          contract.contract_type,
+          stock.symbol
+        );
+        handleSelectContract(contract, theoretical);
+        autoOpenedRef.current = true;
+        // remove navigation state so re-mounts don't reopen
+        navigate(location.pathname, { replace: true });
+      }
+    }
+  }, [contracts, location, stock?.currentPrice]);
 
   if (loading) {
     return (

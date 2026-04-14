@@ -134,7 +134,9 @@ export default function PortfolioValueCard() {
           )}
         </CardTitle>
         <CardAction>
-          <Badge variant="outline">{positive ? <ArrowUpRight /> : <ArrowDownRight />}</Badge>
+          <a href="/portfolio" aria-label="Open portfolio">
+            <Badge variant="outline">{positive ? <ArrowUpRight /> : <ArrowDownRight />}</Badge>
+          </a>
         </CardAction>
       </CardHeader>
 

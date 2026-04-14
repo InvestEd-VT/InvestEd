@@ -142,7 +142,7 @@ InvestEd/
 ### Frontend
 - Andrew Hand
 - Kevin Alegre
-- Noa
+- Noa Nelson
 
 ### Backend
 - Lucas Berger
