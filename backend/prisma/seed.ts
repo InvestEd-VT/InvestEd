@@ -8,6 +8,7 @@ async function main() {
   const INTRO_TO_OPTIONS_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
   const INTRO_TO_SELLING_ID = 'b2c3d4e5-f6a7-8901-bcde-f12345678901';
   const CALLS_AND_PUTS_ID = 'c3d4e5f6-a7b8-9012-cdef-123456789012';
+  const GREEKS_OVERVIEW_ID = 'd4e5f6a7-b8c9-0123-defa-234567890123';
 
   await prisma.module.upsert({
     where: { id: INTRO_TO_OPTIONS_ID },
@@ -59,11 +60,28 @@ async function main() {
       order: 3,
     },
   });
+  await prisma.module.upsert({
+    where: { id: GREEKS_OVERVIEW_ID },
+    update: {
+      title: 'Greeks Overview',
+      description:
+        'An introduction to Delta, Gamma, Theta, and Vega — the key metrics for evaluating options contracts.',
+      order: 4,
+    },
+    create: {
+      id: GREEKS_OVERVIEW_ID,
+      title: 'Greeks Overview',
+      description:
+        'An introduction to Delta, Gamma, Theta, and Vega — the key metrics for evaluating options contracts.',
+      order: 4,
+    },
+  });
 
   console.log('✅ Modules seeded successfully');
   console.log('   → Order 1: Intro to Options');
   console.log('   → Order 2: Intro to Selling Options');
   console.log('   → Order 3: Calls & Puts');
+  console.log('   → Order 4: Greeks Overview');
 }
 
 main()
