@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import PageHeader from '@/components/ui/PageHeader';
 import { Button } from '../components/ui/button';
 import {
   Card,
@@ -73,7 +72,7 @@ const Login = () => {
   return (
     <div className="flex min-h-screen items-center justify-between px-[17vw] bg-zinc-950">
       <div className="text-left mb-[10vh]">
-        <PageHeader title="InvestEd" size="xl" className="text-white mb-4" />
+        <h1 className="text-4xl font-bold text-white mb-4">InvestEd</h1>
         <p className="text-lg text-gray-400">Your investment education platform</p>
       </div>
 

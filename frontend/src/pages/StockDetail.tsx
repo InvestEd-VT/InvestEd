@@ -27,7 +27,6 @@ import { AlertCircleIcon, TrendingUpIcon, TrendingDownIcon } from 'lucide-react'
 import { OptionsChain } from '@/components/trading/OptionsChain';
 import { TradeModal } from '@/components/trading/TradeModal';
 import { PageShell } from '@/components/layout/PageShell';
-import PageHeader from '@/components/ui/PageHeader';
 import {
   computeParkinsonVolatility,
   setTickerVolatility,
@@ -374,7 +373,7 @@ export default function StockDetail() {
         {/* Header */}
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <PageHeader title={stock.symbol} size="lg" />
+            <h1 className="text-3xl font-bold">{stock.symbol}</h1>
             <p className="text-lg text-muted-foreground">{stock.companyName}</p>
           </div>
           <div className="flex gap-2">

@@ -13,7 +13,6 @@ import {
   Info,
   CheckCircle2,
 } from 'lucide-react';
-import PageHeader from '@/components/ui/PageHeader';
 
 // ── Key term callout ──────────────────────────────────────────────────────────
 function Term({ word, definition }: { word: string; definition: string }) {
@@ -223,7 +222,7 @@ export default function IntroToOptions() {
               Module 01
             </span>
           </div>
-          <PageHeader title="Intro to Options" size="lg" />
+          <h1 className="text-3xl font-bold tracking-tight">Intro to Options</h1>
           <p className="text-muted-foreground mt-2">
             A foundational understanding of what options are, why traders use them, and how they
             work.
