@@ -9,6 +9,7 @@ async function main() {
   const INTRO_TO_SELLING_ID = 'b2c3d4e5-f6a7-8901-bcde-f12345678901';
   const CALLS_AND_PUTS_ID = 'c3d4e5f6-a7b8-9012-cdef-123456789012';
   const GREEKS_OVERVIEW_ID = 'd4e5f6a7-b8c9-0123-defa-234567890123';
+  const STRIKE_PRICE_EXPIRATION_ID = 'e5f6a7b8-c9d0-1234-efab-345678901234';
 
   await prisma.module.upsert({
     where: { id: INTRO_TO_OPTIONS_ID },
@@ -60,6 +61,7 @@ async function main() {
       order: 3,
     },
   });
+
   await prisma.module.upsert({
     where: { id: GREEKS_OVERVIEW_ID },
     update: {
@@ -77,11 +79,29 @@ async function main() {
     },
   });
 
+  await prisma.module.upsert({
+    where: { id: STRIKE_PRICE_EXPIRATION_ID },
+    update: {
+      title: 'Strike Price & Expiration',
+      description:
+        "How strike price and expiration date shape an option's value, and how to read an options chain.",
+      order: 5,
+    },
+    create: {
+      id: STRIKE_PRICE_EXPIRATION_ID,
+      title: 'Strike Price & Expiration',
+      description:
+        "How strike price and expiration date shape an option's value, and how to read an options chain.",
+      order: 5,
+    },
+  });
+
   console.log('✅ Modules seeded successfully');
   console.log('   → Order 1: Intro to Options');
   console.log('   → Order 2: Intro to Selling Options');
   console.log('   → Order 3: Calls & Puts');
   console.log('   → Order 4: Greeks Overview');
+  console.log('   → Order 5: Strike Price & Expiration');
 }
 
 main()

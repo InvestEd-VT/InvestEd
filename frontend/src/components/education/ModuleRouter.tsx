@@ -3,12 +3,14 @@ import IntroToOptions from '@/components/education/modules/IntroToOptions';
 import IntroToSelling from '@/components/education/modules/IntroToSelling';
 import CallsAndPuts from '@/components/education/modules/CallsAndPuts';
 import GreeksOverview from '@/components/education/modules/GreeksOverview';
+import StrikePriceAndExpiration from '@/components/education/modules/StrikePriceAndExpiration';
 
 const MODULE_COMPONENTS: Record<string, React.ComponentType> = {
   'a1b2c3d4-e5f6-7890-abcd-ef1234567890': IntroToOptions,
   'b2c3d4e5-f6a7-8901-bcde-f12345678901': IntroToSelling,
   'c3d4e5f6-a7b8-9012-cdef-123456789012': CallsAndPuts,
   'd4e5f6a7-b8c9-0123-defa-234567890123': GreeksOverview,
+  'e5f6a7b8-c9d0-1234-efab-345678901234': StrikePriceAndExpiration,
 };
 
 export default function ModuleRouter() {
