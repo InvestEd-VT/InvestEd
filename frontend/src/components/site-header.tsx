@@ -21,7 +21,11 @@ export function SiteHeader({ searchOverride }: SiteHeaderProps) {
   const location = useLocation();
   const title =
     pageTitles[location.pathname] ||
-    (location.pathname.startsWith('/stock') ? 'Trade' : 'InvestEd');
+    (location.pathname.startsWith('/stock')
+      ? 'Trade'
+      : location.pathname.startsWith('/portfolio/positions/')
+        ? 'Position Detail'
+        : 'InvestEd');
 
   return (
     <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b border-gray-200 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">

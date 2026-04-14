@@ -9,6 +9,7 @@ import {
   StockDetail,
   ResetPassword,
   Portfolio,
+  PositionDetail,
   Transactions,
 } from './pages';
 import { ThemeProvider } from './components/ui/theme-provider';
@@ -76,6 +77,7 @@ function App() {
           />
           <Route path="/trade" element={<Navigate to="/stock/AAPL" replace />} />
           <Route path="/portfolio" element={<Portfolio />} />
+          <Route path="/portfolio/positions/:positionId" element={<PositionDetail />} />
           <Route path="/transactions" element={<Transactions />} />
           {/* Learn section — uses LearnLayout with education header */}
           <Route element={<LearnLayout />}>
