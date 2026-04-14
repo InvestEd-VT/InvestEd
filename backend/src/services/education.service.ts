@@ -16,7 +16,7 @@ export async function listModules(userId: string) {
     },
   });
 
-  return modules.map(({ progress, ...mod }) => ({
+  return modules.map(({ progress, ...mod }: (typeof modules)[number]) => ({
     ...mod,
     completed: progress[0]?.completed ?? false,
     completedAt: progress[0]?.completedAt ?? null,

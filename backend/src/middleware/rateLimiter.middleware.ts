@@ -1,4 +1,5 @@
 import rateLimit from 'express-rate-limit';
+import { env } from '../config/env.js';
 
 /**
  * General API rate limiter
@@ -6,7 +7,7 @@ import rateLimit from 'express-rate-limit';
  */
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 100,
+  limit: env.NODE_ENV === 'test' ? 10000 : 100,
   standardHeaders: 'draft-8',
   legacyHeaders: false,
   message: { error: 'Too many requests, please try again later' },
@@ -18,7 +19,7 @@ export const apiLimiter = rateLimit({
  */
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 10,
+  limit: env.NODE_ENV === 'test' ? 1000 : 10,
   standardHeaders: 'draft-8',
   legacyHeaders: false,
   message: { error: 'Too many authentication attempts, please try again later' },

@@ -110,7 +110,7 @@ export const register = async (data: RegisterRequestBody): Promise<{ message: st
   const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
   try {
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const user = await tx.user.create({
         data: {
           email: data.email,
