@@ -9,6 +9,7 @@ import {
   StockDetail,
   ResetPassword,
   Portfolio,
+  PositionDetail,
   Transactions,
   // Welcome page shown once after first login
   Welcome,
@@ -81,6 +82,7 @@ function App() {
           />
           <Route path="/trade" element={<Navigate to="/stock/AAPL" replace />} />
           <Route path="/portfolio" element={<Portfolio />} />
+          <Route path="/portfolio/positions/:positionId" element={<PositionDetail />} />
           <Route path="/welcome" element={<Welcome />} />
           <Route path="/transactions" element={<Transactions />} />
           {/* Learn section — uses LearnLayout with education header */}
