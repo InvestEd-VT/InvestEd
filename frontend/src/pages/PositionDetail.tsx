@@ -32,10 +32,10 @@ interface StockDetailLocationState {
 function isOptionPosition(position: Position | null | undefined): position is OptionPosition {
   return Boolean(
     position &&
-      position.optionType &&
-      (position.optionType === 'CALL' || position.optionType === 'PUT') &&
-      typeof position.strikePrice === 'number' &&
-      typeof position.expirationDate === 'string'
+    position.optionType &&
+    (position.optionType === 'CALL' || position.optionType === 'PUT') &&
+    typeof position.strikePrice === 'number' &&
+    typeof position.expirationDate === 'string'
   );
 }
 
@@ -99,7 +99,9 @@ function MetricCard({
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-4">
       <p className="text-[11px] uppercase tracking-wide text-gray-400">{label}</p>
-      <p className={`mt-2 text-lg font-semibold tabular-nums text-gray-900 ${valueClassName ?? ''}`}>
+      <p
+        className={`mt-2 text-lg font-semibold tabular-nums text-gray-900 ${valueClassName ?? ''}`}
+      >
         {value}
       </p>
       {hint ? <p className="mt-1 text-xs text-gray-500">{hint}</p> : null}
@@ -206,15 +208,14 @@ export default function PositionDetail() {
             optionType,
             position.symbol
           )
-        : position.currentPrice ?? position.avgCost;
+        : (position.currentPrice ?? position.avgCost);
     const premiumChange = currentPremium - position.avgCost;
     const premiumChangePercent =
       position.avgCost === 0 ? 0 : (premiumChange / position.avgCost) * 100;
     const totalCostBasis = position.quantity * position.avgCost * CONTRACT_MULTIPLIER;
     const totalPositionValue = position.quantity * currentPremium * CONTRACT_MULTIPLIER;
     const unrealizedPnL = totalPositionValue - totalCostBasis;
-    const unrealizedPnLPercent =
-      totalCostBasis === 0 ? 0 : (unrealizedPnL / totalCostBasis) * 100;
+    const unrealizedPnLPercent = totalCostBasis === 0 ? 0 : (unrealizedPnL / totalCostBasis) * 100;
     const dte = daysToExpiry(expirationDate);
     const expired = isExpired(expirationDate);
     const greekValues =
@@ -305,7 +306,11 @@ export default function PositionDetail() {
       <div className="mx-auto max-w-6xl space-y-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-3">
-            <Button asChild variant="ghost" className="w-fit px-0 text-gray-500 hover:text-gray-900">
+            <Button
+              asChild
+              variant="ghost"
+              className="w-fit px-0 text-gray-500 hover:text-gray-900"
+            >
               <Link to="/portfolio">
                 <ArrowLeftIcon className="mr-2 size-4" />
                 Back to portfolio
@@ -314,7 +319,9 @@ export default function PositionDetail() {
 
             <div>
               <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-3xl font-bold tracking-tight text-gray-900">{position.symbol}</h1>
+                <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+                  {position.symbol}
+                </h1>
                 <span
                   className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
                     position.optionType === 'CALL'
@@ -357,18 +364,26 @@ export default function PositionDetail() {
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <MetricCard label="Underlying Symbol" value={position.symbol} />
                 <MetricCard label="Strike Price" value={formatCurrency(position.strikePrice)} />
-                <MetricCard label="Expiration Date" value={formatDisplayDate(derived.expirationDate)} />
-                <MetricCard label="Contract Type" value={position.optionType === 'CALL' ? 'Call' : 'Put'} />
+                <MetricCard
+                  label="Expiration Date"
+                  value={formatDisplayDate(derived.expirationDate)}
+                />
+                <MetricCard
+                  label="Contract Type"
+                  value={position.optionType === 'CALL' ? 'Call' : 'Put'}
+                />
               </div>
 
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <MetricCard
                   label="Days to Expiration"
                   value={dteLabel}
-                  valueClassName={
-                    !derived.expired && derived.dte < 7 ? 'text-red-500' : undefined
+                  valueClassName={!derived.expired && derived.dte < 7 ? 'text-red-500' : undefined}
+                  hint={
+                    derived.expired
+                      ? 'This contract is no longer active.'
+                      : 'Time left until expiration.'
                   }
-                  hint={derived.expired ? 'This contract is no longer active.' : 'Time left until expiration.'}
                 />
                 <MetricCard
                   label="Current Premium"
@@ -376,7 +391,9 @@ export default function PositionDetail() {
                   hint={`${formatSignedCurrency(derived.premiumChange)} (${formatSignedPercent(
                     derived.premiumChangePercent
                   )}) vs average premium`}
-                  valueClassName={derived.premiumChange === 0 ? undefined : pnlColor(derived.premiumChange)}
+                  valueClassName={
+                    derived.premiumChange === 0 ? undefined : pnlColor(derived.premiumChange)
+                  }
                 />
                 <MetricCard
                   label="Underlying Price"
@@ -403,7 +420,10 @@ export default function PositionDetail() {
             <CardContent className="space-y-4 pt-6">
               <MetricCard label="Average Premium" value={formatCurrency(position.avgCost)} />
               <MetricCard label="Total Cost Basis" value={formatCurrency(derived.totalCostBasis)} />
-              <MetricCard label="Total Position Value" value={formatCurrency(derived.totalPositionValue)} />
+              <MetricCard
+                label="Total Position Value"
+                value={formatCurrency(derived.totalPositionValue)}
+              />
               <MetricCard
                 label="Unrealized P&L"
                 value={`${formatSignedCurrency(derived.unrealizedPnL)} (${formatSignedPercent(
@@ -471,13 +491,17 @@ export default function PositionDetail() {
                       className="grid gap-3 px-4 py-4 md:grid-cols-[1.1fr_0.8fr_1.2fr_0.9fr_1fr] md:items-center"
                     >
                       <div>
-                        <p className="text-xs uppercase tracking-wide text-gray-400 md:hidden">Date</p>
+                        <p className="text-xs uppercase tracking-wide text-gray-400 md:hidden">
+                          Date
+                        </p>
                         <p className="text-sm text-gray-700">
                           {formatDisplayDate(transaction.executedAt)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs uppercase tracking-wide text-gray-400 md:hidden">Type</p>
+                        <p className="text-xs uppercase tracking-wide text-gray-400 md:hidden">
+                          Type
+                        </p>
                         <span
                           className={`inline-flex w-fit rounded-full px-2.5 py-1 text-[11px] font-semibold ${
                             transaction.type === 'BUY'
@@ -491,7 +515,9 @@ export default function PositionDetail() {
                         </span>
                       </div>
                       <div>
-                        <p className="text-xs uppercase tracking-wide text-gray-400 md:hidden">Contract</p>
+                        <p className="text-xs uppercase tracking-wide text-gray-400 md:hidden">
+                          Contract
+                        </p>
                         <p className="text-sm font-medium text-gray-900">
                           {transaction.contractSymbol ?? position.contractSymbol ?? position.symbol}
                         </p>
@@ -500,13 +526,19 @@ export default function PositionDetail() {
                         </p>
                       </div>
                       <div className="md:text-right">
-                        <p className="text-xs uppercase tracking-wide text-gray-400 md:hidden">Premium</p>
+                        <p className="text-xs uppercase tracking-wide text-gray-400 md:hidden">
+                          Premium
+                        </p>
                         <p className="text-sm text-gray-700">{formatCurrency(transaction.price)}</p>
                       </div>
                       <div className="md:text-right">
-                        <p className="text-xs uppercase tracking-wide text-gray-400 md:hidden">Total</p>
+                        <p className="text-xs uppercase tracking-wide text-gray-400 md:hidden">
+                          Total
+                        </p>
                         <p className="text-sm font-semibold text-gray-900">
-                          {formatCurrency(transaction.quantity * transaction.price * CONTRACT_MULTIPLIER)}
+                          {formatCurrency(
+                            transaction.quantity * transaction.price * CONTRACT_MULTIPLIER
+                          )}
                         </p>
                       </div>
                     </div>

@@ -63,13 +63,11 @@ export default function PositionCard({ position, className }: PositionCardProps)
   const totalCostBasis = averagePremium * quantity * contractMultiplier;
   const totalCurrentValue = currentPremium * quantity * contractMultiplier;
   const unrealizedPnl = totalCurrentValue - totalCostBasis;
-  const unrealizedPnlPercent =
-    totalCostBasis > 0 ? (unrealizedPnl / totalCostBasis) * 100 : 0;
+  const unrealizedPnlPercent = totalCostBasis > 0 ? (unrealizedPnl / totalCostBasis) * 100 : 0;
   const dte = daysToExpiry(position.expirationDate.split('T')[0]);
   const isNearExpiration = dte < 7;
   const optionTypeLabel = position.optionType === 'CALL' ? 'Call' : 'Put';
-  const premiumTrend =
-    premiumDifference > 0 ? 'up' : premiumDifference < 0 ? 'down' : 'flat';
+  const premiumTrend = premiumDifference > 0 ? 'up' : premiumDifference < 0 ? 'down' : 'flat';
   const premiumTrendLabel =
     premiumTrend === 'up' ? 'UP' : premiumTrend === 'down' ? 'DOWN' : 'FLAT';
   const premiumTrendClasses =
@@ -80,8 +78,7 @@ export default function PositionCard({ position, className }: PositionCardProps)
         : 'border-border bg-muted/40 text-muted-foreground';
   const premiumChangeTextClass =
     premiumTrend === 'flat' ? 'text-foreground' : pnlColor(premiumDifference);
-  const totalValueTextClass =
-    premiumTrend === 'flat' ? 'text-foreground' : pnlColor(unrealizedPnl);
+  const totalValueTextClass = premiumTrend === 'flat' ? 'text-foreground' : pnlColor(unrealizedPnl);
 
   return (
     <Card className={cn('@container/card gap-0', className)}>
@@ -121,10 +118,7 @@ export default function PositionCard({ position, className }: PositionCardProps)
             value={`${dte} day${dte === 1 ? '' : 's'}`}
             valueClassName={isNearExpiration ? 'text-rose-600' : undefined}
           />
-          <DetailItem
-            label="Quantity"
-            value={`${quantity} contract${quantity === 1 ? '' : 's'}`}
-          />
+          <DetailItem label="Quantity" value={`${quantity} contract${quantity === 1 ? '' : 's'}`} />
         </div>
 
         <div className="rounded-xl border bg-muted/20 p-4">
@@ -186,7 +180,6 @@ export default function PositionCard({ position, className }: PositionCardProps)
           <DetailItem label="Contract Size" value={`1 contract = ${contractMultiplier} shares`} />
         </div>
       </CardContent>
-
     </Card>
   );
 }
