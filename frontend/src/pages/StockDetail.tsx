@@ -434,7 +434,6 @@ export default function StockDetail() {
   }, [symbol, stock?.currentPrice, activeTab, syntheticExpiration]);
 
   // Auto-open trade sheet when navigated from onboarding CTA
-  const location = useLocation();
   const autoOpenedRef = useRef(false);
 
   useEffect(() => {
