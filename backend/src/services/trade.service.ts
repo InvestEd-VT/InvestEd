@@ -140,12 +140,16 @@ export const buyOption = async (
   });
 
   // Create notification for successful purchase
-  await notificationService.createNotification(
-    userId,
-    'TRADE_EXECUTED',
-    'Trade Executed',
-    `Bought ${data.quantity} ${data.optionType} contract(s) for ${data.symbol} at $${data.price.toFixed(2)}/contract`
-  );
+  try {
+    await notificationService.createNotification(
+      userId,
+      'TRADE_EXECUTED',
+      'Trade Executed',
+      `Bought ${data.quantity} ${data.optionType} contract(s) for ${data.symbol} at $${data.price.toFixed(2)}/contract`
+    );
+  } catch (error) {
+    console.error('Failed to create buy notification:', error);
+  }
 
   return result;
 };
@@ -246,12 +250,16 @@ export const sellOption = async (
   });
 
   // Create notification for successful sale
-  await notificationService.createNotification(
-    userId,
-    'TRADE_EXECUTED',
-    'Trade Executed',
-    `Sold ${data.quantity} ${data.optionType} contract(s) for ${data.symbol} at $${data.price.toFixed(2)}/contract`
-  );
+  try {
+    await notificationService.createNotification(
+      userId,
+      'TRADE_EXECUTED',
+      'Trade Executed',
+      `Sold ${data.quantity} ${data.optionType} contract(s) for ${data.symbol} at $${data.price.toFixed(2)}/contract`
+    );
+  } catch (error) {
+    console.error('Failed to create sell notification:', error);
+  }
 
   return result;
 };
