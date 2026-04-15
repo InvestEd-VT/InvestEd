@@ -8,4 +8,5 @@ export { default as StockDetail } from './StockDetail';
 export { default as Portfolio } from './Portfolio';
 export { default as PositionDetail } from './PositionDetail';
 export { default as Transactions } from './Transactions';
+export { default as Notifications } from './Notifications';
 export { default as Welcome } from './Welcome';

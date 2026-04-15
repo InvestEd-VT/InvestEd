@@ -111,7 +111,7 @@ export function TradeModal({
 
   return (
     <Sheet open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <SheetContent className="sm:max-w-[400px] bg-white border-gray-200 p-0 flex flex-col">
+      <SheetContent className="sm:max-w-100 bg-white border-gray-200 p-0 flex flex-col">
         <SheetHeader className="p-6 pb-0">
           <SheetTitle className="text-gray-900 text-lg font-semibold">
             {mode === 'buy' ? 'Buy' : 'Sell'}{' '}

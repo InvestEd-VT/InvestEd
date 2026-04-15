@@ -11,6 +11,7 @@ import {
   Portfolio,
   PositionDetail,
   Transactions,
+  Notifications,
   // Welcome page shown once after first login
   Welcome,
 } from './pages';
@@ -85,6 +86,7 @@ function App() {
           <Route path="/portfolio/positions/:positionId" element={<PositionDetail />} />
           <Route path="/welcome" element={<Welcome />} />
           <Route path="/transactions" element={<Transactions />} />
+          <Route path="/notifications" element={<Notifications />} />
           {/* Learn section — uses LearnLayout with education header */}
           <Route element={<LearnLayout />}>
             <Route path="/learn" element={<EducationDashboard />} />

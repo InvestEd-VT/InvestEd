@@ -178,7 +178,7 @@ export default function Portfolio() {
             if (!open) setResetInput('');
           }}
         >
-          <SheetContent className="sm:max-w-[400px]">
+          <SheetContent className="sm:max-w-100">
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2 text-red-500">
                 <AlertTriangleIcon className="size-5" />
