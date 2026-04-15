@@ -7,6 +7,8 @@ export interface User {
   lastName: string;
   createdAt: string;
   updatedAt: string;
+  // Optional server-side flag to indicate the user has already seen the welcome/onboarding screen
+  hasSeenWelcome?: boolean;
 }
 
 export interface RegisterRequest {
