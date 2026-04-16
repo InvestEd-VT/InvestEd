@@ -10,3 +10,4 @@ export { default as PositionDetail } from './PositionDetail';
 export { default as Transactions } from './Transactions';
 export { default as Notifications } from './Notifications';
 export { default as Welcome } from './Welcome';
+export { default as Profile } from './Profile';

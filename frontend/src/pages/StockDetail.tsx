@@ -434,7 +434,6 @@ export default function StockDetail() {
   }, [symbol, stock?.currentPrice, activeTab, syntheticExpiration]);
 
   // Auto-open trade sheet when navigated from onboarding CTA
-  const location = useLocation();
   const autoOpenedRef = useRef(false);
 
   useEffect(() => {
@@ -549,9 +548,9 @@ export default function StockDetail() {
             </Select>
           </div>
           {chartLoading ? (
-            <Skeleton className="h-[400px] w-full" />
+            <Skeleton className="h-100 w-full" />
           ) : candleData.length > 0 ? (
-            <div ref={chartContainerRef} className="relative h-[400px] w-full" />
+            <div ref={chartContainerRef} className="relative h-100 w-full" />
           ) : (
             <p className="text-sm text-muted-foreground py-8 text-center">
               No chart data available
