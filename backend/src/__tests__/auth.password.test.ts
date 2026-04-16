@@ -149,9 +149,11 @@ describe('Auth Password Reset', () => {
   });
 
   it('Should return success for non-existent email', async () => {
-    const response = await request(app).post(FORGOT_PASSWORD_ROUTE).send({
-      email: `${TEST_EMAIL_PREFIX}-missing@test.edu`,
-    });
+    const response = await request(app)
+      .post(FORGOT_PASSWORD_ROUTE)
+      .send({
+        email: `${TEST_EMAIL_PREFIX}-missing@test.edu`,
+      });
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({

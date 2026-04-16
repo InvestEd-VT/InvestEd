@@ -18,12 +18,14 @@ export default function FirstTradePrompt() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            Make a simple practice trade to see how orders, costs, and the payoff chart work.
-            We'll prefill a sample option so you can try placing an order without real money.
+            Make a simple practice trade to see how orders, costs, and the payoff chart work. We'll
+            prefill a sample option so you can try placing an order without real money.
           </p>
         </CardContent>
         <CardFooter className="flex justify-end gap-3">
-          <Button variant="ghost" onClick={() => navigate('/learn')}>Learn first</Button>
+          <Button variant="ghost" onClick={() => navigate('/learn')}>
+            Learn first
+          </Button>
           <Button onClick={handleTrySample}>Try a sample trade</Button>
         </CardFooter>
       </Card>
