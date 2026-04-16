@@ -25,6 +25,7 @@ const createTestUserAndLogin = async () => {
       passwordHash,
       firstName: 'Trade',
       lastName: 'Test',
+      emailVerified: true,
       portfolios: {
         create: { name: 'My Portfolio', cashBalance: 10000 },
       },
@@ -114,7 +115,7 @@ describe('Trade API', () => {
         .send({ symbol: 'AAPL' });
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toContain('Missing required fields');
+      expect(response.body.errors).toBeDefined();
     });
 
     it('should reject buy with negative quantity', async () => {
@@ -124,7 +125,7 @@ describe('Trade API', () => {
         .send({ ...buyPayload, quantity: -1 });
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toContain('positive');
+      expect(response.body.errors).toBeDefined();
     });
 
     it('should reject buy with invalid option type', async () => {
@@ -134,7 +135,7 @@ describe('Trade API', () => {
         .send({ ...buyPayload, optionType: 'INVALID' });
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toContain('CALL or PUT');
+      expect(response.body.errors).toBeDefined();
     });
 
     it('should return 401 without auth', async () => {

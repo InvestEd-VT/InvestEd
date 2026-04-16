@@ -29,6 +29,7 @@ beforeAll(async () => {
       passwordHash,
       firstName: 'Options',
       lastName: 'Test',
+      emailVerified: true,
       portfolios: { create: { name: 'My Portfolio' } },
     },
   });

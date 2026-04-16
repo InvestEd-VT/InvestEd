@@ -11,5 +11,8 @@
     "docker:down": "docker compose down",
     "prisma:generate": "cd backend && npm run prisma:generate",
     "prisma:migrate": "cd backend && npm run prisma:migrate"
+  },
+  "dependencies": {
+    "express-rate-limit": "^8.3.2"
   }
 }
