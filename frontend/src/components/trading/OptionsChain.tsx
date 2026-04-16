@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { OptionsContract } from '@/types';
