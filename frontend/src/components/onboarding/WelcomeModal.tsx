@@ -138,9 +138,6 @@ export function WelcomeModal({ open, onGetStarted, onTour }: WelcomeModalProps) 
 
             {/* Actions */}
             <div className="flex gap-3 justify-end pt-2">
-              <Button variant="ghost" onClick={onGetStarted}>
-                Skip
-              </Button>
               <Button variant="outline" onClick={onTour}>
                 Take a quick tour
               </Button>
