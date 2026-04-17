@@ -12,10 +12,11 @@ import {
   PositionDetail,
   Transactions,
   Notifications,
-  // Welcome page shown once after first login
   Welcome,
+  Profile,
 } from './pages';
 import { ThemeProvider } from './components/ui/theme-provider';
+import { Toaster } from './components/ui/sonner';
 import { PageShell } from './components/layout/PageShell';
 import { StockSearch } from './components/trading/StockSearch';
 import { SettingsIcon, HelpCircleIcon } from 'lucide-react';
@@ -87,6 +88,7 @@ function App() {
           <Route path="/welcome" element={<Welcome />} />
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/notifications" element={<Notifications />} />
+          <Route path="/profile" element={<Profile />} />
           {/* Learn section — uses LearnLayout with education header */}
           <Route element={<LearnLayout />}>
             <Route path="/learn" element={<EducationDashboard />} />
@@ -124,6 +126,7 @@ function App() {
         {/* Catch-all */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
+      <Toaster />
     </ThemeProvider>
   );
 }

@@ -6,3 +6,4 @@ export { default as stockService } from './stock.service';
 export { optionsService } from './options.service';
 export { tradeService } from './trade.service';
 export { portfolioService } from './portfolio.service';
+export * as userService from './user.service';
