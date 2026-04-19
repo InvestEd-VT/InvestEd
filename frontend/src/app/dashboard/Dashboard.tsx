@@ -76,7 +76,9 @@ export default function Dashboard() {
               <div className="px-4 lg:px-6">
                 <PerformanceChart period="all" />
               </div>
-              <TopPositionsList />
+              <div className="px-4 lg:px-6">
+                <TopPositionsList />
+              </div>
               <div className="px-4 lg:px-6">
                 <RecentTransactions />
               </div>

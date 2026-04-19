@@ -12,6 +12,7 @@ import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import usePortfolioStore from '@/store/portfolioStore';
 import { useEffect, useState } from 'react';
 import { getMultipleStockPrev, hasMassiveKey } from '@/services/massive.client';
+import { Link } from 'react-router-dom';
 
 const STARTING_BALANCE = 10000;
 
@@ -134,7 +135,9 @@ export default function PortfolioValueCard() {
           )}
         </CardTitle>
         <CardAction>
-          <Badge variant="outline">{positive ? <ArrowUpRight /> : <ArrowDownRight />}</Badge>
+          <Link to="/portfolio">
+            <Badge variant="outline"><ArrowUpRight /></Badge>
+          </Link>
         </CardAction>
       </CardHeader>
 

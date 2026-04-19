@@ -142,7 +142,7 @@ export function PayoffChart({
         </div>
         <div className="rounded-lg bg-gray-50 p-2.5">
           <p className="text-gray-400">Breakeven</p>
-          <p className="font-semibold mt-0.5">{formatCurrency(be)}</p>
+          <p className="font-semibold mt-0.5 text-gray-500">{formatCurrency(be)}</p>
         </div>
       </div>
     </div>

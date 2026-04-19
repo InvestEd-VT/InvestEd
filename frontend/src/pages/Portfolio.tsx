@@ -162,7 +162,7 @@ export default function Portfolio() {
           <h1 className="text-2xl font-bold tracking-tight">Portfolio</h1>
           <button
             onClick={() => setShowReset(!showReset)}
-            className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+            className="text-xs text-gray-400 hover:text-red-500 cursor-pointer transition-colors"
           >
             Reset Portfolio
           </button>
@@ -290,7 +290,7 @@ export default function Portfolio() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <button
-                        className="font-semibold text-sm hover:underline"
+                        className="font-semibold text-sm hover:underline cursor-pointer"
                         onClick={() => navigate(`/stocks/${position.symbol}`)}
                       >
                         {position.symbol}
@@ -343,7 +343,7 @@ export default function Portfolio() {
 
                   <button
                     onClick={() => handleSell(position)}
-                    className="px-3 py-1.5 rounded-full text-xs font-semibold bg-orange-50 text-orange-500 hover:bg-orange-100 transition-colors"
+                    className="px-3 py-1.5 rounded-full text-xs font-semibold bg-orange-50 text-orange-500 hover:bg-orange-100 transition-colors cursor-pointer"
                   >
                     Sell
                   </button>

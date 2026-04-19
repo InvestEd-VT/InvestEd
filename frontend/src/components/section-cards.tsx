@@ -9,10 +9,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { TrendingUpIcon, TrendingDownIcon } from 'lucide-react';
+import { TrendingUpIcon, TrendingDownIcon, ArrowUpRight } from 'lucide-react';
 import PortfolioTrendCard from '@/components/portfolio/PortfolioTrendCard';
 import usePortfolioStore from '@/store/portfolioStore';
 import CashBalanceCard from '@/components/portfolio/CashBalanceCard';
+import { Link } from 'react-router-dom';
 
 export function SectionCards() {
   const data = usePortfolioStore((s) => s.data);
@@ -33,9 +34,11 @@ export function SectionCards() {
             {positionsCount}
           </CardTitle>
           <CardAction>
-            <Badge variant="outline">
-              <TrendingDownIcon />
-            </Badge>
+            <Link to="/portfolio">
+              <Badge variant="outline">
+                <ArrowUpRight />
+              </Badge>
+            </Link>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
@@ -52,9 +55,11 @@ export function SectionCards() {
             {Math.abs(totalPnL).toLocaleString(undefined, { style: 'currency', currency: 'USD' })}
           </CardTitle>
           <CardAction>
-            <Badge variant="outline">
-              <TrendingUpIcon />
-            </Badge>
+            <Link to="/portfolio">
+              <Badge variant="outline">
+                <ArrowUpRight />
+              </Badge>
+            </Link>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
