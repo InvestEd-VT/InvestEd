@@ -57,14 +57,24 @@ export interface Position {
   updatedAt?: string;
 }
 
+export interface PnLBySymbol {
+  symbol: string;
+  realizedPnL: number;
+  unrealizedPnL: number;
+  totalPnL: number;
+}
+
 export interface PortfolioResponse {
   id: string;
   name: string;
   cashBalance: number;
   positionsValue: number;
   totalValue: number;
-  totalPnL: number;
+  totalPnL: number;          // unrealized
   totalPnLPercent: number;
+  realizedPnL: number;
+  winRate: number | null;
+  pnlBySymbol: PnLBySymbol[];
   positions: Position[];
   createdAt: string;
   updatedAt: string;

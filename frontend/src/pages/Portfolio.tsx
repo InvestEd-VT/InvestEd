@@ -153,6 +153,13 @@ export default function Portfolio() {
   const totalPnl = positions.reduce((s, p) => s + p.pnl, 0);
   const totalPortfolioValue = (portfolio?.cashBalance ?? 0) + totalLiveValue;
   const totalPnlPercent = totalPortfolioValue > 0 ? (totalPnl / 10000) * 100 : 0; // vs starting $10k
+  const openPositionsCount = positions.length;
+  const unrealizedPnl = totalPnl;
+  const realizedPnl = portfolio?.realizedPnL ?? 0;
+  const winRate =
+    portfolio?.winRate !== null && portfolio?.winRate !== undefined
+      ? `${portfolio.winRate}%`
+      : '-';
 
   return (
     <PageShell>
@@ -242,23 +249,41 @@ export default function Portfolio() {
 
         {/* Stats row */}
         {portfolio && (
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-6 gap-4">
             <div className="rounded-xl bg-gray-50 p-4">
-              <p className="text-[11px] text-gray-400 uppercase tracking-wide">Cash</p>
+              <p className="text-[11px] text-gray-500 uppercase tracking-wide">Cash</p>
               <p className="text-lg font-semibold mt-1 text-gray-900">
                 {formatCurrency(portfolio.cashBalance)}
               </p>
             </div>
             <div className="rounded-xl bg-gray-50 p-4">
-              <p className="text-[11px] text-gray-400 uppercase tracking-wide">Positions</p>
+              <p className="text-[11px] text-gray-500 uppercase tracking-wide">Positions</p>
               <p className="text-lg font-semibold mt-1 text-gray-900">
                 {formatCurrency(totalLiveValue)}
               </p>
             </div>
             <div className="rounded-xl bg-gray-50 p-4">
-              <p className="text-[11px] text-gray-400 uppercase tracking-wide">P&L</p>
-              <p className={`text-lg font-semibold mt-1 ${pnlColor(totalPnl)}`}>
-                {formatCurrency(totalPnl)}
+              <p className="text-[11px] text-gray-500 uppercase tracking-wide">Unrealized P&L</p>
+              <p className={`text-lg font-semibold mt-1 ${pnlColor(unrealizedPnl)}`}>
+                {formatCurrency(unrealizedPnl)}
+              </p>
+            </div>
+            <div className="rounded-xl bg-gray-50 p-4">
+              <p className="text-[11px] text-gray-500 uppercase tracking-wide">Realized P&L</p>
+              <p className={`text-lg font-semibold mt-1 ${pnlColor(realizedPnl)}`}>
+                {formatCurrency(realizedPnl)}
+              </p>
+            </div>
+            <div className="rounded-xl bg-gray-50 p-4">
+              <p className="text-[11px] text-gray-500 uppercase tracking-wide">Win Rate</p>
+              <p className={`text-lg font-semibold mt-1 text-gray-900`}>
+                {winRate}
+              </p>
+            </div>
+            <div className="rounded-xl bg-gray-50 p-4">
+              <p className="text-[11px] text-gray-500 uppercase tracking-wide">Open Positions</p>
+              <p className="text-lg font-semibold mt-1 text-gray-900">
+                {openPositionsCount}
               </p>
             </div>
           </div>
