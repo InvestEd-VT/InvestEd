@@ -12,6 +12,7 @@ async function main() {
   const STRIKE_PRICE_EXPIRATION_ID = 'e5f6a7b8-c9d0-1234-efab-345678901234';
   const OPTION_PREMIUM_ID = 'f6a7b8c9-d0e1-2345-fabc-456789012345';
   const MONEYNESS_ID = 'a7b8c9d0-e1f2-3456-abcd-567890123456';
+  const DELTA_ID = 'b8c9d0e1-f2a3-4567-bcde-678901234567';
 
   await prisma.module.upsert({
     where: { id: INTRO_TO_OPTIONS_ID },
@@ -129,6 +130,22 @@ async function main() {
       order: 7,
     },
   });
+  await prisma.module.upsert({
+    where: { id: DELTA_ID },
+    update: {
+      title: 'Delta',
+      description:
+        'How Delta measures price sensitivity, changes with time and volatility, and guides contract selection.',
+      order: 8,
+    },
+    create: {
+      id: DELTA_ID,
+      title: 'Delta',
+      description:
+        'How Delta measures price sensitivity, changes with time and volatility, and guides contract selection.',
+      order: 8,
+    },
+  });
 
   console.log('✅ Modules seeded successfully');
   console.log('   → Order 1: Intro to Options');
@@ -138,6 +155,7 @@ async function main() {
   console.log('   → Order 5: Strike Price & Expiration');
   console.log('   → Order 6: Option Premium Explained');
   console.log('   → Order 7: In the Money, At the Money, Out of the Money');
+  console.log('   → Order 8: Delta');
 }
 
 main()

@@ -6,6 +6,7 @@ import GreeksOverview from '@/components/education/modules/GreeksOverview';
 import StrikePriceAndExpiration from '@/components/education/modules/StrikePriceAndExpiration';
 import OptionPremium from '@/components/education/modules/OptionPremium';
 import Moneyness from '@/components/education/modules/Moneyness';
+import Delta from '@/components/education/modules/Delta';
 
 const MODULE_COMPONENTS: Record<string, React.ComponentType> = {
   'a1b2c3d4-e5f6-7890-abcd-ef1234567890': IntroToOptions,
@@ -15,6 +16,7 @@ const MODULE_COMPONENTS: Record<string, React.ComponentType> = {
   'e5f6a7b8-c9d0-1234-efab-345678901234': StrikePriceAndExpiration,
   'f6a7b8c9-d0e1-2345-fabc-456789012345': OptionPremium,
   'a7b8c9d0-e1f2-3456-abcd-567890123456': Moneyness,
+  'b8c9d0e1-f2a3-4567-bcde-678901234567': Delta,
 };
 
 export default function ModuleRouter() {
