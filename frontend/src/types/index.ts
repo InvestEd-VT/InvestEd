@@ -70,7 +70,7 @@ export interface PortfolioResponse {
   cashBalance: number;
   positionsValue: number;
   totalValue: number;
-  totalPnL: number;          // unrealized
+  totalPnL: number;
   totalPnLPercent: number;
   realizedPnL: number;
   winRate: number | null;
