@@ -13,6 +13,7 @@ async function main() {
   const OPTION_PREMIUM_ID = 'f6a7b8c9-d0e1-2345-fabc-456789012345';
   const MONEYNESS_ID = 'a7b8c9d0-e1f2-3456-abcd-567890123456';
   const DELTA_ID = 'b8c9d0e1-f2a3-4567-bcde-678901234567';
+  const GAMMA_ID = 'c9d0e1f2-a3b4-5678-cdef-789012345678';
 
   await prisma.module.upsert({
     where: { id: INTRO_TO_OPTIONS_ID },
@@ -146,6 +147,22 @@ async function main() {
       order: 8,
     },
   });
+  await prisma.module.upsert({
+    where: { id: GAMMA_ID },
+    update: {
+      title: 'Gamma',
+      description:
+        'What Gamma measures, how it affects Delta near expiration, and what high Gamma means for your position.',
+      order: 9,
+    },
+    create: {
+      id: GAMMA_ID,
+      title: 'Gamma',
+      description:
+        'What Gamma measures, how it affects Delta near expiration, and what high Gamma means for your position.',
+      order: 9,
+    },
+  });
 
   console.log('✅ Modules seeded successfully');
   console.log('   → Order 1: Intro to Options');
@@ -156,6 +173,7 @@ async function main() {
   console.log('   → Order 6: Option Premium Explained');
   console.log('   → Order 7: In the Money, At the Money, Out of the Money');
   console.log('   → Order 8: Delta');
+  console.log('   → Order 9: Gamma');
 }
 
 main()
