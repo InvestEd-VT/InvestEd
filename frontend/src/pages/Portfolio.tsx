@@ -327,12 +327,14 @@ export default function Portfolio() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold tracking-tight">Portfolio</h1>
-          <button
-            onClick={() => setShowReset(!showReset)}
-            className="text-xs text-gray-400 hover:text-red-500 cursor-pointer transition-colors"
-          >
-            Reset Portfolio
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowReset(!showReset)}
+              className="text-xs text-gray-400 hover:text-red-500 cursor-pointer transition-colors"
+            >
+              Reset Portfolio
+            </button>
+          </div>
         </div>
 
         {/* Reset Portfolio Modal */}
@@ -343,7 +345,7 @@ export default function Portfolio() {
             if (!open) setResetInput('');
           }}
         >
-          <SheetContent className="sm:max-w-[400px]">
+          <SheetContent className="sm:max-w-100">
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2 text-red-500">
                 <AlertTriangleIcon className="size-5" />
@@ -617,12 +619,20 @@ export default function Portfolio() {
                       </p>
                     </div>
 
-                    <button
-                      onClick={() => handleSell(position)}
-                      className="px-3 py-1.5 rounded-full text-xs font-semibold bg-orange-50 text-orange-500 hover:bg-orange-100 transition-colors cursor-pointer"
-                    >
-                      Sell
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => navigate(`/portfolio/positions/${position.id}`)}
+                        className="px-3 py-1.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                      >
+                        Details
+                      </button>
+                      <button
+                        onClick={() => handleSell(position)}
+                        className="px-3 py-1.5 rounded-full text-xs font-semibold bg-orange-50 text-orange-500 hover:bg-orange-100 transition-colors cursor-pointer"
+                      >
+                        Sell
+                      </button>
+                    </div>
                   </div>
                 );
               })}

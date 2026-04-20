@@ -7,6 +7,8 @@ export interface User {
   lastName: string;
   createdAt: string;
   updatedAt: string;
+  // Optional server-side flag to indicate the user has already seen the welcome/onboarding screen
+  hasSeenWelcome?: boolean;
 }
 
 export interface RegisterRequest {
@@ -174,6 +176,35 @@ export interface Transaction {
 export interface TransactionsResponse {
   transactions: Transaction[];
   total: number;
+  limit: number;
+  offset: number;
+}
+
+// ─── Notifications ─────────────────────────────────────────────────────────────
+
+export type NotificationType =
+  | 'OPTION_EXPIRED'
+  | 'OPTION_EXERCISED'
+  | 'OPTION_EXPIRING_SOON'
+  | 'TRADE_EXECUTED'
+  | 'PORTFOLIO_RESET';
+
+export interface Notification {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  read: boolean;
+  data?: Record<string, unknown> | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NotificationsResponse {
+  notifications: Notification[];
+  total: number;
+  unreadCount: number;
   limit: number;
   offset: number;
 }

@@ -6,6 +6,39 @@ import { portfolioService } from '@/services';
 import type { Transaction } from '@/types';
 import { formatCurrency } from '@/lib/utils';
 
+function getTransactionTypeLabel(type: Transaction['type']) {
+  switch (type) {
+    case 'EXPIRED_WORTHLESS':
+      return 'Expired Worthless';
+    case 'EXPIRATION':
+      return 'Expiration';
+    case 'EXERCISE':
+      return 'Exercise';
+    case 'BUY':
+      return 'Buy';
+    case 'SELL':
+      return 'Sell';
+    default:
+      return type;
+  }
+}
+
+function getTransactionTypeClass(type: Transaction['type']) {
+  switch (type) {
+    case 'BUY':
+      return 'text-emerald-600';
+    case 'SELL':
+      return 'text-rose-600';
+    case 'EXPIRED_WORTHLESS':
+    case 'EXPIRATION':
+      return 'text-amber-700';
+    case 'EXERCISE':
+      return 'text-indigo-600';
+    default:
+      return 'text-muted-foreground';
+  }
+}
+
 function SkeletonRow({ keyIdx }: { keyIdx: number }) {
   return (
     <div
@@ -76,7 +109,7 @@ export default function RecentTransactions() {
           <div>
             {transactions.map((tx: Transaction) => {
               const date = tx.executedAt ? new Date(tx.executedAt).toLocaleDateString() : '-';
-              const side = (tx.type || 'BUY').toUpperCase();
+              const type = tx.type;
               const symbol = tx.symbol ?? '-';
               const strike = tx.strikePrice ? Number(tx.strikePrice).toFixed(2) : '-';
               const contracts = tx.quantity ?? '-';
@@ -92,11 +125,9 @@ export default function RecentTransactions() {
                 >
                   <div className="col-span-2 text-xs text-muted-foreground">{date}</div>
                   <div
-                    className={`col-span-2 text-sm font-medium ${
-                      side === 'BUY' ? 'text-emerald-600' : 'text-rose-600'
-                    }`}
+                    className={`col-span-2 text-sm font-medium ${getTransactionTypeClass(type)}`}
                   >
-                    {side}
+                    {getTransactionTypeLabel(type)}
                   </div>
                   <div className="col-span-3 text-sm font-medium truncate">{symbol}</div>
                   <div className="col-span-2 text-sm">{strike}</div>

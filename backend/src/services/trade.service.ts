@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import prisma from '../config/database.js';
 import { AppError } from '../utils/AppError.js';
 import * as massiveService from './massive.service.js';
+import * as notificationService from './notification.service.js';
 
 /**
  * Buys an options contract
@@ -139,6 +140,18 @@ export const buyOption = async (
     return { position, transaction, cashBalance: updatedPortfolio.cashBalance };
   });
 
+  // Create notification for successful purchase
+  try {
+    await notificationService.createNotification(
+      userId,
+      'TRADE_EXECUTED',
+      'Trade Executed',
+      `Bought ${data.quantity} ${data.optionType} contract(s) for ${data.symbol} at $${data.price.toFixed(2)}/contract`
+    );
+  } catch (error) {
+    console.error('Failed to create buy notification:', error);
+  }
+
   return result;
 };
 
@@ -236,6 +249,18 @@ export const sellOption = async (
 
     return { position, transaction, cashBalance: updatedPortfolio.cashBalance };
   });
+
+  // Create notification for successful sale
+  try {
+    await notificationService.createNotification(
+      userId,
+      'TRADE_EXECUTED',
+      'Trade Executed',
+      `Sold ${data.quantity} ${data.optionType} contract(s) for ${data.symbol} at $${data.price.toFixed(2)}/contract`
+    );
+  } catch (error) {
+    console.error('Failed to create sell notification:', error);
+  }
 
   return result;
 };

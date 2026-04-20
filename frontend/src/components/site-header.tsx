@@ -2,22 +2,32 @@ import { useLocation } from 'react-router-dom';
 import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { StockSearch } from '@/components/trading/StockSearch';
+import { NotificationBell } from '@/components/notifications';
 
 const pageTitles: Record<string, string> = {
   '/dashboard': 'Dashboard',
   '/portfolio': 'Portfolio',
   '/transactions': 'Transactions',
+  '/notifications': 'Notifications',
   '/learn': 'Learn',
   '/settings': 'Settings',
   '/help': 'Help',
   '/search': 'Search',
 };
 
-export function SiteHeader() {
+interface SiteHeaderProps {
+  searchOverride?: React.ReactNode;
+}
+
+export function SiteHeader({ searchOverride }: SiteHeaderProps) {
   const location = useLocation();
   const title =
     pageTitles[location.pathname] ||
-    (location.pathname.startsWith('/stock') ? 'Trade' : 'InvestEd');
+    (location.pathname.startsWith('/stock')
+      ? 'Trade'
+      : location.pathname.startsWith('/portfolio/positions/')
+        ? 'Position Detail'
+        : 'InvestEd');
 
   return (
     <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b border-gray-200 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
@@ -26,9 +36,14 @@ export function SiteHeader() {
         <Separator orientation="vertical" className="mx-2 data-[orientation=vertical]:h-4" />
         <h1 className="text-sm font-medium text-gray-500">{title}</h1>
 
-        {/* Stock search bar — centered */}
+        {/* Search bar — stock search by default, overridable per layout */}
         <div className="hidden md:flex flex-1 justify-center max-w-md mx-auto">
-          <StockSearch />
+          {searchOverride ?? <StockSearch />}
+        </div>
+
+        {/* Notification Bell */}
+        <div className="ml-auto">
+          <NotificationBell />
         </div>
       </div>
     </header>

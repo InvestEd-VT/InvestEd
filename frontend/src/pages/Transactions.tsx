@@ -16,12 +16,46 @@ import { formatCurrency } from '@/utils/format';
 
 const PAGE_SIZE = 20;
 
+function getTransactionTypeLabel(type: Transaction['type']) {
+  switch (type) {
+    case 'EXPIRED_WORTHLESS':
+      return 'Expired Worthless';
+    case 'EXPIRATION':
+      return 'Expiration';
+    case 'EXERCISE':
+      return 'Exercise';
+    case 'BUY':
+      return 'Buy';
+    case 'SELL':
+      return 'Sell';
+    default:
+      return type;
+  }
+}
+
+function getTransactionTypeBadgeClass(type: Transaction['type']) {
+  switch (type) {
+    case 'BUY':
+      return 'bg-green-50 text-green-600';
+    case 'SELL':
+      return 'bg-orange-50 text-orange-500';
+    case 'EXPIRED_WORTHLESS':
+    case 'EXPIRATION':
+      return 'bg-amber-50 text-amber-700';
+    case 'EXERCISE':
+      return 'bg-indigo-50 text-indigo-600';
+    default:
+      return 'bg-gray-100 text-gray-500';
+  }
+}
+
 export default function Transactions() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
   const [typeFilter, setTypeFilter] = useState('ALL');
   const [symbolFilter, setSymbolFilter] = useState('');
+  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchTransactions = async () => {
@@ -30,6 +64,7 @@ export default function Transactions() {
       const params: Record<string, string | number> = {
         limit: PAGE_SIZE,
         offset,
+        sort: sortOrder,
       };
       if (typeFilter !== 'ALL') params.type = typeFilter;
       if (symbolFilter.trim()) params.symbol = symbolFilter.trim().toUpperCase();
@@ -46,7 +81,7 @@ export default function Transactions() {
 
   useEffect(() => {
     fetchTransactions();
-  }, [offset, typeFilter]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [offset, typeFilter, sortOrder]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -74,9 +109,28 @@ export default function Transactions() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">All Types</SelectItem>
+              <SelectItem value="ALL">All types</SelectItem>
               <SelectItem value="BUY">Buy</SelectItem>
               <SelectItem value="SELL">Sell</SelectItem>
+              <SelectItem value="EXERCISE">Exercise</SelectItem>
+              <SelectItem value="EXPIRATION">Expiration</SelectItem>
+              <SelectItem value="EXPIRED_WORTHLESS">Expired worthless</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={sortOrder}
+            onValueChange={(v: 'desc' | 'asc') => {
+              setSortOrder(v);
+              setOffset(0);
+            }}
+          >
+            <SelectTrigger className="w-[150px] h-9 bg-white border-gray-200 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="desc">Most recent</SelectItem>
+              <SelectItem value="asc">Oldest first</SelectItem>
             </SelectContent>
           </Select>
 
@@ -111,42 +165,44 @@ export default function Transactions() {
             </div>
 
             {/* Rows */}
-            {transactions.map((tx) => (
-              <div
-                key={tx.id}
-                className="grid grid-cols-2 sm:grid-cols-6 items-center px-4 py-3.5 text-sm"
-              >
-                <span className="text-xs text-gray-400">
-                  {new Date(tx.executedAt).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
-                </span>
-                <span>
-                  <span
-                    className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold ${
-                      tx.type === 'BUY'
-                        ? 'bg-green-50 text-green-600'
-                        : tx.type === 'SELL'
-                          ? 'bg-orange-50 text-orange-500'
-                          : 'bg-gray-100 text-gray-500'
-                    }`}
-                  >
-                    {tx.type}
+            {transactions.map((tx) => {
+              const total = Number(tx.quantity ?? 0) * Number(tx.price ?? 0) * 100;
+              const details = [
+                tx.optionType ?? null,
+                tx.strikePrice !== null && tx.strikePrice !== undefined
+                  ? formatCurrency(Number(tx.strikePrice))
+                  : null,
+                `x${tx.quantity ?? 0}`,
+              ]
+                .filter(Boolean)
+                .join(' ');
+
+              return (
+                <div
+                  key={tx.id}
+                  className="grid grid-cols-2 sm:grid-cols-6 items-center px-4 py-3.5 text-sm"
+                >
+                  <span className="text-xs text-gray-400">
+                    {new Date(tx.executedAt).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
                   </span>
-                </span>
-                <span className="font-semibold">{tx.symbol}</span>
-                <span className="text-gray-500 text-xs">
-                  {tx.optionType ?? '—'} {tx.strikePrice ? formatCurrency(tx.strikePrice) : ''} x
-                  {tx.quantity}
-                </span>
-                <span className="text-right text-gray-500">{formatCurrency(tx.price)}</span>
-                <span className="text-right font-semibold">
-                  {formatCurrency(tx.quantity * tx.price * 100)}
-                </span>
-              </div>
-            ))}
+                  <span>
+                    <span
+                      className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold ${getTransactionTypeBadgeClass(tx.type)}`}
+                    >
+                      {getTransactionTypeLabel(tx.type)}
+                    </span>
+                  </span>
+                  <span className="font-semibold">{tx.symbol}</span>
+                  <span className="text-gray-500 text-xs">{details || '—'}</span>
+                  <span className="text-right text-gray-500">{formatCurrency(Number(tx.price ?? 0))}</span>
+                  <span className="text-right font-semibold">{formatCurrency(total)}</span>
+                </div>
+              );
+            })}
           </div>
         )}
 

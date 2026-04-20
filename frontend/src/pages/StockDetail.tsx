@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   CandlestickSeries,
   ColorType,
@@ -31,10 +31,29 @@ import {
   computeParkinsonVolatility,
   setTickerVolatility,
   getTickerVolatility,
+  priceOption,
 } from '@/utils/options';
 
 type ChartTimeframe = '2d' | '1w' | '1m';
 type CandlePoint = CandlestickData<UTCTimestamp>;
+
+interface StockDetailLocationState {
+  tradeMode?: 'buy' | 'sell';
+  preselectedContract?: OptionsContract;
+  defaultPremium?: number;
+  openTrade?: boolean;
+  underlyingPrice?: number;
+  fallbackCompanyName?: string;
+}
+
+interface PendingTradeState {
+  tradeMode: 'buy' | 'sell';
+  preselectedContract: OptionsContract;
+  defaultPremium?: number;
+  openTrade: boolean;
+  underlyingPrice?: number;
+  fallbackCompanyName?: string;
+}
 
 const TIMEFRAME_LABELS: Record<ChartTimeframe, string> = {
   '2d': '2 Day',
@@ -45,7 +64,9 @@ const TIMEFRAME_LABELS: Record<ChartTimeframe, string> = {
 export default function StockDetail() {
   const { symbol } = useParams<{ symbol: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const chartContainerRef = useRef<HTMLDivElement | null>(null);
+  const locationState = (location.state as StockDetailLocationState | null) ?? null;
 
   const [stock, setStock] = useState<Stock | null>(null);
   const [chartData, setChartData] = useState<StockChartData[]>([]);
@@ -65,11 +86,66 @@ export default function StockDetail() {
   const [selectedPremium, setSelectedPremium] = useState(1);
   const [tradeOpen, setTradeOpen] = useState(false);
   const [selectedDte, setSelectedDte] = useState(7);
+  const [pendingTradeState, setPendingTradeState] = useState<PendingTradeState | null>(() =>
+    locationState?.preselectedContract
+      ? {
+          tradeMode: locationState.tradeMode ?? 'sell',
+          preselectedContract: locationState.preselectedContract,
+          defaultPremium: locationState.defaultPremium,
+          openTrade: locationState.openTrade ?? false,
+          underlyingPrice: locationState.underlyingPrice,
+          fallbackCompanyName: locationState.fallbackCompanyName,
+        }
+      : null
+  );
+  const preselectedContract = pendingTradeState?.preselectedContract;
+  const hasMatchingPreselectedContract =
+    Boolean(preselectedContract) &&
+    preselectedContract?.underlying_ticker.toUpperCase() === (symbol ?? '').toUpperCase();
+  const hasMatchingFallbackStock =
+    Boolean(locationState?.underlyingPrice) &&
+    (preselectedContract?.underlying_ticker.toUpperCase() === (symbol ?? '').toUpperCase() ||
+      !preselectedContract);
 
   useEffect(() => {
     setTickerQuery((symbol ?? '').toUpperCase());
     setTickerSearchError(null);
   }, [symbol]);
+
+  useEffect(() => {
+    if (locationState?.preselectedContract) {
+      setPendingTradeState({
+        tradeMode: locationState.tradeMode ?? 'sell',
+        preselectedContract: locationState.preselectedContract,
+        defaultPremium: locationState.defaultPremium,
+        openTrade: locationState.openTrade ?? false,
+        underlyingPrice: locationState.underlyingPrice,
+      });
+    }
+  }, [locationState]);
+
+  useEffect(() => {
+    if (!pendingTradeState?.openTrade || !preselectedContract || !symbol) return;
+
+    const contract = preselectedContract;
+    if (contract.underlying_ticker.toUpperCase() !== symbol.toUpperCase()) return;
+
+    setTradeMode(pendingTradeState.tradeMode);
+    setSelectedContract(contract);
+    setSelectedPremium(pendingTradeState.defaultPremium ?? 1);
+
+    const contractDte = Math.max(
+      0,
+      Math.round(
+        (new Date(`${contract.expiration_date}T16:00:00`).getTime() - Date.now()) / 86400000
+      )
+    );
+    setSelectedDte(contractDte);
+    setActiveTab(contract.contract_type === 'call' ? 'calls' : 'puts');
+    setTradeOpen(true);
+    setPendingTradeState((current) => (current ? { ...current, openTrade: false } : current));
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.pathname, navigate, pendingTradeState, preselectedContract, symbol]);
 
   // Fetch stock details
   useEffect(() => {
@@ -86,6 +162,39 @@ export default function StockDetail() {
         const stockData = await stockService.getDetail(symbol);
         setStock(stockData);
       } catch (err) {
+        if (hasMatchingPreselectedContract) {
+          setStock({
+            symbol: preselectedContract?.underlying_ticker ?? symbol,
+            companyName:
+              pendingTradeState?.fallbackCompanyName ??
+              preselectedContract?.underlying_ticker ??
+              symbol,
+            currentPrice: pendingTradeState?.underlyingPrice ?? 0,
+            priceChange: 0,
+            priceChangePercent: 0,
+            volume: 0,
+            marketCap: 0,
+          });
+          setError(null);
+          setIsRateLimited(false);
+          return;
+        }
+
+        if (hasMatchingFallbackStock) {
+          setStock({
+            symbol,
+            companyName: locationState?.fallbackCompanyName ?? symbol,
+            currentPrice: locationState?.underlyingPrice ?? 0,
+            priceChange: 0,
+            priceChangePercent: 0,
+            volume: 0,
+            marketCap: 0,
+          });
+          setError(null);
+          setIsRateLimited(false);
+          return;
+        }
+
         if (isAxiosError(err) && err.response?.status === 429) {
           setIsRateLimited(true);
           setError('API limit reached');
@@ -96,7 +205,16 @@ export default function StockDetail() {
         setLoading(false);
       }
     })();
-  }, [symbol]);
+  }, [
+    hasMatchingFallbackStock,
+    hasMatchingPreselectedContract,
+    locationState?.fallbackCompanyName,
+    locationState?.underlyingPrice,
+    pendingTradeState?.fallbackCompanyName,
+    pendingTradeState?.underlyingPrice,
+    preselectedContract,
+    symbol,
+  ]);
 
   // Fetch chart history
   useEffect(() => {
@@ -315,6 +433,31 @@ export default function StockDetail() {
     }));
   }, [symbol, stock?.currentPrice, activeTab, syntheticExpiration]);
 
+  // Auto-open trade sheet when navigated from onboarding CTA
+  const autoOpenedRef = useRef(false);
+
+  useEffect(() => {
+    const state = (location.state as any) ?? {};
+    if (autoOpenedRef.current) return;
+    if (state.openTrade && contracts.length > 0 && stock?.currentPrice) {
+      const idx = Math.floor(contracts.length / 2);
+      const contract = contracts[idx];
+      if (contract) {
+        const theoretical = priceOption(
+          stock.currentPrice,
+          contract.strike_price,
+          contract.expiration_date,
+          contract.contract_type,
+          stock.symbol
+        );
+        handleSelectContract(contract, theoretical);
+        autoOpenedRef.current = true;
+        // remove navigation state so re-mounts don't reopen
+        navigate(location.pathname, { replace: true });
+      }
+    }
+  }, [contracts, location, stock?.currentPrice]);
+
   if (loading) {
     return (
       <PageShell>
@@ -405,9 +548,9 @@ export default function StockDetail() {
             </Select>
           </div>
           {chartLoading ? (
-            <Skeleton className="h-[400px] w-full" />
+            <Skeleton className="h-100 w-full" />
           ) : candleData.length > 0 ? (
-            <div ref={chartContainerRef} className="relative h-[400px] w-full" />
+            <div ref={chartContainerRef} className="relative h-100 w-full" />
           ) : (
             <p className="text-sm text-muted-foreground py-8 text-center">
               No chart data available

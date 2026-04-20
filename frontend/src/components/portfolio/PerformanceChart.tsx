@@ -6,6 +6,7 @@ import {
   LineChart,
   Line,
   XAxis,
+  YAxis,
   Tooltip,
   CartesianGrid,
   ReferenceLine,
@@ -15,7 +16,16 @@ import portfolioService from '@/services/portfolio.service';
 import { formatCurrency } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
-export default function PerformanceChart({ period = 'all' }: { period?: string }) {
+const PERIODS = [
+  { label: '7D', value: '7d' },
+  { label: '30D', value: '30d' },
+  { label: '90D', value: '90d' },
+  { label: '1Y', value: '1y' },
+  { label: 'All', value: 'all' },
+];
+
+export default function PerformanceChart() {
+  const [period, setPeriod] = React.useState('30d');
   const [data, setData] = React.useState<Array<{ date: string; value: number }>>([]);
   const [loading, setLoading] = React.useState(true);
   const [startingBalance, setStartingBalance] = React.useState<number | null>(null);
@@ -30,14 +40,13 @@ export default function PerformanceChart({ period = 'all' }: { period?: string }
         const history = (res.history || [])
           .map((h: any) => ({
             date: new Date(h.date).toISOString(),
-            value: Number(h.cashBalance),
+            value: Number(h.totalValue),
           }))
           .sort(
-            (a: { date: string | number | Date }, b: { date: string | number | Date }) =>
+            (a: { date: string }, b: { date: string }) =>
               new Date(a.date).getTime() - new Date(b.date).getTime()
           );
         setData(history);
-        // set starting balance from first history point if available
         if (history.length > 0) setStartingBalance(history[0].value);
         else setStartingBalance(null);
       })
@@ -61,11 +70,35 @@ export default function PerformanceChart({ period = 'all' }: { period?: string }
       ? '#059669'
       : '#e11d48';
 
+  const values = data.map((d) => d.value);
+  const minVal = Math.min(...values);
+  const maxVal = Math.max(...values);
+  const padding = (maxVal - minVal) * 0.2 || 100;
+  const domainMin = Math.floor((minVal - padding) / 10) * 10;
+  const domainMax = Math.ceil((maxVal + padding) / 10) * 10;
+
   return (
     <Card className="@container/card">
-      <CardHeader>
-        <CardTitle>Portfolio performance</CardTitle>
-        <CardDescription>Portfolio value over time</CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>Portfolio performance</CardTitle>
+          <CardDescription>Portfolio value over time</CardDescription>
+        </div>
+        <div className="flex gap-1">
+          {PERIODS.map((p) => (
+            <button
+              key={p.value}
+              onClick={() => setPeriod(p.value)}
+              className={`px-3 py-1 text-xs rounded-md border transition-colors ${
+                period === p.value
+                  ? 'bg-gray-900 text-white border-gray-900'
+                  : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
         {loading ? (
@@ -79,13 +112,14 @@ export default function PerformanceChart({ period = 'all' }: { period?: string }
         ) : (
           <div style={{ width: '100%', height: 280 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data} margin={{ top: 8, right: 40, left: 10, bottom: 24 }}>
+              <LineChart data={data} margin={{ top: 8, right: 40, left: 10, bottom: 8 }}>
                 <CartesianGrid vertical={false} />
                 <XAxis
                   dataKey="date"
                   tickLine={false}
                   axisLine={false}
                   interval="preserveStartEnd"
+                  tick={{ dy: 10 }}
                   tickFormatter={(value) => {
                     const date = new Date(value);
                     return date.toLocaleDateString('en-US', {
@@ -93,6 +127,15 @@ export default function PerformanceChart({ period = 'all' }: { period?: string }
                       day: 'numeric',
                     });
                   }}
+                />
+                <YAxis
+                  domain={[domainMin, domainMax]}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(value) =>
+                    `$${Number(value).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+                  }
+                  width={70}
                 />
                 <Tooltip
                   content={({ active, payload, label }: any) => {

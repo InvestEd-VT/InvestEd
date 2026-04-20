@@ -3,9 +3,12 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { tradeService, portfolioService } from '@/services';
-import type { OptionsContract } from '@/types';
+import type { OptionsContract, TradeResponse } from '@/types';
 import { formatCurrency } from '@/utils/format';
 import { PayoffChart } from './PayoffChart';
+import OptionsOrderConfirmModal from './OptionsOrderConfirmModal';
+import OptionsTradeSuccess from './OptionsTradeSuccess';
+import OptionsTradeError from './OptionsTradeError';
 import axios from 'axios';
 
 interface TradeModalProps {
@@ -29,8 +32,9 @@ export function TradeModal({
   const [price, setPrice] = useState(defaultPremium ?? 1);
   const [cashBalance, setCashBalance] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<string[]>([]);
-  const [success, setSuccess] = useState(false);
+  const [tradeError, setTradeError] = useState<string | null>(null);
+  const [tradeResult, setTradeResult] = useState<TradeResponse | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const isCall = contract.contract_type === 'call';
   const accent =
@@ -52,8 +56,9 @@ export function TradeModal({
     if (open) {
       setQuantity(1);
       setPrice(defaultPremium ?? 1);
-      setErrors([]);
-      setSuccess(false);
+      setTradeError(null);
+      setTradeResult(null);
+      setConfirmOpen(false);
       portfolioService
         .getPortfolio()
         .then((p) => setCashBalance(p.cashBalance))
@@ -64,8 +69,9 @@ export function TradeModal({
   const multiplier = contract.shares_per_contract || 100;
   const total = quantity * price * multiplier;
 
-  const handleSubmit = async () => {
-    setErrors([]);
+  const handleConfirmSubmit = async () => {
+    setConfirmOpen(false);
+    setTradeError(null);
     setIsSubmitting(true);
     try {
       const tradeData = {
@@ -78,29 +84,34 @@ export function TradeModal({
         price,
       };
 
+      let response: TradeResponse;
       if (mode === 'buy') {
-        await tradeService.buyOption(tradeData);
+        response = await tradeService.buyOption(tradeData);
       } else {
-        await tradeService.sellOption(tradeData);
+        response = await tradeService.sellOption(tradeData);
       }
 
-      setSuccess(true);
-      setTimeout(() => onClose(), 1200);
+      setTradeResult(response);
+      setCashBalance(response.cashBalance);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data) {
         const data = error.response.data;
-        setErrors([data.error || data.message || 'Trade failed']);
+        setTradeError(data.error || data.message || 'Trade failed');
       } else {
-        setErrors(['Trade failed. Please try again.']);
+        setTradeError('Trade failed. Please try again.');
       }
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handleGoBackToOrder = () => {
+    setTradeError(null);
+  };
+
   return (
     <Sheet open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <SheetContent className="sm:max-w-[400px] bg-white border-gray-200 p-0 flex flex-col">
+      <SheetContent className="sm:max-w-100 bg-white border-gray-200 p-0 flex flex-col">
         <SheetHeader className="p-6 pb-0">
           <SheetTitle className="text-gray-900 text-lg font-semibold">
             {mode === 'buy' ? 'Buy' : 'Sell'}{' '}
@@ -110,33 +121,34 @@ export function TradeModal({
           </SheetTitle>
         </SheetHeader>
 
-        <div className="flex-1 flex flex-col p-6 pt-4 space-y-5">
-          {/* Contract info */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-bold text-gray-700">{contract.underlying_ticker}</span>
-              <span
-                className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
-                  isCall ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-500'
-                }`}
-              >
-                {contract.contract_type.toUpperCase()}
-              </span>
-            </div>
+        {!tradeResult && !tradeError ? (
+          <div className="flex-1 flex flex-col p-6 pt-4 space-y-5">
+            {/* Contract info */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xl font-bold text-gray-700">{contract.underlying_ticker}</span>
+                <span
+                  className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
+                    isCall ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-500'
+                  }`}
+                >
+                  {contract.contract_type.toUpperCase()}
+                </span>
+              </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-lg bg-gray-50 p-3">
-                <p className="text-[11px] text-gray-400 uppercase tracking-wide">Strike</p>
-                <p className="text-sm font-semibold mt-0.5 text-gray-500">
-                  {formatCurrency(contract.strike_price)}
-                </p>
-              </div>
-              <div className="rounded-lg bg-gray-50 p-3">
-                <p className="text-[11px] text-gray-400 uppercase tracking-wide">Expires</p>
-                <p className="text-sm font-semibold mt-0.5 text-gray-500">{contract.expiration_date}</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-lg bg-gray-50 p-3">
+                  <p className="text-[11px] text-gray-400 uppercase tracking-wide">Strike</p>
+                  <p className="text-sm font-semibold mt-0.5 text-gray-500">
+                    {formatCurrency(contract.strike_price)}
+                  </p>
+                </div>
+                <div className="rounded-lg bg-gray-50 p-3">
+                  <p className="text-[11px] text-gray-400 uppercase tracking-wide">Expires</p>
+                  <p className="text-sm font-semibold mt-0.5 text-gray-500">{contract.expiration_date}</p>
+                </div>
               </div>
             </div>
-          </div>
 
           {/* Inputs */}
           <div className="space-y-4">
@@ -206,38 +218,41 @@ export function TradeModal({
             />
           </div>
 
-          {/* Errors */}
-          {errors.length > 0 && (
-            <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-500">
-              {errors.map((err, i) => (
-                <p key={i}>{err}</p>
-              ))}
-            </div>
-          )}
-
-          {/* Success */}
-          {success && (
-            <div className="rounded-lg bg-green-50 border border-green-200 p-3 text-sm text-green-600 font-medium">
-              Trade executed successfully!
-            </div>
-          )}
-
           {/* Submit */}
           <div className="mt-auto pt-2">
             <button
-              onClick={handleSubmit}
-              disabled={isSubmitting || success || quantity < 1 || price <= 0}
+              onClick={() => setConfirmOpen(true)}
+              disabled={isSubmitting || quantity < 1 || price <= 0}
               className={`w-full py-3 rounded-full font-semibold text-sm text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${accent.bg} ${accent.hover}`}
             >
               {isSubmitting
                 ? 'Executing...'
-                : success
-                  ? 'Done!'
-                  : `${mode === 'buy' ? 'Buy' : 'Sell'} ${quantity} Contract${quantity > 1 ? 's' : ''}`}
+                : `${mode === 'buy' ? 'Buy' : 'Sell'} ${quantity} Contract${quantity > 1 ? 's' : ''}`}
             </button>
           </div>
-        </div>
+          </div>
+        ) : tradeError ? (
+          <OptionsTradeError
+            message={tradeError}
+            onRetry={handleConfirmSubmit}
+            onGoBack={handleGoBackToOrder}
+            isSubmitting={isSubmitting}
+          />
+        ) : (
+          tradeResult && <OptionsTradeSuccess trade={tradeResult} onClose={onClose} />
+        )}
       </SheetContent>
+
+      <OptionsOrderConfirmModal
+        open={confirmOpen}
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={handleConfirmSubmit}
+        contract={contract}
+        mode={mode}
+        quantity={quantity}
+        price={price}
+        isSubmitting={isSubmitting}
+      />
     </Sheet>
   );
 }
