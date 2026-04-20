@@ -24,7 +24,7 @@ const portfolioService = {
           '30d': 30,
           '90d': 90,
           '1y': 365,
-          all: 90,
+          all: 3650,
         };
         const days = periodMap[period] || 30;
         const now = new Date();

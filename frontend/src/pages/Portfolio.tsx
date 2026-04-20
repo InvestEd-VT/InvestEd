@@ -32,7 +32,32 @@ export default function Portfolio() {
   const [sellStockPrice, setSellStockPrice] = useState(0);
   const [sellPremium, setSellPremium] = useState(0);
   const [sellOpen, setSellOpen] = useState(false);
+  const [period, setPeriod] = useState<'ALL' | '1M' | '1W' | '1D'>('ALL');
+  const [history, setHistory] = useState<any[]>([]);
   const navigate = useNavigate();
+
+  const periodMap: Record<string, string> = {
+    ALL: 'all',
+    '1M': '30d',
+    '1W': '7d',
+    '1D': '7d',
+  };
+
+  const fetchHistory = async (selectedPeriod: string) => {
+    try {
+      const res = await portfolioService.getPortfolioHistory(
+        periodMap[selectedPeriod]
+      );
+
+      setHistory(res.history);
+    } catch {
+      setHistory([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchHistory(period);
+  }, [period]);
 
   const fetchPortfolio = async () => {
     setIsLoading(true);
@@ -87,6 +112,7 @@ export default function Portfolio() {
 
   useEffect(() => {
     fetchPortfolio();
+    fetchHistory(period);
   }, []);
 
   const handleReset = async () => {
@@ -234,16 +260,49 @@ export default function Portfolio() {
           </SheetContent>
         </Sheet>
 
-        {/* Big number: Total Value */}
+        {/* Big number + Time Tabs */}
         {portfolio && (
-          <div className="space-y-1">
-            <p className="text-4xl font-bold tracking-tight">
-              {formatCurrency(totalPortfolioValue)}
-            </p>
-            <p className={`text-sm font-medium ${pnlColor(totalPnl)}`}>
-              {formatCurrency(totalPnl)} ({formatPercent(totalPnlPercent)})
-              <span className="text-gray-400 font-normal ml-2">All time</span>
-            </p>
+          <div className="flex items-end justify-between">
+            {/* Left: Portfolio Value */}
+            <div className="space-y-1">
+              <p className="text-4xl font-bold tracking-tight">
+                {formatCurrency(totalPortfolioValue)}
+              </p>
+              <p className={`text-sm font-medium ${pnlColor(totalPnl)}`}>
+                {formatCurrency(totalPnl)} ({formatPercent(totalPnlPercent)})
+                <span className="text-gray-400 font-normal ml-2">
+                  {period === 'ALL'
+                    ? 'All time'
+                    : period === '1M'
+                    ? '1 Month'
+                    : period === '1W'
+                    ? '1 Week'
+                    : 'Today'}
+                </span>
+              </p>
+            </div>
+
+            {/* Right: Time Period Tabs */}
+            <div className="flex gap-2">
+              {[
+                { label: 'All', value: 'ALL' },
+                { label: '1M', value: '1M' },
+                { label: '1W', value: '1W' },
+                { label: 'Today', value: '1D' },
+              ].map((tab) => (
+                <button
+                  key={tab.value}
+                  onClick={() => setPeriod(tab.value as any)}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition ${
+                    period === tab.value
+                      ? 'bg-gray-900 text-white'
+                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
