@@ -323,7 +323,7 @@ export default function Portfolio() {
 
   return (
     <PageShell>
-      <div className="max-w-5xl space-y-6">
+      <div className="max-w-full space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold tracking-tight">Portfolio</h1>
@@ -647,9 +647,6 @@ export default function Portfolio() {
                     { label: 'Theta ($/day)', value: netGreeks.theta },
                     { label: 'Vega', value: netGreeks.vega },
                   ].map((g) => {
-                    const abs = Math.abs(g.value);
-                    const pct = Math.min(100, abs / 1000); // scaling for UI only
-
                     return (
                       <div key={g.label} className="space-y-1">
                         <div className="flex justify-between text-xs">
@@ -670,7 +667,7 @@ export default function Portfolio() {
                   </h2>
 
                   <div className="flex items-center">
-                    {/* PIE */}
+                    {/* Pie Chart */}
                     <div className="w-3/4 h-40">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
@@ -690,7 +687,7 @@ export default function Portfolio() {
                       </ResponsiveContainer>
                     </div>
 
-                    {/* LEGEND */}
+                    {/* Legend */}
                     <div className="w-1/2 pl-4 space-y-2">
                       {allocationWithColors.map((d) => {
                         const total = allocationWithColors.reduce((s, x) => s + x.value, 0);
