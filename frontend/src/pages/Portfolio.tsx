@@ -435,162 +435,170 @@ export default function Portfolio() {
 
         {/* Stats row */}
         {portfolio && (
-          <div className="grid grid-cols-6 gap-4">
-            <div className="rounded-xl bg-gray-50 p-4">
-              <p className="text-[11px] text-gray-500 uppercase tracking-wide">Cash</p>
-              <p className="text-lg font-semibold mt-1 text-gray-900">
-                {formatCurrency(portfolio.cashBalance)}
-              </p>
+          <div className="space-y-3">
+            <div className="grid grid-cols-6 gap-4">
+              <div className="rounded-xl bg-gray-50 p-4">
+                <p className="text-[11px] text-gray-500 uppercase tracking-wide">Cash</p>
+                <p className="text-lg font-semibold mt-1 text-gray-900">
+                  {formatCurrency(portfolio.cashBalance)}
+                </p>
+              </div>
+              <div className="rounded-xl bg-gray-50 p-4">
+                <p className="text-[11px] text-gray-500 uppercase tracking-wide">Positions</p>
+                <p className="text-lg font-semibold mt-1 text-gray-900">
+                  {formatCurrency(totalLiveValue)}
+                </p>
+              </div>
+              <div className="rounded-xl bg-gray-50 p-4">
+                <p className="text-[11px] text-gray-500 uppercase tracking-wide">Unrealized P&L</p>
+                <p className={`text-lg font-semibold mt-1 ${pnlColor(unrealizedPnl)}`}>
+                  {formatCurrency(unrealizedPnl)}
+                </p>
+              </div>
+              <div className="rounded-xl bg-gray-50 p-4">
+                <p className="text-[11px] text-gray-500 uppercase tracking-wide">Realized P&L</p>
+                <p className={`text-lg font-semibold mt-1 ${pnlColor(realizedPnl)}`}>
+                  {formatCurrency(realizedPnl)}
+                </p>
+              </div>
+              <div className="rounded-xl bg-gray-50 p-4">
+                <p className="text-[11px] text-gray-500 uppercase tracking-wide">Win Rate</p>
+                <p className={`text-lg font-semibold mt-1 text-gray-900`}>
+                  {winRate}
+                </p>
+              </div>
+              <div className="rounded-xl bg-gray-50 p-4">
+                <p className="text-[11px] text-gray-500 uppercase tracking-wide">Open Positions</p>
+                <p className="text-lg font-semibold mt-1 text-gray-900">
+                  {openPositionsCount}
+                </p>
+              </div>
             </div>
-            <div className="rounded-xl bg-gray-50 p-4">
-              <p className="text-[11px] text-gray-500 uppercase tracking-wide">Positions</p>
-              <p className="text-lg font-semibold mt-1 text-gray-900">
-                {formatCurrency(totalLiveValue)}
-              </p>
-            </div>
-            <div className="rounded-xl bg-gray-50 p-4">
-              <p className="text-[11px] text-gray-500 uppercase tracking-wide">Unrealized P&L</p>
-              <p className={`text-lg font-semibold mt-1 ${pnlColor(unrealizedPnl)}`}>
-                {formatCurrency(unrealizedPnl)}
-              </p>
-            </div>
-            <div className="rounded-xl bg-gray-50 p-4">
-              <p className="text-[11px] text-gray-500 uppercase tracking-wide">Realized P&L</p>
-              <p className={`text-lg font-semibold mt-1 ${pnlColor(realizedPnl)}`}>
-                {formatCurrency(realizedPnl)}
-              </p>
-            </div>
-            <div className="rounded-xl bg-gray-50 p-4">
-              <p className="text-[11px] text-gray-500 uppercase tracking-wide">Win Rate</p>
-              <p className={`text-lg font-semibold mt-1 text-gray-900`}>
-                {winRate}
-              </p>
-            </div>
-            <div className="rounded-xl bg-gray-50 p-4">
-              <p className="text-[11px] text-gray-500 uppercase tracking-wide">Open Positions</p>
-              <p className="text-lg font-semibold mt-1 text-gray-900">
-                {openPositionsCount}
-              </p>
+
+            <div className="grid grid-cols-3 gap-4">
+              {/* Net Greeks Exposure */}
+              <div className="rounded-xl border border-gray-200 p-4 space-y-4">
+                <h2 className="text-sm font-medium text-gray-500">Net Greeks Exposure</h2>
+
+                {[
+                  { label: 'Delta', value: netGreeks.delta },
+                  { label: 'Gamma', value: netGreeks.gamma },
+                  { label: 'Theta ($/day)', value: netGreeks.theta },
+                  { label: 'Vega', value: netGreeks.vega },
+                ].map((g) => {
+                  const abs = Math.abs(g.value);
+                  const pct = Math.min(100, abs / 1000); // scaling for UI only
+
+                  return (
+                    <div key={g.label} className="space-y-1">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-500">{g.label}</span>
+                        <span className="font-medium text-gray-900">
+                          {g.value.toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Allocation */}
+              <div className="rounded-xl border border-gray-200 p-4">
+                <h2 className="text-sm font-medium text-gray-500 mb-3">
+                  Allocation
+                </h2>
+
+                <div className="flex items-center">
+                  {/* PIE */}
+                  <div className="w-3/4 h-40">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={allocationWithColors}
+                          dataKey="value"
+                          nameKey="name"
+                          innerRadius={45}
+                          outerRadius={70}
+                        >
+                          {allocationWithColors.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  {/* LEGEND */}
+                  <div className="w-1/2 pl-4 space-y-2">
+                    {allocationWithColors.map((d) => {
+                      const total = allocationWithColors.reduce((s, x) => s + x.value, 0);
+                      const pct = total ? (d.value / total) * 100 : 0;
+
+                      return (
+                        <div
+                          key={d.name}
+                          className="flex items-center justify-between text-xs"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="w-2.5 h-2.5 rounded-full"
+                              style={{ backgroundColor: d.color }}
+                            />
+                            <span className="text-gray-600">{d.name}</span>
+                          </div>
+                          <span className="font-medium text-gray-900">
+                            {pct.toFixed(1)}%
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Calls vs. Puts */}
+              <div className="rounded-xl border border-gray-200 p-4 space-y-4">
+                <h2 className="text-sm font-medium text-gray-500">
+                  Calls vs. Puts
+                </h2>
+
+                <div className="text-sm text-gray-700 space-y-2">
+                  <div className="flex justify-between">
+                    <span className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-green-500" />
+                      Calls
+                    </span>
+                    <span>{callPutRatio.callPct.toFixed(1)}%</span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                      Puts
+                    </span>
+                    <span>{callPutRatio.putPct.toFixed(1)}%</span>
+                  </div>
+                </div>
+
+                <div className="h-2 rounded-full overflow-hidden flex">
+                  <div
+                    style={{
+                      width: `${callPutRatio.callPct}%`,
+                      backgroundColor: CALL_COLOR,
+                    }}
+                  />
+                  <div
+                    style={{
+                      width: `${callPutRatio.putPct}%`,
+                      backgroundColor: PUT_COLOR,
+                    }}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         )}
-
-        <div className="grid grid-cols-3 gap-4">
-          {/* Net Greeks Exposure */}
-          <div className="rounded-xl border border-gray-200 p-4 space-y-4">
-            <h2 className="text-sm font-medium text-gray-500">Net Greeks Exposure</h2>
-
-            {[
-              { label: 'Delta', value: netGreeks.delta },
-              { label: 'Gamma', value: netGreeks.gamma },
-              { label: 'Theta ($/day)', value: netGreeks.theta },
-              { label: 'Vega', value: netGreeks.vega },
-            ].map((g) => {
-              const abs = Math.abs(g.value);
-              const pct = Math.min(100, abs / 1000); // scaling for UI only
-
-              return (
-                <div key={g.label} className="space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-500">{g.label}</span>
-                    <span className="font-medium text-gray-900">
-                      {g.value.toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* DONUT */}
-          <div className="rounded-xl border border-gray-200 p-4">
-            <h2 className="text-sm font-medium text-gray-500 mb-3">
-              Allocation
-            </h2>
-
-            <div className="h-56">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={allocationWithColors}
-                    dataKey="value"
-                    nameKey="name"
-                    innerRadius={55}
-                    outerRadius={80}
-                  >
-                    {allocationWithColors.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* LEGEND */}
-            <div className="mt-3 space-y-1">
-              {allocationWithColors.map((d, i) => {
-                const total = allocationWithColors.reduce((s, x) => s + x.value, 0);
-                const pct = total ? (d.value / total) * 100 : 0;
-
-                return (
-                  <div key={d.name} className="flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="w-2.5 h-2.5 rounded-full"
-                        style={{ backgroundColor: d.color }}
-                      />
-                      <span className="text-gray-600">{d.name}</span>
-                    </div>
-                    <span className="font-medium text-gray-900">
-                      {pct.toFixed(1)}%
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* CALL/PUT */}
-          <div className="rounded-xl border border-gray-200 p-4 space-y-4">
-            <h2 className="text-sm font-medium text-gray-500">
-              Calls vs. Puts
-            </h2>
-
-            <div className="text-sm text-gray-700 space-y-2">
-              <div className="flex justify-between">
-                <span className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-green-500" />
-                  Calls
-                </span>
-                <span>{callPutRatio.callPct.toFixed(1)}%</span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
-                  Puts
-                </span>
-                <span>{callPutRatio.putPct.toFixed(1)}%</span>
-              </div>
-            </div>
-
-            <div className="h-2 rounded-full overflow-hidden flex">
-              <div
-                style={{
-                  width: `${callPutRatio.callPct}%`,
-                  backgroundColor: CALL_COLOR,
-                }}
-              />
-              <div
-                style={{
-                  width: `${callPutRatio.putPct}%`,
-                  backgroundColor: PUT_COLOR,
-                }}
-              />
-            </div>
-          </div>
-        </div>
 
         <div className="h-px bg-gray-200" />
 
