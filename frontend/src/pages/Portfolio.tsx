@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,14 @@ import type { Portfolio as PortfolioType, Position, OptionsContract } from '@/ty
 import { formatCurrency, formatPercent, pnlColor } from '@/utils/format';
 import { priceOption } from '@/utils/options';
 import { AlertTriangleIcon } from 'lucide-react';
+import { greeks } from '@/utils/options';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 
 // Per-position P&L calculated from live stock price + Black-Scholes
 interface EnrichedPosition extends Position {
@@ -35,6 +43,102 @@ export default function Portfolio() {
   const [period, setPeriod] = useState<'ALL' | '1M' | '1W' | '1D'>('ALL');
   const [history, setHistory] = useState<any[]>([]);
   const navigate = useNavigate();
+
+  const positions = enrichedPositions;
+  const totalLiveValue = positions.reduce((s, p) => s + p.liveValue, 0);
+  const totalPnl = positions.reduce((s, p) => s + p.pnl, 0);
+  const totalPortfolioValue = (portfolio?.cashBalance ?? 0) + totalLiveValue;
+  const totalPnlPercent = totalPortfolioValue > 0 ? (totalPnl / 10000) * 100 : 0; // vs starting $10k
+  const openPositionsCount = positions.length;
+  const unrealizedPnl = totalPnl;
+  const realizedPnl = portfolio?.realizedPnL ?? 0;
+  const winRate =
+    portfolio?.winRate !== null && portfolio?.winRate !== undefined
+      ? `${portfolio.winRate}%`
+      : '-';
+
+  const netGreeks = useMemo(() => {
+    let delta = 0;
+    let gamma = 0;
+    let theta = 0;
+    let vega = 0;
+
+    for (const p of positions) {
+      if (!p.strikePrice || !p.expirationDate || !p.stockPrice) continue;
+
+      const type = (p.optionType?.toLowerCase() as 'call' | 'put') ?? 'call';
+
+      const g = greeks(
+        p.stockPrice,
+        p.strikePrice,
+        p.expirationDate.split('T')[0],
+        type,
+        p.symbol
+      );
+
+      const multiplier = (p.quantity ?? 0) * 100;
+
+      delta += g.delta * multiplier;
+      gamma += g.gamma * multiplier;
+      theta += g.theta * multiplier;
+      vega += g.vega * multiplier;
+    }
+
+    return { delta, gamma, theta, vega };
+  }, [positions]);
+
+  const allocationData = useMemo(() => {
+    const map = new Map<string, number>();
+
+    for (const p of positions) {
+      map.set(p.symbol, (map.get(p.symbol) ?? 0) + p.liveValue);
+    }
+
+    return Array.from(map.entries()).map(([symbol, value]) => ({
+      name: symbol,
+      value,
+    }));
+  }, [positions]);
+
+  const COLORS = [
+    '#3b82f6', // blue
+    '#a855f7', // purple
+    '#14b8a6', // teal
+    '#8b5cf6', // violet
+    '#f43f5e', // pink
+    '#0ea5e9', // cyan
+    '#eab308', // yellow
+  ];
+
+  const CALL_COLOR = '#22c55e';
+  const PUT_COLOR = '#ef4444';
+
+  const allocationWithColors = allocationData.map((d, i) => ({
+    ...d,
+    color: COLORS[i % COLORS.length],
+  }));
+
+  const callPutRatio = useMemo(() => {
+    let calls = 0;
+    let puts = 0;
+
+    for (const p of positions) {
+      if ((p.optionType ?? '').toUpperCase() === 'CALL') {
+        calls += p.liveValue;
+      } else {
+        puts += p.liveValue;
+      }
+    }
+
+    const total = calls + puts || 1;
+
+    return {
+      calls,
+      puts,
+      callPct: (calls / total) * 100,
+      putPct: (puts / total) * 100,
+    };
+  }, [positions]);
 
   const periodMap: Record<string, string> = {
     ALL: 'all',
@@ -174,18 +278,19 @@ export default function Portfolio() {
     );
   }
 
-  const positions = enrichedPositions;
-  const totalLiveValue = positions.reduce((s, p) => s + p.liveValue, 0);
-  const totalPnl = positions.reduce((s, p) => s + p.pnl, 0);
-  const totalPortfolioValue = (portfolio?.cashBalance ?? 0) + totalLiveValue;
-  const totalPnlPercent = totalPortfolioValue > 0 ? (totalPnl / 10000) * 100 : 0; // vs starting $10k
-  const openPositionsCount = positions.length;
-  const unrealizedPnl = totalPnl;
-  const realizedPnl = portfolio?.realizedPnL ?? 0;
-  const winRate =
-    portfolio?.winRate !== null && portfolio?.winRate !== undefined
-      ? `${portfolio.winRate}%`
-      : '-';
+  const getDTE = (expiration?: string | null) => {
+    if (!expiration) return null;
+    const exp = new Date(expiration);
+    return Math.max(
+      0,
+      Math.ceil((exp.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    );
+  };
+
+  const expiringPositions = positions.filter((p) => {
+    const dte = getDTE(p.expirationDate);
+    return dte !== null && dte <= 7;
+  });
 
   return (
     <PageShell>
@@ -293,7 +398,7 @@ export default function Portfolio() {
                 <button
                   key={tab.value}
                   onClick={() => setPeriod(tab.value as any)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium transition ${
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition cursor-pointer ${
                     period === tab.value
                       ? 'bg-gray-900 text-white'
                       : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
@@ -301,6 +406,28 @@ export default function Portfolio() {
                 >
                   {tab.label}
                 </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Expiring Positions Alert */}
+        {expiringPositions.length > 0 && (
+          <div
+            className={`mb-4 rounded-lg border px-4 py-3 text-sm ${
+              expiringPositions.some(p => getDTE(p.expirationDate)! <= 3)
+                ? 'bg-red-50 border-red-200 text-red-700'
+                : 'bg-amber-50 border-amber-200 text-amber-700'
+            }`}
+          >
+            <div className="font-semibold mb-1">
+              ⚠ Expiring Positions
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {expiringPositions.map((p) => (
+                <span key={p.id} className="font-medium">
+                  {p.symbol} ({getDTE(p.expirationDate)}DTE)
+                </span>
               ))}
             </div>
           </div>
@@ -348,6 +475,123 @@ export default function Portfolio() {
           </div>
         )}
 
+        <div className="grid grid-cols-3 gap-4">
+          {/* Net Greeks Exposure */}
+          <div className="rounded-xl border border-gray-200 p-4 space-y-4">
+            <h2 className="text-sm font-medium text-gray-500">Net Greeks Exposure</h2>
+
+            {[
+              { label: 'Delta', value: netGreeks.delta },
+              { label: 'Gamma', value: netGreeks.gamma },
+              { label: 'Theta ($/day)', value: netGreeks.theta },
+              { label: 'Vega', value: netGreeks.vega },
+            ].map((g) => {
+              const abs = Math.abs(g.value);
+              const pct = Math.min(100, abs / 1000); // scaling for UI only
+
+              return (
+                <div key={g.label} className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-500">{g.label}</span>
+                    <span className="font-medium text-gray-900">
+                      {g.value.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* DONUT */}
+          <div className="rounded-xl border border-gray-200 p-4">
+            <h2 className="text-sm font-medium text-gray-500 mb-3">
+              Allocation
+            </h2>
+
+            <div className="h-56">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={allocationWithColors}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={55}
+                    outerRadius={80}
+                  >
+                    {allocationWithColors.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* LEGEND */}
+            <div className="mt-3 space-y-1">
+              {allocationWithColors.map((d, i) => {
+                const total = allocationWithColors.reduce((s, x) => s + x.value, 0);
+                const pct = total ? (d.value / total) * 100 : 0;
+
+                return (
+                  <div key={d.name} className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full"
+                        style={{ backgroundColor: d.color }}
+                      />
+                      <span className="text-gray-600">{d.name}</span>
+                    </div>
+                    <span className="font-medium text-gray-900">
+                      {pct.toFixed(1)}%
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* CALL/PUT */}
+          <div className="rounded-xl border border-gray-200 p-4 space-y-4">
+            <h2 className="text-sm font-medium text-gray-500">
+              Calls vs. Puts
+            </h2>
+
+            <div className="text-sm text-gray-700 space-y-2">
+              <div className="flex justify-between">
+                <span className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-green-500" />
+                  Calls
+                </span>
+                <span>{callPutRatio.callPct.toFixed(1)}%</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                  Puts
+                </span>
+                <span>{callPutRatio.putPct.toFixed(1)}%</span>
+              </div>
+            </div>
+
+            <div className="h-2 rounded-full overflow-hidden flex">
+              <div
+                style={{
+                  width: `${callPutRatio.callPct}%`,
+                  backgroundColor: CALL_COLOR,
+                }}
+              />
+              <div
+                style={{
+                  width: `${callPutRatio.putPct}%`,
+                  backgroundColor: PUT_COLOR,
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
         <div className="h-px bg-gray-200" />
 
         {/* Positions */}
@@ -366,73 +610,110 @@ export default function Portfolio() {
             </div>
           ) : (
             <div className="rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-200">
-              {positions.map((position) => (
-                <div
-                  key={position.id}
-                  className="flex items-center px-4 py-3.5 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <button
-                        className="font-semibold text-sm hover:underline cursor-pointer"
-                        onClick={() => navigate(`/stocks/${position.symbol}`)}
-                      >
-                        {position.symbol}
-                      </button>
-                      <span
-                        className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
-                          position.optionType === 'CALL'
-                            ? 'bg-green-50 text-green-600'
-                            : 'bg-orange-50 text-orange-500'
-                        }`}
-                      >
-                        {position.optionType ?? position.positionType}
-                      </span>
-                      {position.strikePrice && (
-                        <span className="text-xs text-gray-400">
-                          {formatCurrency(position.strikePrice)} strike
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      {position.quantity} contract{position.quantity > 1 ? 's' : ''} @{' '}
-                      {formatCurrency(position.avgCost)} avg
-                      {position.expirationDate &&
-                        (() => {
-                          const exp = new Date(position.expirationDate!);
-                          const dte = Math.max(
-                            0,
-                            Math.round((exp.getTime() - Date.now()) / 86400000)
-                          );
-                          return (
-                            <span className="ml-2">
-                              · Exp{' '}
-                              {exp.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                              <span className={dte <= 7 ? ' text-red-500 font-medium' : ''}>
-                                {' '}
-                                ({dte}DTE)
-                              </span>
-                            </span>
-                          );
-                        })()}
-                    </p>
-                  </div>
-
-                  <div className="text-right mr-4">
-                    <p className="text-sm font-medium">{formatCurrency(position.liveValue)}</p>
-                    <p className={`text-xs ${pnlColor(position.pnl)}`}>
-                      {formatCurrency(position.pnl)} ({formatPercent(position.pnlPercent)})
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={() => handleSell(position)}
-                    className="px-3 py-1.5 rounded-full text-xs font-semibold bg-orange-50 text-orange-500 hover:bg-orange-100 transition-colors cursor-pointer"
+              {positions.map((position) => {
+                const costBasis = Number(position.avgCost) * Number(position.quantity) * 100;
+                return (
+                  <div
+                    key={position.id}
+                    className="flex items-center px-4 py-3.5 hover:bg-gray-50 transition-colors"
                   >
-                    Sell
-                  </button>
-                </div>
-              ))}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <button
+                          className="font-semibold text-sm hover:underline cursor-pointer"
+                          onClick={() => navigate(`/stocks/${position.symbol}`)}
+                        >
+                          {position.symbol}
+                        </button>
+                        <span
+                          className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                            position.optionType === 'CALL'
+                              ? 'bg-green-50 text-green-600'
+                              : 'bg-orange-50 text-orange-500'
+                          }`}
+                        >
+                          {position.optionType ?? position.positionType}
+                        </span>
+                        {position.strikePrice && (
+                          <span className="text-xs text-gray-400">
+                            {formatCurrency(position.strikePrice)} strike
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {position.quantity} contract{position.quantity > 1 ? 's' : ''} @{' '}
+                        {formatCurrency(position.avgCost)} avg
+                        {position.expirationDate &&
+                          (() => {
+                            const exp = new Date(position.expirationDate!);
+                            const dte = Math.max(
+                              0,
+                              Math.round((exp.getTime() - Date.now()) / 86400000)
+                            );
+                            return (
+                              <span className="ml-2">
+                                · Exp{' '}
+                                {exp.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                <span className={dte <= 3
+                                  ? 'text-red-600'
+                                  : dte <= 7
+                                  ? 'text-amber-600'
+                                  : 'text-gray-500'}>
+                                  {' '}
+                                  ({dte}DTE)
+                                </span>
+                              </span>
+                            );
+                          })()}
+                      </p>
+                      {position.strikePrice && position.expirationDate && (() => {
+                        const type = (position.optionType?.toLowerCase() as 'call' | 'put') ?? 'call';
+                        const expStr = position.expirationDate?.split('T')[0];
+                        const g =
+                          position.stockPrice &&
+                          position.strikePrice &&
+                          expStr
+                            ? greeks(
+                                position.stockPrice,
+                                position.strikePrice,
+                                expStr,
+                                type,
+                                position.symbol
+                              )
+                            : null;
+
+                        return (
+                          <p className="text-[11px] text-gray-400">
+                            {g && (
+                              <>
+                                Δ {g.delta.toFixed(2)} · Θ {g.theta.toFixed(2)} /day ·
+                                Γ {g.gamma.toFixed(4)} · V {g.vega.toFixed(2)}
+                              </>
+                            )}
+                          </p>
+                        );
+                      })()}
+                    </div>
+
+                    <div className="text-right mr-4">
+                      <p className="text-sm font-medium">{formatCurrency(position.liveValue)}</p>
+                      <p className={`text-xs ${pnlColor(position.pnl)}`}>
+                        {formatCurrency(position.pnl)} ({formatPercent(position.pnlPercent)})
+                      </p>
+                      <p className="text-[11px] text-gray-400">
+                        Cost Basis: {formatCurrency(costBasis)}
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => handleSell(position)}
+                      className="px-3 py-1.5 rounded-full text-xs font-semibold bg-orange-50 text-orange-500 hover:bg-orange-100 transition-colors cursor-pointer"
+                    >
+                      Sell
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
