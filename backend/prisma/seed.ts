@@ -10,6 +10,8 @@ async function main() {
   const CALLS_AND_PUTS_ID = 'c3d4e5f6-a7b8-9012-cdef-123456789012';
   const GREEKS_OVERVIEW_ID = 'd4e5f6a7-b8c9-0123-defa-234567890123';
   const STRIKE_PRICE_EXPIRATION_ID = 'e5f6a7b8-c9d0-1234-efab-345678901234';
+  const OPTION_PREMIUM_ID = 'f6a7b8c9-d0e1-2345-fabc-456789012345';
+  const MONEYNESS_ID = 'a7b8c9d0-e1f2-3456-abcd-567890123456';
 
   await prisma.module.upsert({
     where: { id: INTRO_TO_OPTIONS_ID },
@@ -95,6 +97,38 @@ async function main() {
       order: 5,
     },
   });
+  await prisma.module.upsert({
+    where: { id: OPTION_PREMIUM_ID },
+    update: {
+      title: 'Option Premium Explained',
+      description:
+        "How an option's premium is quoted, what bid and ask mean, and how to read a price in the chain.",
+      order: 6,
+    },
+    create: {
+      id: OPTION_PREMIUM_ID,
+      title: 'Option Premium Explained',
+      description:
+        "How an option's premium is quoted, what bid and ask mean, and how to read a price in the chain.",
+      order: 6,
+    },
+  });
+  await prisma.module.upsert({
+    where: { id: MONEYNESS_ID },
+    update: {
+      title: 'In the Money, At the Money, Out of the Money',
+      description:
+        'How ITM, ATM, and OTM affect premium cost, Delta, and the tradeoff between price and probability.',
+      order: 7,
+    },
+    create: {
+      id: MONEYNESS_ID,
+      title: 'In the Money, At the Money, Out of the Money',
+      description:
+        'How ITM, ATM, and OTM affect premium cost, Delta, and the tradeoff between price and probability.',
+      order: 7,
+    },
+  });
 
   console.log('✅ Modules seeded successfully');
   console.log('   → Order 1: Intro to Options');
@@ -102,6 +136,8 @@ async function main() {
   console.log('   → Order 3: Calls & Puts');
   console.log('   → Order 4: Greeks Overview');
   console.log('   → Order 5: Strike Price & Expiration');
+  console.log('   → Order 6: Option Premium Explained');
+  console.log('   → Order 7: In the Money, At the Money, Out of the Money');
 }
 
 main()
