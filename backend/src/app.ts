@@ -1,10 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import morgan from 'morgan';
 import { env } from './config/env.js';
+import logger from './config/logger.js';
 import routes from './routes/index.js';
 import { errorMiddleware } from './middleware/error.middleware.js';
+import { requestLogger } from './middleware/requestLogger.middleware.js';
 import { apiLimiter, authLimiter } from './middleware/rateLimiter.middleware.js';
 
 const app = express();
@@ -26,8 +27,9 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
+// Structured request logging (replaces morgan)
 if (env.NODE_ENV !== 'test') {
-  app.use(morgan('dev'));
+  app.use(requestLogger);
 }
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

@@ -345,9 +345,10 @@ export const resetPassword = async (token: string, newPassword: string) => {
  * Returns 400 if user is already verified
  */
 export const resendVerification = async (token: string) => {
+  const tokenHash = hashToken(token);
   const user = await prisma.user.findFirst({
     where: {
-      verificationToken: token,
+      verificationToken: tokenHash,
     },
   });
 

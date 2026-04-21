@@ -16,7 +16,8 @@ model User {
   passwordHash       String
   firstName          String
   lastName           String
-  emailVerified      Boolean     @default(false)
+  emailVerified          Boolean     @default(false)
+  hasCompletedFirstTrade Boolean     @default(false)
   refreshToken       String?
   verificationToken  String?     @unique
   verificationExpiry DateTime?

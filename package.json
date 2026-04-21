@@ -10,9 +10,23 @@
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "prisma:generate": "cd backend && npm run prisma:generate",
-    "prisma:migrate": "cd backend && npm run prisma:migrate"
+    "prisma:migrate": "cd backend && npm run prisma:migrate",
+    "prepare": "husky"
   },
   "dependencies": {
     "express-rate-limit": "^8.3.2"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0"
+  },
+  "lint-staged": {
+    "frontend/src/**/*.{ts,tsx}": [
+      "cd frontend && npx prettier --check",
+      "cd frontend && npx eslint --max-warnings 0"
+    ],
+    "backend/src/**/*.ts": [
+      "cd backend && npx prettier --check"
+    ]
   }
 }

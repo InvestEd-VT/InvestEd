@@ -3,12 +3,14 @@ import prisma from '../config/database.js';
 import { AppError } from '../utils/AppError.js';
 import * as massiveService from './massive.service.js';
 import * as notificationService from './notification.service.js';
+import { validateTradePrice } from './priceValidation.service.js';
 
 /**
  * Buys an options contract
  * INVESTED-182: tradeService.buyOption()
  * INVESTED-183: Validate sufficient cash balance
  * INVESTED-184: Update options position and deduct cash
+ * INVESTED-333: First trade is a demo — no real transaction
  */
 export const buyOption = async (
   userId: string,
@@ -22,12 +24,77 @@ export const buyOption = async (
     price: number;
   }
 ) => {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    throw new AppError('User not found', 404);
+  }
+
   const portfolio = await prisma.portfolio.findFirst({
     where: { userId },
   });
 
   if (!portfolio) {
     throw new AppError('Portfolio not found', 404);
+  }
+
+  // INVESTED-333: First trade is a demo — return simulated result
+  if (!user.hasCompletedFirstTrade) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { hasCompletedFirstTrade: true },
+    });
+
+    const contractMultiplier = 100;
+    const totalCost = data.price * data.quantity * contractMultiplier;
+
+    return {
+      position: {
+        id: 'demo',
+        symbol: data.symbol,
+        quantity: data.quantity,
+        avgCost: data.price,
+        positionType: 'OPTION',
+        optionType: data.optionType,
+        strikePrice: data.strikePrice,
+        expirationDate: data.expirationDate,
+        contractSymbol: data.contractSymbol,
+        status: 'OPEN',
+        portfolioId: portfolio.id,
+      },
+      transaction: {
+        id: 'demo',
+        type: 'BUY',
+        symbol: data.symbol,
+        quantity: data.quantity,
+        price: data.price,
+        positionType: 'OPTION',
+        optionType: data.optionType,
+        strikePrice: data.strikePrice,
+        expirationDate: data.expirationDate,
+        contractSymbol: data.contractSymbol,
+        portfolioId: portfolio.id,
+      },
+      cashBalance: portfolio.cashBalance,
+      isDemo: true,
+    };
+  }
+
+  // INVESTED-298: Validate submitted price against theoretical market price
+  try {
+    const validation = await validateTradePrice(
+      data.symbol, data.strikePrice, data.expirationDate, data.optionType, data.price
+    );
+    if (!validation.isValid) {
+      throw new AppError(
+        `${validation.reason}. Adjust your limit price to be within the valid range.`,
+        400
+      );
+    }
+  } catch (error) {
+    // If price validation fails due to API issues, allow the trade through
+    // but log the failure — don't block users because Polygon is down
+    if (error instanceof AppError) throw error;
+    // API error — skip validation gracefully
   }
 
   const contractMultiplier = 100;
@@ -179,6 +246,21 @@ export const sellOption = async (
 
   if (!portfolio) {
     throw new AppError('Portfolio not found', 404);
+  }
+
+  // INVESTED-298: Validate submitted price against theoretical market price
+  try {
+    const validation = await validateTradePrice(
+      data.symbol, data.strikePrice, data.expirationDate, data.optionType, data.price
+    );
+    if (!validation.isValid) {
+      throw new AppError(
+        `${validation.reason}. Adjust your limit price to be within the valid range.`,
+        400
+      );
+    }
+  } catch (error) {
+    if (error instanceof AppError) throw error;
   }
 
   // INVESTED-190: Validate sufficient position

@@ -35,6 +35,7 @@ export function TradeModal({
   const [tradeError, setTradeError] = useState<string | null>(null);
   const [tradeResult, setTradeResult] = useState<TradeResponse | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [theoreticalPrice, setTheoreticalPrice] = useState<number | null>(null);
 
   const isCall = contract.contract_type === 'call';
   const accent =
@@ -63,8 +64,22 @@ export function TradeModal({
         .getPortfolio()
         .then((p) => setCashBalance(p.cashBalance))
         .catch(() => {});
+      // INVESTED-299: Fetch theoretical price from backend
+      tradeService
+        .getTheoreticalPrice(
+          contract.underlying_ticker,
+          contract.strike_price,
+          contract.expiration_date,
+          contract.contract_type.toUpperCase() as 'CALL' | 'PUT'
+        )
+        .then((res) => {
+          setTheoreticalPrice(res.theoreticalPrice);
+          // Auto-fill with theoretical price if no default premium
+          if (!defaultPremium) setPrice(res.theoreticalPrice);
+        })
+        .catch(() => {});
     }
-  }, [open, stockPrice, defaultPremium]);
+  }, [open, stockPrice, defaultPremium, contract]);
 
   const multiplier = contract.shares_per_contract || 100;
   const total = quantity * price * multiplier;
@@ -103,6 +118,11 @@ export function TradeModal({
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleRetry = () => {
+    setTradeError(null);
+    setConfirmOpen(true);
   };
 
   const handleGoBackToOrder = () => {
@@ -179,6 +199,18 @@ export function TradeModal({
                 onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
                 className="bg-white border-gray-200 h-11 text-lg text-gray-500 font-semibold"
               />
+              {theoreticalPrice !== null && (
+                <p className="text-[11px] text-gray-400 mt-1">
+                  Theoretical: {formatCurrency(theoreticalPrice)}/share
+                  <button
+                    type="button"
+                    onClick={() => setPrice(theoreticalPrice)}
+                    className="ml-2 text-blue-500 hover:text-blue-600 underline"
+                  >
+                    Use this price
+                  </button>
+                </p>
+              )}
             </div>
           </div>
 
@@ -234,7 +266,7 @@ export function TradeModal({
         ) : tradeError ? (
           <OptionsTradeError
             message={tradeError}
-            onRetry={handleConfirmSubmit}
+            onRetry={handleRetry}
             onGoBack={handleGoBackToOrder}
             isSubmitting={isSubmitting}
           />

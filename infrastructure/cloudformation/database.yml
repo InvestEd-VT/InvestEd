@@ -1,0 +1,135 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: InvestEd - RDS PostgreSQL + ElastiCache Redis
+
+Parameters:
+  Environment:
+    Type: String
+    Default: production
+    AllowedValues: [production, staging]
+  DBMasterUsername:
+    Type: String
+    Default: invested_admin
+    NoEcho: true
+  DBMasterPassword:
+    Type: String
+    NoEcho: true
+    MinLength: 12
+
+Resources:
+  # Security Groups
+  DatabaseSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow PostgreSQL from ECS tasks
+      VpcId: !ImportValue
+        Fn::Sub: invested-${Environment}-vpc-id
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !ImportValue
+            Fn::Sub: invested-${Environment}-ecs-sg
+      Tags:
+        - Key: Name
+          Value: !Sub invested-${Environment}-db-sg
+
+  RedisSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow Redis from ECS tasks
+      VpcId: !ImportValue
+        Fn::Sub: invested-${Environment}-vpc-id
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 6379
+          ToPort: 6379
+          SourceSecurityGroupId: !ImportValue
+            Fn::Sub: invested-${Environment}-ecs-sg
+      Tags:
+        - Key: Name
+          Value: !Sub invested-${Environment}-redis-sg
+
+  # RDS Subnet Group
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: InvestEd DB Subnets
+      SubnetIds:
+        - !ImportValue
+          Fn::Sub: invested-${Environment}-private-subnet-a
+        - !ImportValue
+          Fn::Sub: invested-${Environment}-private-subnet-b
+
+  # RDS PostgreSQL (free tier eligible: db.t3.micro)
+  PostgresDB:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    Properties:
+      DBInstanceIdentifier: !Sub invested-${Environment}-db
+      Engine: postgres
+      EngineVersion: '16.4'
+      DBInstanceClass: db.t3.micro
+      AllocatedStorage: 20
+      MaxAllocatedStorage: 50
+      StorageType: gp3
+      DBName: invested
+      MasterUsername: !Ref DBMasterUsername
+      MasterUserPassword: !Ref DBMasterPassword
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      VPCSecurityGroups:
+        - !Ref DatabaseSecurityGroup
+      PubliclyAccessible: false
+      BackupRetentionPeriod: 7
+      MultiAZ: false
+      StorageEncrypted: true
+      Tags:
+        - Key: Name
+          Value: !Sub invested-${Environment}-postgres
+
+  # ElastiCache Redis Subnet Group
+  RedisSubnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      Description: InvestEd Redis Subnets
+      SubnetIds:
+        - !ImportValue
+          Fn::Sub: invested-${Environment}-private-subnet-a
+        - !ImportValue
+          Fn::Sub: invested-${Environment}-private-subnet-b
+
+  # ElastiCache Redis (cache.t3.micro for low cost)
+  RedisCluster:
+    Type: AWS::ElastiCache::CacheCluster
+    Properties:
+      ClusterName: !Sub invested-${Environment}-redis
+      Engine: redis
+      EngineVersion: '7.1'
+      CacheNodeType: cache.t3.micro
+      NumCacheNodes: 1
+      CacheSubnetGroupName: !Ref RedisSubnetGroup
+      VpcSecurityGroupIds:
+        - !Ref RedisSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub invested-${Environment}-redis
+
+Outputs:
+  DatabaseEndpoint:
+    Value: !GetAtt PostgresDB.Endpoint.Address
+    Export:
+      Name: !Sub invested-${Environment}-db-endpoint
+
+  DatabasePort:
+    Value: !GetAtt PostgresDB.Endpoint.Port
+    Export:
+      Name: !Sub invested-${Environment}-db-port
+
+  RedisEndpoint:
+    Value: !GetAtt RedisCluster.RedisEndpoint.Address
+    Export:
+      Name: !Sub invested-${Environment}-redis-endpoint
+
+  RedisPort:
+    Value: !GetAtt RedisCluster.RedisEndpoint.Port
+    Export:
+      Name: !Sub invested-${Environment}-redis-port

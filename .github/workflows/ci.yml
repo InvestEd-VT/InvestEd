@@ -2,9 +2,13 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop-all]
   pull_request:
-    branches: [main]
+    branches: [main, develop-all]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   frontend:
@@ -32,6 +36,9 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+      - name: Type check
+        run: npx tsc --noEmit
 
       - name: Test
         run: npm run test:run
@@ -90,7 +97,7 @@ jobs:
       - name: Check formatting
         run: npm run format:check
 
-      - name: Type Check
+      - name: Type check
         run: npx tsc --noEmit
 
       - name: Test
