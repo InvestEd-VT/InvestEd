@@ -15,7 +15,7 @@ async function main() {
   const DELTA_ID = 'b8c9d0e1-f2a3-4567-bcde-678901234567';
   const GAMMA_ID = 'c9d0e1f2-a3b4-5678-cdef-789012345678';
   const THETA_ID = 'd0e1f2a3-b4c5-6789-defa-890123456789';
-
+  const VEGA_ID = 'e1f2a3b4-c5d6-7890-efab-901234567890';
   await prisma.module.upsert({
     where: { id: INTRO_TO_OPTIONS_ID },
     update: {
@@ -180,6 +180,22 @@ async function main() {
       order: 10,
     },
   });
+  await prisma.module.upsert({
+    where: { id: VEGA_ID },
+    update: {
+      title: 'Vega',
+      description:
+        'How implied volatility affects option premium, what Vega measures, and how to factor it into contract selection.',
+      order: 11,
+    },
+    create: {
+      id: VEGA_ID,
+      title: 'Vega',
+      description:
+        'How implied volatility affects option premium, what Vega measures, and how to factor it into contract selection.',
+      order: 11,
+    },
+  });
 
   console.log('✅ Modules seeded successfully');
   console.log('   → Order 1: Intro to Options');
@@ -192,6 +208,7 @@ async function main() {
   console.log('   → Order 8: Delta');
   console.log('   → Order 9: Gamma');
   console.log('   → Order 10: Theta');
+  console.log('   → Order 11: Vega');
 }
 
 main()
