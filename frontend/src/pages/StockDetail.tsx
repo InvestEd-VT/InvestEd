@@ -456,7 +456,7 @@ export default function StockDetail() {
         navigate(location.pathname, { replace: true });
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- handleSelectContract is unstable; adding it causes infinite re-renders
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleSelectContract is unstable; adding it causes infinite re-renders
   }, [contracts, location, stock?.currentPrice, navigate]);
 
   if (loading) {

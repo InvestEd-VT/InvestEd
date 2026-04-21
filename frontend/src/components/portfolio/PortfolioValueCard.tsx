@@ -13,7 +13,6 @@ import usePortfolioStore from '@/store/portfolioStore';
 import { useEffect, useState } from 'react';
 import { getMultipleStockPrev, hasMassiveKey } from '@/services/massive.client';
 
-
 const STARTING_BALANCE = 10000;
 
 function Skeleton() {

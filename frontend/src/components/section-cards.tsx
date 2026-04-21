@@ -14,7 +14,6 @@ import PortfolioTrendCard from '@/components/portfolio/PortfolioTrendCard';
 import usePortfolioStore from '@/store/portfolioStore';
 import CashBalanceCard from '@/components/portfolio/CashBalanceCard';
 
-
 export function SectionCards() {
   const data = usePortfolioStore((s) => s.data);
 

@@ -66,28 +66,31 @@ export default function Notifications() {
   const [filter, setFilter] = useState<'all' | 'read' | 'unread'>('all');
   const [selectedNotifications, setSelectedNotifications] = useState<Set<string>>(new Set());
 
-  const fetchNotifications = useCallback(async (page: number = 1) => {
-    setIsLoading(true);
-    try {
-      const read = filter === 'all' ? undefined : filter === 'read';
-      const offset = (page - 1) * ITEMS_PER_PAGE;
+  const fetchNotifications = useCallback(
+    async (page: number = 1) => {
+      setIsLoading(true);
+      try {
+        const read = filter === 'all' ? undefined : filter === 'read';
+        const offset = (page - 1) * ITEMS_PER_PAGE;
 
-      const response = await notificationService.getNotifications({
-        read,
-        limit: ITEMS_PER_PAGE,
-        offset,
-      });
+        const response = await notificationService.getNotifications({
+          read,
+          limit: ITEMS_PER_PAGE,
+          offset,
+        });
 
-      setNotifications(response.notifications);
-      setTotalCount(response.total);
-      setCurrentPage(page);
-      setSelectedNotifications(new Set());
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [filter]);
+        setNotifications(response.notifications);
+        setTotalCount(response.total);
+        setCurrentPage(page);
+        setSelectedNotifications(new Set());
+      } catch (error) {
+        console.error('Failed to fetch notifications:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [filter]
+  );
 
   useEffect(() => {
     fetchNotifications(1);
@@ -195,7 +198,10 @@ export default function Notifications() {
 
         {/* Filter and Actions */}
         <div className="flex items-center justify-between gap-4">
-          <Select value={filter} onValueChange={(value) => setFilter(value as 'all' | 'read' | 'unread')}>
+          <Select
+            value={filter}
+            onValueChange={(value) => setFilter(value as 'all' | 'read' | 'unread')}
+          >
             <SelectTrigger className="w-40">
               <SelectValue />
             </SelectTrigger>
