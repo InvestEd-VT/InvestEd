@@ -1,4 +1,4 @@
-import redisClient from '../config/redis.js';
+import redis from '../config/redis.js';
 import logger from '../config/logger.js';
 import * as massiveService from './massive.service.js';
 
@@ -21,7 +21,7 @@ interface CachedPrice {
  */
 export async function cacheStockPrice(symbol: string, data: CachedPrice): Promise<void> {
   try {
-    await redisClient.setEx(
+    await redis.setEx(
       `price:stock:${symbol.toUpperCase()}`,
       STOCK_CACHE_TTL,
       JSON.stringify(data)
@@ -36,7 +36,7 @@ export async function cacheStockPrice(symbol: string, data: CachedPrice): Promis
  */
 export async function cacheOptionPrice(contractSymbol: string, price: number): Promise<void> {
   try {
-    await redisClient.setEx(
+    await redis.setEx(
       `price:option:${contractSymbol}`,
       OPTIONS_CACHE_TTL,
       JSON.stringify({ price, timestamp: Date.now() })
@@ -51,7 +51,7 @@ export async function cacheOptionPrice(contractSymbol: string, price: number): P
  */
 export async function getCachedStockPrice(symbol: string): Promise<CachedPrice | null> {
   try {
-    const cached = await redisClient.get(`price:stock:${symbol.toUpperCase()}`);
+    const cached = await redis.get(`price:stock:${symbol.toUpperCase()}`);
     return cached ? JSON.parse(cached) : null;
   } catch {
     return null;
@@ -62,7 +62,7 @@ export async function getCachedOptionPrice(
   contractSymbol: string
 ): Promise<{ price: number; timestamp: number } | null> {
   try {
-    const cached = await redisClient.get(`price:option:${contractSymbol}`);
+    const cached = await redis.get(`price:option:${contractSymbol}`);
     return cached ? JSON.parse(cached) : null;
   } catch {
     return null;
@@ -73,7 +73,7 @@ export async function getCachedOptionPrice(
  * INVESTED-215: Invalidate cache on websocket price update
  */
 export async function invalidateStockPrice(symbol: string): Promise<void> {
-  await redisClient.del(`price:stock:${symbol.toUpperCase()}`);
+  await redis.del(`price:stock:${symbol.toUpperCase()}`);
 }
 
 /**
