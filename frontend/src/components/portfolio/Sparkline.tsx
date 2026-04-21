@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import { stockService } from '@/services';
+import type { StockChartData } from '@/types';
 
 interface SparklineProps {
   symbol: string;
@@ -21,7 +22,7 @@ export function Sparkline({ symbol, width = 70, height = 24 }: SparklineProps) {
       .getHistory(symbol, '1w')
       .then((bars) => {
         if (cancelled || !bars?.length) return;
-        setData(bars.map((b: { c: number }) => ({ v: b.c })));
+        setData(bars.map((b: StockChartData) => ({ v: b.close })));
       })
       .catch(() => {});
     return () => {
