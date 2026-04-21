@@ -11,7 +11,9 @@ import type { Portfolio as PortfolioType, Position, OptionsContract } from '@/ty
 import { formatCurrency, formatPercent, pnlColor } from '@/utils/format';
 import { priceOption } from '@/utils/options';
 import { AlertTriangleIcon } from 'lucide-react';
-import { greeks } from '@/utils/options';
+import { greeks, daysToExpiry } from '@/utils/options';
+import { Sparkline } from '@/components/portfolio/Sparkline';
+import { ThetaDecayBar } from '@/components/portfolio/ThetaDecayBar';
 import {
   PieChart,
   Pie,
@@ -596,17 +598,32 @@ export default function Portfolio() {
                               )
                             : null;
 
+                        const dte = expStr ? daysToExpiry(expStr) : 0;
+
                         return (
-                          <p className="text-[11px] text-gray-400">
+                          <>
+                            <p className="text-[11px] text-gray-400">
+                              {g && (
+                                <>
+                                  Δ {g.delta.toFixed(2)} · Θ {g.theta.toFixed(2)} /day ·
+                                  Γ {g.gamma.toFixed(4)} · V {g.vega.toFixed(2)}
+                                </>
+                              )}
+                            </p>
                             {g && (
-                              <>
-                                Δ {g.delta.toFixed(2)} · Θ {g.theta.toFixed(2)} /day ·
-                                Γ {g.gamma.toFixed(4)} · V {g.vega.toFixed(2)}
-                              </>
+                              <ThetaDecayBar
+                                theta={g.theta}
+                                dte={dte}
+                                quantity={Number(position.quantity)}
+                              />
                             )}
-                          </p>
+                          </>
                         );
                       })()}
+                    </div>
+
+                    <div className="flex flex-col items-center mr-3">
+                      <Sparkline symbol={position.symbol} />
                     </div>
 
                     <div className="text-right mr-4">
