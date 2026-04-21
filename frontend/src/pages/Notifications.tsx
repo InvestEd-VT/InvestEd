@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -66,7 +66,7 @@ export default function Notifications() {
   const [filter, setFilter] = useState<'all' | 'read' | 'unread'>('all');
   const [selectedNotifications, setSelectedNotifications] = useState<Set<string>>(new Set());
 
-  const fetchNotifications = async (page: number = 1) => {
+  const fetchNotifications = useCallback(async (page: number = 1) => {
     setIsLoading(true);
     try {
       const read = filter === 'all' ? undefined : filter === 'read';
@@ -87,11 +87,11 @@ export default function Notifications() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [filter]);
 
   useEffect(() => {
     fetchNotifications(1);
-  }, [filter]);
+  }, [fetchNotifications]);
 
   useEffect(() => {
     setFilteredNotifications(notifications);
@@ -195,7 +195,7 @@ export default function Notifications() {
 
         {/* Filter and Actions */}
         <div className="flex items-center justify-between gap-4">
-          <Select value={filter} onValueChange={(value) => setFilter(value as any)}>
+          <Select value={filter} onValueChange={(value) => setFilter(value as 'all' | 'read' | 'unread')}>
             <SelectTrigger className="w-40">
               <SelectValue />
             </SelectTrigger>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { XIcon, ArrowRightIcon, ArrowLeftIcon } from 'lucide-react';
@@ -52,9 +52,12 @@ export function PlatformTour({ open, onClose, onFinish, steps }: PlatformTourPro
   const [index, setIndex] = useState(0);
   const step = tourSteps[index];
 
+  const resetIndex = useCallback(() => setIndex(0), []);
+
   useEffect(() => {
     if (!open) {
-      setIndex(0);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- resetting index when tour closes is intentional
+      resetIndex();
       return;
     }
     const onKey = (e: KeyboardEvent) => {
@@ -66,7 +69,7 @@ export function PlatformTour({ open, onClose, onFinish, steps }: PlatformTourPro
     return () => {
       window.removeEventListener('keydown', onKey);
     };
-  }, [open]);
+  }, [open, onClose, tourSteps.length, resetIndex]);
 
   const handleNext = () => {
     if (index >= tourSteps.length - 1) {
@@ -96,6 +99,7 @@ export function PlatformTour({ open, onClose, onFinish, steps }: PlatformTourPro
 
   useEffect(() => {
     if (!open || !step?.selector) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- clearing positioning state when step has no selector
       setStyle(undefined);
       setHighlightStyle(undefined);
       setHighlightRect(undefined);

@@ -437,7 +437,7 @@ export default function StockDetail() {
   const autoOpenedRef = useRef(false);
 
   useEffect(() => {
-    const state = (location.state as any) ?? {};
+    const state = (location.state as StockDetailLocationState | null) ?? {};
     if (autoOpenedRef.current) return;
     if (state.openTrade && contracts.length > 0 && stock?.currentPrice) {
       const idx = Math.floor(contracts.length / 2);
@@ -456,7 +456,8 @@ export default function StockDetail() {
         navigate(location.pathname, { replace: true });
       }
     }
-  }, [contracts, location, stock?.currentPrice]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- handleSelectContract is unstable; adding it causes infinite re-renders
+  }, [contracts, location, stock?.currentPrice, navigate]);
 
   if (loading) {
     return (

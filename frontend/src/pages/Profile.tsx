@@ -50,7 +50,7 @@ export default function ProfilePage() {
     };
 
     loadProfile();
-  }, []);
+  }, [toast]);
 
   // Handle name update
   const handleUpdateName = async (e: React.FormEvent) => {
@@ -80,11 +80,14 @@ export default function ProfilePage() {
         title: 'Success',
         description: 'Profile updated successfully',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to update profile:', error);
+      const message =
+        (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        'Failed to update profile';
       toast({
         title: 'Error',
-        description: error?.response?.data?.message || 'Failed to update profile',
+        description: message,
         variant: 'destructive',
       });
     } finally {
@@ -148,9 +151,11 @@ export default function ProfilePage() {
         title: 'Success',
         description: 'Password changed successfully',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to change password:', error);
-      const errorMessage = error?.response?.data?.error || 'Failed to change password';
+      const errorMessage =
+        (error as { response?: { data?: { error?: string } } })?.response?.data?.error ||
+        'Failed to change password';
       toast({
         title: 'Error',
         description: errorMessage,

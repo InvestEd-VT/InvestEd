@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,7 @@ export function NotificationBell() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await notificationService.getNotifications({
@@ -29,7 +29,7 @@ export function NotificationBell() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchNotifications();
@@ -52,7 +52,7 @@ export function NotificationBell() {
       unsubscribe();
       window.removeEventListener('focus', handleFocus);
     };
-  }, []);
+  }, [fetchNotifications]);
 
   const handleMarkAsRead = async (notificationId: string) => {
     try {
@@ -85,7 +85,7 @@ export function NotificationBell() {
     if (isOpen) {
       fetchNotifications();
     }
-  }, [isOpen]);
+  }, [isOpen, fetchNotifications]);
 
   return (
     <div className="relative">

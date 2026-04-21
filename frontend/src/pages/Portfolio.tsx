@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +7,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { PageShell } from '@/components/layout/PageShell';
 import { TradeModal } from '@/components/trading/TradeModal';
 import { portfolioService, stockService } from '@/services';
-import type { Portfolio as PortfolioType, Position, OptionsContract } from '@/types';
+import type { Portfolio as PortfolioType, Position, OptionsContract, Transaction } from '@/types';
 import { formatCurrency, formatPercent, pnlColor } from '@/utils/format';
 import { priceOption } from '@/utils/options';
 import { AlertTriangleIcon } from 'lucide-react';
@@ -26,6 +26,13 @@ import {
   YAxis,
   Tooltip as ReTooltip,
 } from 'recharts';
+
+const PERIOD_MAP: Record<string, string> = {
+  ALL: 'all',
+  '1M': '30d',
+  '1W': '7d',
+  '1D': '7d',
+};
 
 // Per-position P&L calculated from live stock price + Black-Scholes
 interface EnrichedPosition extends Position {
@@ -48,8 +55,8 @@ export default function Portfolio() {
   const [sellPremium, setSellPremium] = useState(0);
   const [sellOpen, setSellOpen] = useState(false);
   const [period, setPeriod] = useState<'ALL' | '1M' | '1W' | '1D'>('ALL');
-  const [recentTrades, setRecentTrades] = useState<any[]>([]);
-  const [history, setHistory] = useState<any[]>([]);
+  const [recentTrades, setRecentTrades] = useState<Transaction[]>([]);
+  const [, setHistory] = useState<Record<string, unknown>[]>([]);
   const navigate = useNavigate();
 
   const positions = enrichedPositions;
@@ -153,37 +160,32 @@ export default function Portfolio() {
     };
   }, [positions]);
 
-  const periodMap: Record<string, string> = {
-    ALL: 'all',
-    '1M': '30d',
-    '1W': '7d',
-    '1D': '7d',
-  };
+  // periodMap moved to module scope (PERIOD_MAP) to avoid useCallback dep issues
 
-  const fetchHistory = async (selectedPeriod: string) => {
+  const fetchHistory = useCallback(async (selectedPeriod: string) => {
     try {
-      const res = await portfolioService.getPortfolioHistory(periodMap[selectedPeriod]);
+      const res = await portfolioService.getPortfolioHistory(PERIOD_MAP[selectedPeriod]);
 
       setHistory(res.history);
     } catch {
       setHistory([]);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchHistory(period);
-  }, [period]);
+  }, [period, fetchHistory]);
 
-  const fetchRecentTrades = async () => {
+  const fetchRecentTrades = useCallback(async () => {
     try {
       const res = await portfolioService.getTransactions({ limit: 5 });
       setRecentTrades(res.transactions ?? []);
     } catch {
       setRecentTrades([]);
     }
-  };
+  }, []);
 
-  const fetchPortfolio = async () => {
+  const fetchPortfolio = useCallback(async () => {
     setIsLoading(true);
     try {
       const data = await portfolioService.getPortfolio();
@@ -232,13 +234,13 @@ export default function Portfolio() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchPortfolio();
     fetchHistory(period);
     fetchRecentTrades();
-  }, []);
+  }, [fetchPortfolio, fetchHistory, period, fetchRecentTrades]);
 
   const handleReset = async () => {
     if (resetInput !== 'RESET') return;
@@ -417,7 +419,7 @@ export default function Portfolio() {
               ].map((tab) => (
                 <button
                   key={tab.value}
-                  onClick={() => setPeriod(tab.value as any)}
+                  onClick={() => setPeriod(tab.value as 'ALL' | '1M' | '1W' | '1D')}
                   className={`px-3 py-1 rounded-full text-xs font-medium transition cursor-pointer ${
                     period === tab.value
                       ? 'bg-gray-900 text-white'
@@ -817,7 +819,7 @@ export default function Portfolio() {
                         </div>
 
                         {/* Rows */}
-                        {recentTrades.map((tx, i) => (
+                        {recentTrades.map((tx) => (
                           <div
                             key={tx.id}
                             className="grid grid-cols-2 sm:grid-cols-6 items-center px-4 py-3.5 text-sm"

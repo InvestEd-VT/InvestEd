@@ -39,7 +39,7 @@ const authService = {
       // Attempt to PATCH the current user record with a hasSeenWelcome flag.
       // If the backend doesn't support it, this will throw and we silently ignore.
       await api.patch('/users/me', { hasSeenWelcome: true });
-    } catch (e) {
+    } catch {
       // ignore - backend may not support this endpoint/field
     }
   },

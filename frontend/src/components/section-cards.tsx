@@ -9,11 +9,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { TrendingUpIcon, TrendingDownIcon, ArrowUpRight } from 'lucide-react';
+import { TrendingUpIcon, TrendingDownIcon } from 'lucide-react';
 import PortfolioTrendCard from '@/components/portfolio/PortfolioTrendCard';
 import usePortfolioStore from '@/store/portfolioStore';
 import CashBalanceCard from '@/components/portfolio/CashBalanceCard';
-import { Link } from 'react-router-dom';
+
 
 export function SectionCards() {
   const data = usePortfolioStore((s) => s.data);
