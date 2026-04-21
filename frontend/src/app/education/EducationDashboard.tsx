@@ -33,6 +33,11 @@ export default function EducationDashboard() {
     dismissTimer.current = setTimeout(() => setLockedMsg(null), 3000);
   };
 
+  const handleModuleClick = (id: string) => {
+    window.scrollTo(0, 0);
+    navigate(`/learn/modules/${id}`);
+  };
+
   return (
     <div className="min-h-screen bg-background p-6 md:p-10">
       {/* Header */}
@@ -91,9 +96,7 @@ export default function EducationDashboard() {
             return (
               <button
                 key={mod.id}
-                onClick={() =>
-                  locked ? handleLockedClick(mod.order) : navigate(`/learn/modules/${mod.id}`)
-                }
+                onClick={() => (locked ? handleLockedClick(mod.order) : handleModuleClick(mod.id))}
                 className={`w-full text-left rounded-xl border bg-card p-5 flex items-center gap-4 group transition-colors
                   ${locked ? 'opacity-60 cursor-not-allowed' : 'hover:bg-accent/50 cursor-pointer'}`}
               >
