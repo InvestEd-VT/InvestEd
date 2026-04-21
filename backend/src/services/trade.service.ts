@@ -4,6 +4,7 @@ import { AppError } from '../utils/AppError.js';
 import * as massiveService from './massive.service.js';
 import * as notificationService from './notification.service.js';
 import { validateTradePrice } from './priceValidation.service.js';
+import { env } from '../config/env.js';
 
 /**
  * Buys an options contract
@@ -80,25 +81,25 @@ export const buyOption = async (
   }
 
   // INVESTED-298: Validate submitted price against theoretical market price
-  try {
-    const validation = await validateTradePrice(
-      data.symbol,
-      data.strikePrice,
-      data.expirationDate,
-      data.optionType,
-      data.price
-    );
-    if (!validation.isValid) {
-      throw new AppError(
-        `${validation.reason}. Adjust your limit price to be within the valid range.`,
-        400
+  // Skip in test environment — Polygon API not available in CI
+  if (env.NODE_ENV !== 'test') {
+    try {
+      const validation = await validateTradePrice(
+        data.symbol,
+        data.strikePrice,
+        data.expirationDate,
+        data.optionType,
+        data.price
       );
+      if (!validation.isValid) {
+        throw new AppError(
+          `${validation.reason}. Adjust your limit price to be within the valid range.`,
+          400
+        );
+      }
+    } catch (error) {
+      if (error instanceof AppError) throw error;
     }
-  } catch (error) {
-    // If price validation fails due to API issues, allow the trade through
-    // but log the failure — don't block users because Polygon is down
-    if (error instanceof AppError) throw error;
-    // API error — skip validation gracefully
   }
 
   const contractMultiplier = 100;
