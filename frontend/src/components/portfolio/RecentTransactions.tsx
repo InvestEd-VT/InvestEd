@@ -144,7 +144,7 @@ export default function RecentTransactions() {
       <CardFooter>
         <div className="w-full flex justify-end">
           <Link to="/transactions">
-            <Button size="sm" variant="ghost" className='cursor-pointer'>
+            <Button size="sm" variant="ghost" className="cursor-pointer">
               View all transactions
             </Button>
           </Link>

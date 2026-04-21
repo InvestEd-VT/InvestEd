@@ -4,7 +4,11 @@ import jwt from 'jsonwebtoken';
 import { env } from '../config/env.js';
 import logger from '../config/logger.js';
 import prisma from '../config/database.js';
-import { refreshPrices, invalidateStockPrice, cacheStockPrice } from '../services/priceCache.service.js';
+import {
+  refreshPrices,
+  invalidateStockPrice,
+  cacheStockPrice,
+} from '../services/priceCache.service.js';
 
 interface AuthenticatedSocket extends WebSocket {
   userId?: string;
@@ -120,17 +124,19 @@ export function createPriceServer(httpServer: HttpServer): WebSocketServer {
         if (ws.readyState !== WebSocket.OPEN) continue;
         for (const [symbol, data] of prices) {
           if (ws.subscribedSymbols?.has(symbol)) {
-            ws.send(JSON.stringify({
-              type: 'price',
-              symbol,
-              price: data.price,
-              open: data.open,
-              high: data.high,
-              low: data.low,
-              close: data.close,
-              volume: data.volume,
-              timestamp: data.timestamp,
-            }));
+            ws.send(
+              JSON.stringify({
+                type: 'price',
+                symbol,
+                price: data.price,
+                open: data.open,
+                high: data.high,
+                low: data.low,
+                close: data.close,
+                volume: data.volume,
+                timestamp: data.timestamp,
+              })
+            );
           }
         }
       }

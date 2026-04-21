@@ -76,7 +76,9 @@ export default function OptionsOrderConfirmModal({
 
             <div className="rounded-lg bg-gray-50 p-3">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">{quantity} x {formatCurrency(price)} x {multiplier}</span>
+                <span className="text-gray-600">
+                  {quantity} x {formatCurrency(price)} x {multiplier}
+                </span>
                 <span className="font-semibold text-gray-900">{formatCurrency(total)}</span>
               </div>
               <div className="mt-2 flex items-center justify-between text-sm font-semibold">
@@ -99,7 +101,11 @@ export default function OptionsOrderConfirmModal({
             <Button
               onClick={onConfirm}
               disabled={isSubmitting || quantity < 1 || price <= 0}
-              className={mode === 'buy' ? 'bg-green-500 hover:bg-green-600' : 'bg-orange-500 hover:bg-orange-600'}
+              className={
+                mode === 'buy'
+                  ? 'bg-green-500 hover:bg-green-600'
+                  : 'bg-orange-500 hover:bg-orange-600'
+              }
             >
               {isSubmitting ? 'Submitting...' : `Confirm ${mode === 'buy' ? 'Buy' : 'Sell'}`}
             </Button>

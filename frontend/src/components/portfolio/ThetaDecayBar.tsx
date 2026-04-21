@@ -23,7 +23,13 @@ export function ThetaDecayBar({ theta, dte, quantity }: ThetaDecayBarProps) {
 
   // Color intensity based on DTE urgency
   const barColor =
-    dte <= 3 ? 'bg-red-500' : dte <= 7 ? 'bg-amber-500' : dte <= 14 ? 'bg-yellow-400' : 'bg-blue-400';
+    dte <= 3
+      ? 'bg-red-500'
+      : dte <= 7
+        ? 'bg-amber-500'
+        : dte <= 14
+          ? 'bg-yellow-400'
+          : 'bg-blue-400';
   const trackColor = 'bg-gray-100';
 
   return (

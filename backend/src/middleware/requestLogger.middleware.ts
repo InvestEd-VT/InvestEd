@@ -21,8 +21,8 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction): 
       userAgent: req.get('user-agent'),
       ip: req.ip,
       // Include userId if authenticated (set by auth middleware)
-      ...(((req as unknown) as { userId?: string }).userId && {
-        userId: ((req as unknown) as { userId?: string }).userId,
+      ...((req as unknown as { userId?: string }).userId && {
+        userId: (req as unknown as { userId?: string }).userId,
       }),
     };
 

@@ -198,7 +198,9 @@ export default function Transactions() {
                   </span>
                   <span className="font-semibold">{tx.symbol}</span>
                   <span className="text-gray-500 text-xs">{details || '—'}</span>
-                  <span className="text-right text-gray-500">{formatCurrency(Number(tx.price ?? 0))}</span>
+                  <span className="text-right text-gray-500">
+                    {formatCurrency(Number(tx.price ?? 0))}
+                  </span>
                   <span className="text-right font-semibold">{formatCurrency(total)}</span>
                 </div>
               );

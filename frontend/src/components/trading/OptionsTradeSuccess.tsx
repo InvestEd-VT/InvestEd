@@ -68,7 +68,9 @@ export default function OptionsTradeSuccess({ trade, onClose }: OptionsTradeSucc
           </div>
           <div>
             <p className="text-gray-500">Price per contract</p>
-            <p className="font-medium text-gray-900">{formatCurrency(Number(tx.price) * multiplier)}</p>
+            <p className="font-medium text-gray-900">
+              {formatCurrency(Number(tx.price) * multiplier)}
+            </p>
           </div>
           <div>
             <p className="text-gray-500">Total {tx.type === 'BUY' ? 'cost' : 'proceeds'}</p>
@@ -79,7 +81,9 @@ export default function OptionsTradeSuccess({ trade, onClose }: OptionsTradeSucc
 
       <div className="mt-4 rounded-lg border border-gray-200 p-4">
         <p className="text-xs uppercase tracking-wide text-gray-500">Updated cash balance</p>
-        <p className="mt-1 text-xl font-semibold text-gray-900">{formatCurrency(trade.cashBalance)}</p>
+        <p className="mt-1 text-xl font-semibold text-gray-900">
+          {formatCurrency(trade.cashBalance)}
+        </p>
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">

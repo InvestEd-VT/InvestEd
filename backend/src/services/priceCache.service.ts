@@ -2,7 +2,7 @@ import redisClient from '../config/redis.js';
 import logger from '../config/logger.js';
 import * as massiveService from './massive.service.js';
 
-const STOCK_CACHE_TTL = 15;   // 15 seconds
+const STOCK_CACHE_TTL = 15; // 15 seconds
 const OPTIONS_CACHE_TTL = 15; // 15 seconds
 
 interface CachedPrice {
@@ -58,7 +58,9 @@ export async function getCachedStockPrice(symbol: string): Promise<CachedPrice |
   }
 }
 
-export async function getCachedOptionPrice(contractSymbol: string): Promise<{ price: number; timestamp: number } | null> {
+export async function getCachedOptionPrice(
+  contractSymbol: string
+): Promise<{ price: number; timestamp: number } | null> {
   try {
     const cached = await redisClient.get(`price:option:${contractSymbol}`);
     return cached ? JSON.parse(cached) : null;

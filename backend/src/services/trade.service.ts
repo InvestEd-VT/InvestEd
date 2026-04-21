@@ -82,7 +82,11 @@ export const buyOption = async (
   // INVESTED-298: Validate submitted price against theoretical market price
   try {
     const validation = await validateTradePrice(
-      data.symbol, data.strikePrice, data.expirationDate, data.optionType, data.price
+      data.symbol,
+      data.strikePrice,
+      data.expirationDate,
+      data.optionType,
+      data.price
     );
     if (!validation.isValid) {
       throw new AppError(
@@ -251,7 +255,11 @@ export const sellOption = async (
   // INVESTED-298: Validate submitted price against theoretical market price
   try {
     const validation = await validateTradePrice(
-      data.symbol, data.strikePrice, data.expirationDate, data.optionType, data.price
+      data.symbol,
+      data.strikePrice,
+      data.expirationDate,
+      data.optionType,
+      data.price
     );
     if (!validation.isValid) {
       throw new AppError(

@@ -72,7 +72,7 @@ class ErrorTrackingService {
     }
 
     return {
-      userId: ((req as unknown) as { userId?: string }).userId,
+      userId: (req as unknown as { userId?: string }).userId,
       method: req.method,
       url: req.originalUrl,
       body: sanitizedBody,

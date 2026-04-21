@@ -61,9 +61,7 @@ export default function Portfolio() {
   const unrealizedPnl = totalPnl;
   const realizedPnl = portfolio?.realizedPnL ?? 0;
   const winRate =
-    portfolio?.winRate !== null && portfolio?.winRate !== undefined
-      ? `${portfolio.winRate}%`
-      : '-';
+    portfolio?.winRate !== null && portfolio?.winRate !== undefined ? `${portfolio.winRate}%` : '-';
 
   const netGreeks = useMemo(() => {
     let delta = 0;
@@ -76,13 +74,7 @@ export default function Portfolio() {
 
       const type = (p.optionType?.toLowerCase() as 'call' | 'put') ?? 'call';
 
-      const g = greeks(
-        p.stockPrice,
-        p.strikePrice,
-        p.expirationDate.split('T')[0],
-        type,
-        p.symbol
-      );
+      const g = greeks(p.stockPrice, p.strikePrice, p.expirationDate.split('T')[0], type, p.symbol);
 
       const multiplier = (p.quantity ?? 0) * 100;
 
@@ -170,9 +162,7 @@ export default function Portfolio() {
 
   const fetchHistory = async (selectedPeriod: string) => {
     try {
-      const res = await portfolioService.getPortfolioHistory(
-        periodMap[selectedPeriod]
-      );
+      const res = await portfolioService.getPortfolioHistory(periodMap[selectedPeriod]);
 
       setHistory(res.history);
     } catch {
@@ -312,10 +302,7 @@ export default function Portfolio() {
   const getDTE = (expiration?: string | null) => {
     if (!expiration) return null;
     const exp = new Date(expiration);
-    return Math.max(
-      0,
-      Math.ceil((exp.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-    );
+    return Math.max(0, Math.ceil((exp.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
   };
 
   const expiringPositions = positions.filter((p) => {
@@ -412,10 +399,10 @@ export default function Portfolio() {
                   {period === 'ALL'
                     ? 'All time'
                     : period === '1M'
-                    ? '1 Month'
-                    : period === '1W'
-                    ? '1 Week'
-                    : 'Today'}
+                      ? '1 Month'
+                      : period === '1W'
+                        ? '1 Week'
+                        : 'Today'}
                 </span>
               </p>
             </div>
@@ -448,14 +435,12 @@ export default function Portfolio() {
         {expiringPositions.length > 0 && (
           <div
             className={`mb-4 rounded-lg border px-4 py-3 text-sm ${
-              expiringPositions.some(p => getDTE(p.expirationDate)! <= 3)
+              expiringPositions.some((p) => getDTE(p.expirationDate)! <= 3)
                 ? 'bg-red-50 border-red-200 text-red-700'
                 : 'bg-amber-50 border-amber-200 text-amber-700'
             }`}
           >
-            <div className="font-semibold mb-1">
-              ⚠ Expiring Positions
-            </div>
+            <div className="font-semibold mb-1">⚠ Expiring Positions</div>
             <div className="flex flex-wrap gap-2">
               {expiringPositions.map((p) => (
                 <span key={p.id} className="font-medium">
@@ -495,15 +480,11 @@ export default function Portfolio() {
             </div>
             <div className="rounded-xl bg-gray-50 p-4">
               <p className="text-[11px] text-gray-500 uppercase tracking-wide">Win Rate</p>
-              <p className={`text-lg font-semibold mt-1 text-gray-900`}>
-                {winRate}
-              </p>
+              <p className={`text-lg font-semibold mt-1 text-gray-900`}>{winRate}</p>
             </div>
             <div className="rounded-xl bg-gray-50 p-4">
               <p className="text-[11px] text-gray-500 uppercase tracking-wide">Open Positions</p>
-              <p className="text-lg font-semibold mt-1 text-gray-900">
-                {openPositionsCount}
-              </p>
+              <p className="text-lg font-semibold mt-1 text-gray-900">{openPositionsCount}</p>
             </div>
           </div>
         )}
@@ -569,12 +550,19 @@ export default function Portfolio() {
                             return (
                               <span className="ml-2">
                                 · Exp{' '}
-                                {exp.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                <span className={dte <= 3
-                                  ? 'text-red-600'
-                                  : dte <= 7
-                                  ? 'text-amber-600'
-                                  : 'text-gray-500'}>
+                                {exp.toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                })}
+                                <span
+                                  className={
+                                    dte <= 3
+                                      ? 'text-red-600'
+                                      : dte <= 7
+                                        ? 'text-amber-600'
+                                        : 'text-gray-500'
+                                  }
+                                >
                                   {' '}
                                   ({dte}DTE)
                                 </span>
@@ -582,44 +570,45 @@ export default function Portfolio() {
                             );
                           })()}
                       </p>
-                      {position.strikePrice && position.expirationDate && (() => {
-                        const type = (position.optionType?.toLowerCase() as 'call' | 'put') ?? 'call';
-                        const expStr = position.expirationDate?.split('T')[0];
-                        const g =
-                          position.stockPrice &&
-                          position.strikePrice &&
-                          expStr
-                            ? greeks(
-                                position.stockPrice,
-                                position.strikePrice,
-                                expStr,
-                                type,
-                                position.symbol
-                              )
-                            : null;
+                      {position.strikePrice &&
+                        position.expirationDate &&
+                        (() => {
+                          const type =
+                            (position.optionType?.toLowerCase() as 'call' | 'put') ?? 'call';
+                          const expStr = position.expirationDate?.split('T')[0];
+                          const g =
+                            position.stockPrice && position.strikePrice && expStr
+                              ? greeks(
+                                  position.stockPrice,
+                                  position.strikePrice,
+                                  expStr,
+                                  type,
+                                  position.symbol
+                                )
+                              : null;
 
-                        const dte = expStr ? daysToExpiry(expStr) : 0;
+                          const dte = expStr ? daysToExpiry(expStr) : 0;
 
-                        return (
-                          <>
-                            <p className="text-[11px] text-gray-400">
+                          return (
+                            <>
+                              <p className="text-[11px] text-gray-400">
+                                {g && (
+                                  <>
+                                    Δ {g.delta.toFixed(2)} · Θ {g.theta.toFixed(2)} /day · Γ{' '}
+                                    {g.gamma.toFixed(4)} · V {g.vega.toFixed(2)}
+                                  </>
+                                )}
+                              </p>
                               {g && (
-                                <>
-                                  Δ {g.delta.toFixed(2)} · Θ {g.theta.toFixed(2)} /day ·
-                                  Γ {g.gamma.toFixed(4)} · V {g.vega.toFixed(2)}
-                                </>
+                                <ThetaDecayBar
+                                  theta={g.theta}
+                                  dte={dte}
+                                  quantity={Number(position.quantity)}
+                                />
                               )}
-                            </p>
-                            {g && (
-                              <ThetaDecayBar
-                                theta={g.theta}
-                                dte={dte}
-                                quantity={Number(position.quantity)}
-                              />
-                            )}
-                          </>
-                        );
-                      })()}
+                            </>
+                          );
+                        })()}
                     </div>
 
                     <div className="flex flex-col items-center mr-3">
@@ -658,7 +647,7 @@ export default function Portfolio() {
         </div>
 
         {portfolio && (
-          <div className='space-y-6'>
+          <div className="space-y-6">
             <div className="h-px bg-gray-200" />
 
             <div>
@@ -678,9 +667,7 @@ export default function Portfolio() {
                       <div key={g.label} className="space-y-1">
                         <div className="flex justify-between text-xs">
                           <span className="text-gray-500">{g.label}</span>
-                          <span className="font-medium text-gray-900">
-                            {g.value.toFixed(2)}
-                          </span>
+                          <span className="font-medium text-gray-900">{g.value.toFixed(2)}</span>
                         </div>
                       </div>
                     );
@@ -689,9 +676,7 @@ export default function Portfolio() {
 
                 {/* Allocation */}
                 <div className="rounded-xl border border-gray-200 p-4">
-                  <h2 className="text-sm font-medium text-gray-500 mb-3">
-                    Allocation
-                  </h2>
+                  <h2 className="text-sm font-medium text-gray-500 mb-3">Allocation</h2>
 
                   <div className="flex items-center">
                     {/* Pie Chart */}
@@ -721,10 +706,7 @@ export default function Portfolio() {
                         const pct = total ? (d.value / total) * 100 : 0;
 
                         return (
-                          <div
-                            key={d.name}
-                            className="flex items-center justify-between text-xs"
-                          >
+                          <div key={d.name} className="flex items-center justify-between text-xs">
                             <div className="flex items-center gap-2">
                               <span
                                 className="w-2.5 h-2.5 rounded-full"
@@ -732,9 +714,7 @@ export default function Portfolio() {
                               />
                               <span className="text-gray-600">{d.name}</span>
                             </div>
-                            <span className="font-medium text-gray-900">
-                              {pct.toFixed(1)}%
-                            </span>
+                            <span className="font-medium text-gray-900">{pct.toFixed(1)}%</span>
                           </div>
                         );
                       })}
@@ -744,9 +724,7 @@ export default function Portfolio() {
 
                 {/* Calls vs. Puts */}
                 <div className="rounded-xl border border-gray-200 p-4 space-y-4">
-                  <h2 className="text-sm font-medium text-gray-500">
-                    Calls vs. Puts
-                  </h2>
+                  <h2 className="text-sm font-medium text-gray-500">Calls vs. Puts</h2>
 
                   <div className="text-sm text-gray-700 space-y-2">
                     <div className="flex justify-between">
@@ -784,9 +762,7 @@ export default function Portfolio() {
 
                 {/* P&L by Symbol */}
                 <div className="rounded-xl border border-gray-200 p-4 col-span-3">
-                  <h2 className="text-sm font-medium text-gray-500 mb-3">
-                    P&L by Symbol
-                  </h2>
+                  <h2 className="text-sm font-medium text-gray-500 mb-3">P&L by Symbol</h2>
 
                   <div className="h-64">
                     <ResponsiveContainer width="100%" height="100%">
@@ -799,9 +775,7 @@ export default function Portfolio() {
                           ]}
                           tickFormatter={(v) => `$${v}`}
                         />
-                        <ReTooltip
-                          formatter={(value: number) => formatCurrency(value)}
-                        />
+                        <ReTooltip formatter={(value: number) => formatCurrency(value)} />
                         <Bar dataKey="pnl" minPointSize={3}>
                           {pnlBySymbolData.map((entry, index) => (
                             <Cell
@@ -818,9 +792,7 @@ export default function Portfolio() {
                 {/* Recent Activity Feed */}
                 <div className="rounded-xl border border-gray-200 p-4 col-span-3">
                   <div className="flex items-center justify-between mb-3">
-                    <h2 className="text-sm font-medium text-gray-500">
-                      Recent Activity
-                    </h2>
+                    <h2 className="text-sm font-medium text-gray-500">Recent Activity</h2>
                     <button
                       onClick={() => navigate('/transactions')}
                       className="text-xs text-gray-900 hover:underline cursor-pointer"
@@ -872,10 +844,12 @@ export default function Portfolio() {
                             </span>
                             <span className="font-semibold">{tx.symbol}</span>
                             <span className="text-gray-500 text-xs">
-                              {tx.optionType ?? '—'} {tx.strikePrice ? formatCurrency(tx.strikePrice) : ''} x
-                              {tx.quantity}
+                              {tx.optionType ?? '—'}{' '}
+                              {tx.strikePrice ? formatCurrency(tx.strikePrice) : ''} x{tx.quantity}
                             </span>
-                            <span className="text-right text-gray-500">{formatCurrency(tx.price)}</span>
+                            <span className="text-right text-gray-500">
+                              {formatCurrency(tx.price)}
+                            </span>
                             <span className="text-right font-semibold">
                               {formatCurrency(tx.quantity * tx.price * 100)}
                             </span>

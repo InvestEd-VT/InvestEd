@@ -4,8 +4,12 @@ import logger from '../config/logger.js';
 // ─── Math helpers (ported from frontend options.ts) ─────────────────────────
 
 function cdf(x: number): number {
-  const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741;
-  const a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911;
+  const a1 = 0.254829592,
+    a2 = -0.284496736,
+    a3 = 1.421413741;
+  const a4 = -1.453152027,
+    a5 = 1.061405429,
+    p = 0.3275911;
   const sign = x < 0 ? -1 : 1;
   const ax = Math.abs(x) / Math.SQRT2;
   const t = 1.0 / (1.0 + p * ax);
@@ -16,12 +20,29 @@ function cdf(x: number): number {
 const RISK_FREE_RATE = 0.043;
 
 const DIVIDEND_YIELDS: Record<string, number> = {
-  SPY: 0.013, QQQ: 0.006, IWM: 0.012, DIA: 0.018,
-  AAPL: 0.005, MSFT: 0.007, GOOGL: 0.005, AMZN: 0.0,
-  META: 0.004, TSLA: 0.0, NVDA: 0.0, AMD: 0.0,
-  NFLX: 0.0, JPM: 0.022, BAC: 0.025, WMT: 0.013,
-  KO: 0.028, PEP: 0.026, JNJ: 0.03, V: 0.007,
-  MA: 0.005, COIN: 0.0, MARA: 0.0,
+  SPY: 0.013,
+  QQQ: 0.006,
+  IWM: 0.012,
+  DIA: 0.018,
+  AAPL: 0.005,
+  MSFT: 0.007,
+  GOOGL: 0.005,
+  AMZN: 0.0,
+  META: 0.004,
+  TSLA: 0.0,
+  NVDA: 0.0,
+  AMD: 0.0,
+  NFLX: 0.0,
+  JPM: 0.022,
+  BAC: 0.025,
+  WMT: 0.013,
+  KO: 0.028,
+  PEP: 0.026,
+  JNJ: 0.03,
+  V: 0.007,
+  MA: 0.005,
+  COIN: 0.0,
+  MARA: 0.0,
 };
 
 // ─── Volatility ─────────────────────────────────────────────────────────────
@@ -59,7 +80,10 @@ function getSkewParams(baseHV: number): { slope: number; curve: number } {
 }
 
 function getAdjustedIV(
-  stockPrice: number, strikePrice: number, dte: number, baseHV: number
+  stockPrice: number,
+  strikePrice: number,
+  dte: number,
+  baseHV: number
 ): number {
   const ivPremium = 1.15;
   const baseIV = baseHV * ivPremium;
@@ -83,7 +107,12 @@ function getAdjustedIV(
 // ─── Black-Scholes ──────────────────────────────────────────────────────────
 
 function bsPrice(
-  S: number, K: number, T: number, r: number, q: number, sigma: number,
+  S: number,
+  K: number,
+  T: number,
+  r: number,
+  q: number,
+  sigma: number,
   type: 'call' | 'put'
 ): number {
   if (T <= 0) return type === 'call' ? Math.max(0, S - K) : Math.max(0, K - S);
@@ -154,19 +183,23 @@ export async function validateTradePrice(
   const type = optionType.toLowerCase() as 'call' | 'put';
   const q = DIVIDEND_YIELDS[symbol.toUpperCase()] ?? 0;
   const sigma = getAdjustedIV(currentPrice, strikePrice, dte, hv);
-  const theoretical = Math.max(0.01, Math.round(
-    bsPrice(currentPrice, strikePrice, T, RISK_FREE_RATE, q, sigma, type) * 100
-  ) / 100);
+  const theoretical = Math.max(
+    0.01,
+    Math.round(bsPrice(currentPrice, strikePrice, T, RISK_FREE_RATE, q, sigma, type) * 100) / 100
+  );
 
   // 4. DTE-based tolerance (wider for near-expiration due to gamma)
   let tolerance: number;
-  if (dte <= 3) tolerance = 0.50;       // ±50% for 0-3 DTE
-  else if (dte <= 7) tolerance = 0.40;  // ±40% for 4-7 DTE
-  else if (dte <= 30) tolerance = 0.30; // ±30% for 8-30 DTE
-  else tolerance = 0.25;                // ±25% for 30+ DTE
+  if (dte <= 3)
+    tolerance = 0.5; // ±50% for 0-3 DTE
+  else if (dte <= 7)
+    tolerance = 0.4; // ±40% for 4-7 DTE
+  else if (dte <= 30)
+    tolerance = 0.3; // ±30% for 8-30 DTE
+  else tolerance = 0.25; // ±25% for 30+ DTE
 
   // Minimum band of $0.10 for very cheap options
-  const band = Math.max(0.10, theoretical * tolerance);
+  const band = Math.max(0.1, theoretical * tolerance);
   const minPrice = Math.max(0.01, theoretical - band);
   const maxPrice = theoretical + band;
 
@@ -182,7 +215,8 @@ export async function validateTradePrice(
   };
 
   if (!isValid) {
-    result.reason = `Price $${submittedPrice.toFixed(2)} is outside the valid range ` +
+    result.reason =
+      `Price $${submittedPrice.toFixed(2)} is outside the valid range ` +
       `$${result.minPrice.toFixed(2)} - $${result.maxPrice.toFixed(2)} ` +
       `(theoretical: $${theoretical.toFixed(2)})`;
     logger.warn('Trade price validation failed', result);
@@ -231,9 +265,10 @@ export async function getTheoreticalPrice(
   const q = DIVIDEND_YIELDS[symbol.toUpperCase()] ?? 0;
   const sigma = getAdjustedIV(currentPrice, strikePrice, dte, hv);
 
-  const theoreticalPrice = Math.max(0.01, Math.round(
-    bsPrice(currentPrice, strikePrice, T, RISK_FREE_RATE, q, sigma, type) * 100
-  ) / 100);
+  const theoreticalPrice = Math.max(
+    0.01,
+    Math.round(bsPrice(currentPrice, strikePrice, T, RISK_FREE_RATE, q, sigma, type) * 100) / 100
+  );
 
   return { theoreticalPrice, stockPrice: currentPrice, iv: sigma };
 }

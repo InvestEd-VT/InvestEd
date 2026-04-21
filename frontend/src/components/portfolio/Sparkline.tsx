@@ -24,7 +24,9 @@ export function Sparkline({ symbol, width = 70, height = 24 }: SparklineProps) {
         setData(bars.map((b: { c: number }) => ({ v: b.c })));
       })
       .catch(() => {});
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [symbol]);
 
   if (!data || data.length < 2) return <div style={{ width, height }} />;

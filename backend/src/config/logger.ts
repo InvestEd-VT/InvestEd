@@ -17,19 +17,13 @@ const devFormat = combine(
 );
 
 // Structured JSON format for production (CloudWatch, ELK, etc.)
-const prodFormat = combine(
-  timestamp({ format: 'ISO' }),
-  errors({ stack: true }),
-  json()
-);
+const prodFormat = combine(timestamp({ format: 'ISO' }), errors({ stack: true }), json());
 
 const logger = winston.createLogger({
   level: env.NODE_ENV === 'production' ? 'info' : 'debug',
   defaultMeta: { service: 'invested-api' },
   format: env.NODE_ENV === 'production' ? prodFormat : devFormat,
-  transports: [
-    new winston.transports.Console(),
-  ],
+  transports: [new winston.transports.Console()],
   // Don't exit on uncaught exceptions — let the process manager handle restarts
   exitOnError: false,
 });

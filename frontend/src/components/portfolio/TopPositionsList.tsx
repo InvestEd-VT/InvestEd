@@ -132,7 +132,7 @@ export default function TopPositionsList() {
       <CardFooter>
         <div className="w-full flex justify-end">
           <a href="/portfolio">
-            <Button size="sm" variant="ghost" className='cursor-pointer'>
+            <Button size="sm" variant="ghost" className="cursor-pointer">
               View all positions
             </Button>
           </a>
