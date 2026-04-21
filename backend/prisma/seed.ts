@@ -14,6 +14,7 @@ async function main() {
   const MONEYNESS_ID = 'a7b8c9d0-e1f2-3456-abcd-567890123456';
   const DELTA_ID = 'b8c9d0e1-f2a3-4567-bcde-678901234567';
   const GAMMA_ID = 'c9d0e1f2-a3b4-5678-cdef-789012345678';
+  const THETA_ID = 'd0e1f2a3-b4c5-6789-defa-890123456789';
 
   await prisma.module.upsert({
     where: { id: INTRO_TO_OPTIONS_ID },
@@ -163,6 +164,22 @@ async function main() {
       order: 9,
     },
   });
+  await prisma.module.upsert({
+    where: { id: THETA_ID },
+    update: {
+      title: 'Theta',
+      description:
+        'How time decay works, why it accelerates near expiration, and what it means for buyers and sellers.',
+      order: 10,
+    },
+    create: {
+      id: THETA_ID,
+      title: 'Theta',
+      description:
+        'How time decay works, why it accelerates near expiration, and what it means for buyers and sellers.',
+      order: 10,
+    },
+  });
 
   console.log('✅ Modules seeded successfully');
   console.log('   → Order 1: Intro to Options');
@@ -174,6 +191,7 @@ async function main() {
   console.log('   → Order 7: In the Money, At the Money, Out of the Money');
   console.log('   → Order 8: Delta');
   console.log('   → Order 9: Gamma');
+  console.log('   → Order 10: Theta');
 }
 
 main()
