@@ -1,16 +1,17 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import { env } from '../config/env.js';
 import logger from '../config/logger.js';
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: env.EMAIL_USER,
-    pass: env.EMAIL_PASS,
-  },
-});
+const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null;
 
-function emailTemplate(title: string, body: string, ctaText: string, ctaUrl: string): string {
+const FROM_EMAIL = env.EMAIL_FROM || 'InvestEd <onboarding@resend.dev>';
+
+function emailTemplate(
+  title: string,
+  body: string,
+  ctaText: string,
+  ctaUrl: string
+): string {
   return `
 <!DOCTYPE html>
 <html>
@@ -43,16 +44,21 @@ function emailTemplate(title: string, body: string, ctaText: string, ctaUrl: str
 </html>`;
 }
 
-export const sendVerificationEmail = async (email: string, token: string): Promise<void> => {
+export const sendVerificationEmail = async (
+  email: string,
+  token: string
+): Promise<void> => {
   const verificationUrl = `${env.FRONTEND_URL}/verify-email?token=${encodeURIComponent(token)}`;
 
-  if (!env.EMAIL_USER || !env.EMAIL_PASS) {
-    logger.info(`[DEV] Verification email skipped. Verify link: ${verificationUrl}`);
+  if (!resend) {
+    logger.info(
+      `[DEV] Verification email skipped. Verify link: ${verificationUrl}`
+    );
     return;
   }
 
-  await transporter.sendMail({
-    from: `"InvestEd" <${env.EMAIL_USER}>`,
+  const { error } = await resend.emails.send({
+    from: FROM_EMAIL,
     to: email,
     subject: 'Verify your InvestEd account',
     html: emailTemplate(
@@ -62,18 +68,29 @@ export const sendVerificationEmail = async (email: string, token: string): Promi
       verificationUrl
     ),
   });
+
+  if (error) {
+    logger.error('Failed to send verification email', { error, to: email });
+  } else {
+    logger.info('Verification email sent', { to: email });
+  }
 };
 
-export const sendPasswordResetEmail = async (email: string, token: string): Promise<void> => {
+export const sendPasswordResetEmail = async (
+  email: string,
+  token: string
+): Promise<void> => {
   const resetUrl = `${env.FRONTEND_URL}/reset-password?token=${encodeURIComponent(token)}`;
 
-  if (!env.EMAIL_USER || !env.EMAIL_PASS) {
-    logger.info(`[DEV] Password reset email skipped. Reset link: ${resetUrl}`);
+  if (!resend) {
+    logger.info(
+      `[DEV] Password reset email skipped. Reset link: ${resetUrl}`
+    );
     return;
   }
 
-  await transporter.sendMail({
-    from: `"InvestEd" <${env.EMAIL_USER}>`,
+  const { error } = await resend.emails.send({
+    from: FROM_EMAIL,
     to: email,
     subject: 'Reset your InvestEd password',
     html: emailTemplate(
@@ -83,4 +100,10 @@ export const sendPasswordResetEmail = async (email: string, token: string): Prom
       resetUrl
     ),
   });
+
+  if (error) {
+    logger.error('Failed to send password reset email', { error, to: email });
+  } else {
+    logger.info('Password reset email sent', { to: email });
+  }
 };
