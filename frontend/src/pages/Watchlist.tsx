@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { Card, CardContent } from '../components/ui/card';
+import { Card, CardContent } from '../components/ui/card'; // used for empty state
 import { PageShell } from '../components/layout/PageShell';
 import { Sparkline } from '../components/portfolio/Sparkline';
 import { useToast } from '../hooks';
@@ -102,25 +102,25 @@ export default function Watchlist() {
 
   return (
     <PageShell>
-      <div className="max-w-2xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Watchlist</h1>
-          <p className="text-muted-foreground mt-2">Track your favorite stocks</p>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Watchlist</h1>
+            <p className="text-sm text-gray-500 mt-1">Track your favorite stocks</p>
+          </div>
+          <form onSubmit={handleAdd} className="flex gap-2">
+            <Input
+              value={symbolInput}
+              onChange={(e) => setSymbolInput(e.target.value)}
+              placeholder="e.g. AAPL"
+              className="w-32"
+            />
+            <Button type="submit" disabled={isAdding || !symbolInput.trim()} size="sm">
+              <PlusIcon className="size-4 mr-1" />
+              {isAdding ? 'Adding...' : 'Add'}
+            </Button>
+          </form>
         </div>
-
-        {/* Add Stock */}
-        <form onSubmit={handleAdd} className="flex gap-2">
-          <Input
-            value={symbolInput}
-            onChange={(e) => setSymbolInput(e.target.value)}
-            placeholder="Enter stock symbol (e.g. AAPL)"
-            className="flex-1"
-          />
-          <Button type="submit" disabled={isAdding || !symbolInput.trim()}>
-            <PlusIcon className="size-4 mr-1" />
-            {isAdding ? 'Adding...' : 'Add'}
-          </Button>
-        </form>
 
         {/* Watchlist */}
         {isLoading ? (
@@ -141,30 +141,31 @@ export default function Watchlist() {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-3">
+          <div className="rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-200">
             {watchlist.map((item) => (
-              <Card key={item.id} className="w-full">
-                <CardContent className="flex items-center justify-between py-4 px-5">
-                  <div className="flex items-center gap-4">
-                    <div>
-                      <p className="text-lg font-semibold">{item.symbol}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Added {new Date(item.addedAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <Sparkline symbol={item.symbol} width={80} height={28} />
+              <div
+                key={item.id}
+                className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-center gap-6 flex-1 min-w-0">
+                  <div className="min-w-[60px]">
+                    <p className="text-sm font-semibold">{item.symbol}</p>
+                    <p className="text-[11px] text-gray-400">
+                      Added {new Date(item.addedAt).toLocaleDateString()}
+                    </p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleRemove(item.symbol)}
-                    disabled={removingSymbol === item.symbol}
-                    className="text-muted-foreground hover:text-destructive"
-                  >
-                    <XIcon className="size-4" />
-                  </Button>
-                </CardContent>
-              </Card>
+                  <Sparkline symbol={item.symbol} width={120} height={32} />
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleRemove(item.symbol)}
+                  disabled={removingSymbol === item.symbol}
+                  className="text-gray-400 hover:text-red-500 ml-4"
+                >
+                  <XIcon className="size-4" />
+                </Button>
+              </div>
             ))}
           </div>
         )}
