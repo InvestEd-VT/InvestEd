@@ -258,8 +258,10 @@ export function TradeModal({
               />
             </div>
 
-            {/* Submit */}
-            <div className="mt-auto pt-2">
+          </div>
+
+            {/* Submit — sticky bottom */}
+            <div className="sticky bottom-0 bg-white border-t border-gray-100 p-4">
               <button
                 onClick={() => setConfirmOpen(true)}
                 disabled={isSubmitting || quantity < 1 || price <= 0}
@@ -271,7 +273,6 @@ export function TradeModal({
                   : `${mode === 'buy' ? 'Buy' : 'Sell'} ${quantity} Contract${quantity > 1 ? 's' : ''}`}
               </button>
             </div>
-          </div>
         ) : tradeError ? (
           <OptionsTradeError
             message={tradeError}
