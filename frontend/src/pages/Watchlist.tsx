@@ -29,15 +29,11 @@ export default function Watchlist() {
       const response = await api.get<{ watchlist: WatchlistItem[] }>('/watchlist');
       setWatchlist(response.data.watchlist);
     } catch {
-      toast({
-        title: 'Error',
-        description: 'Failed to load watchlist',
-        variant: 'destructive',
-      });
+      // Don't toast on initial load failure to avoid re-render loops
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, []);
 
   useEffect(() => {
     fetchWatchlist();
