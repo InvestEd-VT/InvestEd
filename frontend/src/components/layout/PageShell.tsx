@@ -4,7 +4,14 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
 export function PageShell({ children }: { children: React.ReactNode }) {
   return (
-    <SidebarProvider
+    <>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:text-gray-900 focus:underline"
+      >
+        Skip to content
+      </a>
+      <SidebarProvider
       style={
         {
           '--sidebar-width': 'calc(var(--spacing) * 72)',
@@ -38,12 +45,13 @@ export function PageShell({ children }: { children: React.ReactNode }) {
         }
       >
         <SiteHeader />
-        <div className="flex flex-1 flex-col">
+        <main id="main-content" className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">{children}</div>
           </div>
-        </div>
+        </main>
       </SidebarInset>
     </SidebarProvider>
+    </>
   );
 }

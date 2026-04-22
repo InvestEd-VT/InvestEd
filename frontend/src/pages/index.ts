@@ -13,3 +13,5 @@ export { default as Welcome } from './Welcome';
 export { default as Profile } from './Profile';
 export { default as Settings } from './Settings';
 export { default as Watchlist } from './Watchlist';
+export { default as Help } from './Help';
+export { default as Leaderboard } from './Leaderboard';

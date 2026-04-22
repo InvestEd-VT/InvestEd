@@ -8,6 +8,8 @@ import tradeRoutes from './trade.routes.js';
 import educationRoutes from './education.routes.js';
 import notificationRoutes from './notification.routes.js';
 import watchlistRoutes from './watchlist.routes.js';
+import adminRoutes from './admin.routes.js';
+import leaderboardRoutes from './leaderboard.routes.js';
 
 const router = Router();
 
@@ -20,5 +22,7 @@ router.use('/trade', tradeRoutes);
 router.use('/education', educationRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/watchlist', watchlistRoutes);
+router.use('/admin', adminRoutes);
+router.use('/leaderboard', leaderboardRoutes);
 
 export default router;

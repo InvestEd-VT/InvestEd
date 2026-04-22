@@ -131,7 +131,7 @@ export function TradeModal({
 
   return (
     <Sheet open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <SheetContent className="sm:max-w-100 bg-white border-gray-200 p-0 flex flex-col">
+      <SheetContent className="sm:max-w-100 bg-white border-gray-200 p-0 flex flex-col" aria-label={`${mode === 'buy' ? 'Buy' : 'Sell'} ${contract.contract_type.toUpperCase()} option order`}>
         <SheetHeader className="p-6 pb-0">
           <SheetTitle className="text-gray-900 text-lg font-semibold">
             {mode === 'buy' ? 'Buy' : 'Sell'}{' '}
@@ -187,6 +187,7 @@ export function TradeModal({
                   value={quantity}
                   onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
                   className="bg-white border-gray-200 h-11 text-lg text-gray-500 font-semibold"
+                  aria-label="Number of contracts"
                 />
               </div>
 
@@ -202,6 +203,7 @@ export function TradeModal({
                   value={price}
                   onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
                   className="bg-white border-gray-200 h-11 text-lg text-gray-500 font-semibold"
+                  aria-label="Limit price per share"
                 />
                 {theoreticalPrice !== null && (
                   <p className="text-[11px] text-gray-400 mt-1">
@@ -219,7 +221,7 @@ export function TradeModal({
             </div>
 
             {/* Order summary */}
-            <div className="rounded-lg bg-gray-50 p-4 space-y-2">
+            <div id="trade-order-summary" className="rounded-lg bg-gray-50 p-4 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">
                   {quantity} x {formatCurrency(price)} x {multiplier}
@@ -261,6 +263,7 @@ export function TradeModal({
               <button
                 onClick={() => setConfirmOpen(true)}
                 disabled={isSubmitting || quantity < 1 || price <= 0}
+                aria-describedby="trade-order-summary"
                 className={`w-full py-3 rounded-full font-semibold text-sm text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${accent.bg} ${accent.hover}`}
               >
                 {isSubmitting

@@ -39,6 +39,11 @@ export function ThetaDecayBar({ theta, dte, quantity }: ThetaDecayBarProps) {
       </span>
       <div className={`flex-1 h-1.5 rounded-full ${trackColor} overflow-hidden max-w-[80px]`}>
         <div
+          role="progressbar"
+          aria-valuenow={Math.round(progress * 100)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={`Theta decay: ${dte} days to expiration`}
           className={`h-full rounded-full ${barColor} transition-all`}
           style={{ width: `${progress * 100}%` }}
         />

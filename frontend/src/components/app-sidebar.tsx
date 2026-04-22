@@ -19,6 +19,7 @@ import {
   ListIcon,
   BookOpenIcon,
   StarIcon,
+  TrophyIcon,
   Settings2Icon,
   CircleHelpIcon,
   TrendingUpIcon,
@@ -56,6 +57,11 @@ const data = {
       title: 'Watchlist',
       url: '/watchlist',
       icon: <StarIcon />,
+    },
+    {
+      title: 'Leaderboard',
+      url: '/leaderboard',
+      icon: <TrophyIcon />,
     },
   ],
   navSecondary: [

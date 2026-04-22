@@ -16,37 +16,18 @@ import {
   Profile,
   Settings,
   Watchlist,
+  Help,
+  Leaderboard,
 } from './pages';
 import { ThemeProvider } from './components/ui/theme-provider';
 import { Toaster } from './components/ui/sonner';
 import { PageShell } from './components/layout/PageShell';
 import { StockSearch } from './components/trading/StockSearch';
-import { SettingsIcon, HelpCircleIcon } from 'lucide-react';
 import LearnLayout from '@/app/education/LearnLayout';
 import EducationDashboard from '@/app/education/EducationDashboard';
 import ModuleRouter from '@/components/education/ModuleRouter';
 import LockedModuleGuard from '@/components/education/LockedModuleGuard';
 import NotFound from '@/pages/NotFound';
-
-function PlaceholderPage({
-  title,
-  icon: Icon,
-  description,
-}: {
-  title: string;
-  icon: React.ElementType;
-  description: string;
-}) {
-  return (
-    <PageShell>
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <Icon className="size-12 text-gray-300 mb-4" />
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">{title}</h1>
-        <p className="text-gray-500 text-sm max-w-md">{description}</p>
-      </div>
-    </PageShell>
-  );
-}
 
 function App() {
   return (
@@ -104,18 +85,10 @@ function App() {
               }
             />
           </Route>
+          <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/watchlist" element={<Watchlist />} />
           <Route path="/settings" element={<Settings />} />
-          <Route
-            path="/help"
-            element={
-              <PlaceholderPage
-                title="Help"
-                icon={HelpCircleIcon}
-                description="Need help? Contact your team or check the documentation."
-              />
-            }
-          />
+          <Route path="/help" element={<Help />} />
         </Route>
 
         {/* Catch-all */}

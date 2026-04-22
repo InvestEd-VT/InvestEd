@@ -286,7 +286,7 @@ export default function Portfolio() {
             <Skeleton className="h-12 w-48" />
             <Skeleton className="h-4 w-32" />
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {Array.from({ length: 3 }).map((_, i) => (
               <Skeleton key={i} className="h-16 rounded-lg" />
             ))}
@@ -455,7 +455,7 @@ export default function Portfolio() {
 
         {/* Stats row */}
         {portfolio && (
-          <div className="grid grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             <div className="rounded-xl bg-gray-50 p-4">
               <p className="text-[11px] text-gray-500 uppercase tracking-wide">Cash</p>
               <p className="text-lg font-semibold mt-1 text-gray-900">
@@ -508,12 +508,13 @@ export default function Portfolio() {
               </button>
             </div>
           ) : (
-            <div className="rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-200">
+            <div role="table" aria-label="Open positions" className="rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-200">
               {positions.map((position) => {
                 const costBasis = Number(position.avgCost) * Number(position.quantity) * 100;
                 return (
                   <div
                     key={position.id}
+                    role="row"
                     className="flex items-center px-4 py-3.5 hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex-1 min-w-0">
@@ -630,12 +631,14 @@ export default function Portfolio() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => navigate(`/portfolio/positions/${position.id}`)}
+                        aria-label={`View details for ${position.symbol}`}
                         className="px-3 py-1.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors cursor-pointer"
                       >
                         Details
                       </button>
                       <button
                         onClick={() => handleSell(position)}
+                        aria-label={`Sell ${position.symbol} position`}
                         className="px-3 py-1.5 rounded-full text-xs font-semibold bg-orange-50 text-orange-500 hover:bg-orange-100 transition-colors cursor-pointer"
                       >
                         Sell
@@ -654,7 +657,7 @@ export default function Portfolio() {
 
             <div>
               <h2 className="text-sm font-medium text-gray-500 mb-3">Details</h2>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Net Greeks Exposure */}
                 <div className="rounded-xl border border-gray-200 p-4 space-y-4">
                   <h2 className="text-sm font-medium text-gray-500">Net Greeks Exposure</h2>
