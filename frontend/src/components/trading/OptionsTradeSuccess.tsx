@@ -27,12 +27,25 @@ export default function OptionsTradeSuccess({ trade, onClose }: OptionsTradeSucc
 
   return (
     <div className="flex flex-1 flex-col p-6 pt-4">
+      {trade.isDemo && (
+        <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 mb-3">
+          <p className="text-sm font-semibold text-blue-700">Practice Trade</p>
+          <p className="text-xs text-blue-600">
+            This was a demo trade — no real money was used. Your portfolio balance is unchanged.
+            Future trades will be real!
+          </p>
+        </div>
+      )}
       <div className="rounded-xl border border-green-200 bg-green-50 p-4">
         <div className="flex items-center gap-3">
           <CheckCircle2Icon className="size-6 text-green-600" />
           <div>
-            <p className="text-sm font-semibold text-green-700">Trade executed successfully</p>
-            <p className="text-xs text-green-700/80">Your order has been recorded.</p>
+            <p className="text-sm font-semibold text-green-700">
+              {trade.isDemo ? 'Practice trade completed' : 'Trade executed successfully'}
+            </p>
+            <p className="text-xs text-green-700/80">
+              {trade.isDemo ? 'Great job! You placed your first order.' : 'Your order has been recorded.'}
+            </p>
           </div>
         </div>
       </div>

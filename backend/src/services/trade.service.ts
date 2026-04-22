@@ -5,6 +5,7 @@ import * as massiveService from './massive.service.js';
 import * as notificationService from './notification.service.js';
 import { validateTradePrice } from './priceValidation.service.js';
 import { env } from '../config/env.js';
+import logger from '../config/logger.js';
 
 /**
  * Buys an options contract
@@ -221,7 +222,7 @@ export const buyOption = async (
       `Bought ${data.quantity} ${data.optionType} contract(s) for ${data.symbol} at $${data.price.toFixed(2)}/contract`
     );
   } catch (error) {
-    console.error('Failed to create buy notification:', error);
+    logger.error('Failed to create buy notification:', error);
   }
 
   return result;
@@ -353,7 +354,7 @@ export const sellOption = async (
       `Sold ${data.quantity} ${data.optionType} contract(s) for ${data.symbol} at $${data.price.toFixed(2)}/contract`
     );
   } catch (error) {
-    console.error('Failed to create sell notification:', error);
+    logger.error('Failed to create sell notification:', error);
   }
 
   return result;

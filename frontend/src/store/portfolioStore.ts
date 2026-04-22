@@ -76,7 +76,6 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
 
       set({ data, isLoading: false, lastFetched: Date.now() });
     } catch (err: unknown) {
-      console.error('Failed to fetch portfolio', err);
       const message =
         (err as { response?: { data?: { message?: string } }; message?: string })?.response?.data
           ?.message ||

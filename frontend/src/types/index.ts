@@ -151,6 +151,7 @@ export interface TradeResponse {
   position: Position;
   transaction: Transaction;
   cashBalance: number;
+  isDemo?: boolean;
 }
 
 // ─── Portfolio (extended) ──────────────────────────────────────────────────────

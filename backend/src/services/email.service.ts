@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { env } from '../config/env.js';
+import logger from '../config/logger.js';
 
 /**
  * Nodemailer transporter configured with Gmail credentials
@@ -22,7 +23,7 @@ export const sendVerificationEmail = async (email: string, token: string): Promi
   const verificationUrl = `${env.FRONTEND_URL}/verify-email?token=${encodeURIComponent(token)}`;
 
   if (!env.EMAIL_USER || !env.EMAIL_PASS) {
-    console.log(`[DEV] Verification email skipped. Verify link: ${verificationUrl}`);
+    logger.info(`[DEV] Verification email skipped. Verify link: ${verificationUrl}`);
     return;
   }
 
@@ -47,7 +48,7 @@ export const sendPasswordResetEmail = async (email: string, token: string): Prom
   const resetUrl = `${env.FRONTEND_URL}/reset-password?token=${token}`;
 
   if (!env.EMAIL_USER || !env.EMAIL_PASS) {
-    console.log(`[DEV] Password reset email skipped. Reset link: ${resetUrl}`);
+    logger.info(`[DEV] Password reset email skipped. Reset link: ${resetUrl}`);
     return;
   }
 

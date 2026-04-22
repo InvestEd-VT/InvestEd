@@ -38,7 +38,6 @@ export default function ProfilePage() {
         setFirstName(profile.firstName);
         setLastName(profile.lastName);
       } catch (error) {
-        console.error('Failed to load profile:', error);
         toast({
           title: 'Error',
           description: 'Failed to load profile',
@@ -81,7 +80,6 @@ export default function ProfilePage() {
         description: 'Profile updated successfully',
       });
     } catch (error: unknown) {
-      console.error('Failed to update profile:', error);
       const message =
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
         'Failed to update profile';
@@ -152,7 +150,6 @@ export default function ProfilePage() {
         description: 'Password changed successfully',
       });
     } catch (error: unknown) {
-      console.error('Failed to change password:', error);
       const errorMessage =
         (error as { response?: { data?: { error?: string } } })?.response?.data?.error ||
         'Failed to change password';

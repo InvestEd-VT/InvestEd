@@ -1,6 +1,7 @@
 import cron from 'node-cron';
 import prisma from '../config/database.js';
 import { Prisma } from '@prisma/client';
+import logger from '../config/logger.js';
 
 export const takePortfolioSnapshot = async () => {
   const portfolios = await prisma.portfolio.findMany({
@@ -25,13 +26,13 @@ export const takePortfolioSnapshot = async () => {
     });
   }
 
-  console.log(`[snapshot] Captured ${portfolios.length} portfolio snapshots`);
+  logger.info(`[snapshot] Captured ${portfolios.length} portfolio snapshots`);
 };
 
 export const startSnapshotJob = () => {
   cron.schedule('0 0 * * *', async () => {
-    console.log('[snapshot] Running daily portfolio snapshot...');
+    logger.info('[snapshot] Running daily portfolio snapshot...');
     await takePortfolioSnapshot();
   });
-  console.log('[snapshot] Daily snapshot job scheduled');
+  logger.info('[snapshot] Daily snapshot job scheduled');
 };

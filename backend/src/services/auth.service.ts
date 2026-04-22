@@ -147,18 +147,54 @@ export const register = async (data: RegisterRequestBody): Promise<{ message: st
  * Returns 401 if email or password is invalid
  */
 export const login = async (data: LoginRequestBody): Promise<AuthResponse> => {
+  const MAX_FAILED_ATTEMPTS = 5;
+  const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+
   const user = await prisma.user.findUnique({ where: { email: data.email } });
   if (!user) {
     throw new AppError('Invalid email or password', 401);
   }
 
+  // Check if account is locked
+  if (user.lockedUntil && user.lockedUntil > new Date()) {
+    const minutesLeft = Math.ceil(
+      (user.lockedUntil.getTime() - Date.now()) / 60000
+    );
+    throw new AppError(
+      `Account locked due to too many failed attempts. Try again in ${minutesLeft} minute(s).`,
+      429
+    );
+  }
+
   const valid = await comparePassword(data.password, user.passwordHash);
   if (!valid) {
+    const attempts = user.failedLoginAttempts + 1;
+    const lockout =
+      attempts >= MAX_FAILED_ATTEMPTS
+        ? new Date(Date.now() + LOCKOUT_DURATION_MS)
+        : null;
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        failedLoginAttempts: attempts,
+        ...(lockout && { lockedUntil: lockout }),
+      },
+    });
+
     throw new AppError('Invalid email or password', 401);
   }
 
   if (!user.emailVerified) {
     throw new AppError('Please verify your email before logging in', 401);
+  }
+
+  // Reset failed attempts on successful login
+  if (user.failedLoginAttempts > 0) {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { failedLoginAttempts: 0, lockedUntil: null },
+    });
   }
 
   const accessToken = generateAccessToken(user.id);

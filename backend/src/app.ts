@@ -31,7 +31,7 @@ app.use(cors(corsOptions));
 if (env.NODE_ENV !== 'test') {
   app.use(requestLogger);
 }
-app.use(express.json());
+app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Health check endpoint for Docker and Railway
