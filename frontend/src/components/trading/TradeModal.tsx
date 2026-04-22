@@ -142,7 +142,8 @@ export function TradeModal({
         </SheetHeader>
 
         {!tradeResult && !tradeError ? (
-          <div className="flex-1 flex flex-col p-6 pt-4 space-y-5">
+          <>
+          <div className="flex-1 flex flex-col p-6 pt-4 space-y-5 overflow-y-auto">
             {/* Contract info */}
             <div className="space-y-3">
               <div className="flex items-center gap-2">
@@ -261,7 +262,7 @@ export function TradeModal({
           </div>
 
             {/* Submit — sticky bottom */}
-            <div className="sticky bottom-0 bg-white border-t border-gray-100 p-4">
+            <div className="border-t border-gray-100 p-4 bg-white">
               <button
                 onClick={() => setConfirmOpen(true)}
                 disabled={isSubmitting || quantity < 1 || price <= 0}
@@ -273,6 +274,7 @@ export function TradeModal({
                   : `${mode === 'buy' ? 'Buy' : 'Sell'} ${quantity} Contract${quantity > 1 ? 's' : ''}`}
               </button>
             </div>
+          </>
         ) : tradeError ? (
           <OptionsTradeError
             message={tradeError}
