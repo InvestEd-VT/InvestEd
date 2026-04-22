@@ -368,6 +368,8 @@ export const resetPassword = async (token: string, newPassword: string) => {
       resetToken: null,
       resetTokenExpiry: null,
       refreshToken: null,
+      failedLoginAttempts: 0,
+      lockedUntil: null,
     },
   });
 

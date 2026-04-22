@@ -14,6 +14,8 @@ import {
   Notifications,
   Welcome,
   Profile,
+  Settings,
+  Watchlist,
 } from './pages';
 import { ThemeProvider } from './components/ui/theme-provider';
 import { Toaster } from './components/ui/sonner';
@@ -24,6 +26,7 @@ import LearnLayout from '@/app/education/LearnLayout';
 import EducationDashboard from '@/app/education/EducationDashboard';
 import ModuleRouter from '@/components/education/ModuleRouter';
 import LockedModuleGuard from '@/components/education/LockedModuleGuard';
+import NotFound from '@/pages/NotFound';
 
 function PlaceholderPage({
   title,
@@ -101,16 +104,8 @@ function App() {
               }
             />
           </Route>
-          <Route
-            path="/settings"
-            element={
-              <PlaceholderPage
-                title="Settings"
-                icon={SettingsIcon}
-                description="Account settings and preferences will be available here."
-              />
-            }
-          />
+          <Route path="/watchlist" element={<Watchlist />} />
+          <Route path="/settings" element={<Settings />} />
           <Route
             path="/help"
             element={
@@ -124,7 +119,7 @@ function App() {
         </Route>
 
         {/* Catch-all */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster />
     </ThemeProvider>

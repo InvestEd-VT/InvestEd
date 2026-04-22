@@ -300,13 +300,14 @@ export const getTransactions = async (
     prisma.transaction.findMany({
       where,
       orderBy: { executedAt: filters.sort === 'asc' ? 'asc' : 'desc' },
-      take: filters.limit || 50,
+      take: Math.min(filters.limit || 50, 200),
       skip: filters.offset || 0,
     }),
     prisma.transaction.count({ where }),
   ]);
 
-  return { transactions, total, limit: filters.limit || 50, offset: filters.offset || 0 };
+  const effectiveLimit = Math.min(filters.limit || 50, 200);
+  return { transactions, total, limit: effectiveLimit, offset: filters.offset || 0 };
 };
 
 /**
