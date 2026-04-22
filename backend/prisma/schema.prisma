@@ -30,6 +30,18 @@ model User {
   portfolios         Portfolio[]
   progress           ModuleProgress[]
   notifications    Notification[]
+  watchlist        Watchlist[]
+}
+
+model Watchlist {
+  id        String   @id @default(uuid())
+  userId    String
+  symbol    String
+  addedAt   DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, symbol])
+  @@index([userId])
 }
 
 model Portfolio {

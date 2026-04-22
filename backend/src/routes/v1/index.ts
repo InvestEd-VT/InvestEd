@@ -7,6 +7,7 @@ import optionsRoutes from './options.routes.js';
 import tradeRoutes from './trade.routes.js';
 import educationRoutes from './education.routes.js';
 import notificationRoutes from './notification.routes.js';
+import watchlistRoutes from './watchlist.routes.js';
 
 const router = Router();
 
@@ -18,5 +19,6 @@ router.use('/options', optionsRoutes);
 router.use('/trade', tradeRoutes);
 router.use('/education', educationRoutes);
 router.use('/notifications', notificationRoutes);
+router.use('/watchlist', watchlistRoutes);
 
 export default router;
