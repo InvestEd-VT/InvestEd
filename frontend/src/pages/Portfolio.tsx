@@ -336,7 +336,7 @@ export default function Portfolio() {
             if (!open) setResetInput('');
           }}
         >
-          <SheetContent className="sm:max-w-100">
+          <SheetContent className="w-[340px] sm:max-w-[380px] overflow-y-auto">
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2 text-red-500">
                 <AlertTriangleIcon className="size-5" />
