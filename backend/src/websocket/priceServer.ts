@@ -4,11 +4,8 @@ import jwt from 'jsonwebtoken';
 import { env } from '../config/env.js';
 import logger from '../config/logger.js';
 import prisma from '../config/database.js';
-import {
-  refreshPrices,
-  invalidateStockPrice,
-  cacheStockPrice,
-} from '../services/priceCache.service.js';
+import { refreshPrices } from '../services/priceCache.service.js';
+import { checkAlerts } from '../services/priceAlert.service.js';
 
 interface AuthenticatedSocket extends WebSocket {
   userId?: string;
@@ -140,6 +137,8 @@ export function createPriceServer(httpServer: HttpServer): WebSocketServer {
           }
         }
       }
+      // Check price alerts after broadcasting
+      await checkAlerts(prices);
     } catch (err) {
       logger.warn('Price broadcast failed', { error: (err as Error).message });
     }

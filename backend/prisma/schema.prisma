@@ -31,6 +31,27 @@ model User {
   progress           ModuleProgress[]
   notifications    Notification[]
   watchlist        Watchlist[]
+  priceAlerts      PriceAlert[]
+}
+
+model PriceAlert {
+  id          String         @id @default(uuid())
+  userId      String
+  symbol      String
+  targetPrice Float
+  condition   AlertCondition
+  triggered   Boolean        @default(false)
+  triggeredAt DateTime?
+  createdAt   DateTime       @default(now())
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([triggered])
+}
+
+enum AlertCondition {
+  ABOVE
+  BELOW
 }
 
 model Watchlist {

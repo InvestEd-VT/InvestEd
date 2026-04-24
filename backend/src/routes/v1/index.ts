@@ -9,6 +9,7 @@ import educationRoutes from './education.routes.js';
 import notificationRoutes from './notification.routes.js';
 import watchlistRoutes from './watchlist.routes.js';
 import adminRoutes from './admin.routes.js';
+import priceAlertRoutes from './priceAlert.routes.js';
 import leaderboardRoutes from './leaderboard.routes.js';
 
 const router = Router();
@@ -23,6 +24,7 @@ router.use('/education', educationRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/watchlist', watchlistRoutes);
 router.use('/admin', adminRoutes);
+router.use('/alerts', priceAlertRoutes);
 router.use('/leaderboard', leaderboardRoutes);
 
 export default router;

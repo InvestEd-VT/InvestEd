@@ -27,6 +27,7 @@ import { AlertCircleIcon, TrendingUpIcon, TrendingDownIcon } from 'lucide-react'
 import { OptionsChain } from '@/components/trading/OptionsChain';
 import { TradeModal } from '@/components/trading/TradeModal';
 import { PageShell } from '@/components/layout/PageShell';
+import { PriceAlertForm } from '@/components/trading/PriceAlertForm';
 import {
   computeParkinsonVolatility,
   setTickerVolatility,
@@ -559,7 +560,7 @@ export default function StockDetail() {
           )}
         </Card>
 
-        {/* Stats */}
+        {/* Stats + Price Alert */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card className="p-4">
             <p className="text-sm text-muted-foreground">Volume</p>
@@ -568,6 +569,9 @@ export default function StockDetail() {
           <Card className="p-4">
             <p className="text-sm text-muted-foreground">Market Cap</p>
             <p className="text-2xl font-semibold">${(stock.marketCap / 1e9).toFixed(2)}B</p>
+          </Card>
+          <Card className="p-4 col-span-2">
+            <PriceAlertForm symbol={stock.symbol} currentPrice={stock.currentPrice} />
           </Card>
         </div>
 
