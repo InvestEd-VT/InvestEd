@@ -37,7 +37,7 @@ export default function ProfilePage() {
         setProfileData(profile);
         setFirstName(profile.firstName);
         setLastName(profile.lastName);
-      } catch (error) {
+      } catch {
         toast({
           title: 'Error',
           description: 'Failed to load profile',
