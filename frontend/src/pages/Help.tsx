@@ -14,7 +14,7 @@ const faqs = [
   {
     question: 'What are "the Greeks"?',
     answer:
-      'The Greeks are a set of metrics that describe how an option\'s price responds to various factors. Delta measures sensitivity to the underlying stock price, Theta measures time decay, Gamma measures the rate of change of Delta, and Vega measures sensitivity to volatility. You will learn about each of these in the Education modules.',
+      "The Greeks are a set of metrics that describe how an option's price responds to various factors. Delta measures sensitivity to the underlying stock price, Theta measures time decay, Gamma measures the rate of change of Delta, and Vega measures sensitivity to volatility. You will learn about each of these in the Education modules.",
   },
   {
     question: 'Why is the stock price not updating?',

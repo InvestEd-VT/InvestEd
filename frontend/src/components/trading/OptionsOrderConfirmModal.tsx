@@ -30,13 +30,21 @@ export default function OptionsOrderConfirmModal({
   const contractType = contract.contract_type.toUpperCase();
 
   return (
-    <div className="fixed inset-0 z-[70]" role="dialog" aria-labelledby="confirm-modal-title" aria-describedby="confirm-modal-description" aria-modal="true">
+    <div
+      className="fixed inset-0 z-[70]"
+      role="dialog"
+      aria-labelledby="confirm-modal-title"
+      aria-describedby="confirm-modal-description"
+      aria-modal="true"
+    >
       <div className="absolute inset-0 bg-black/50" onClick={onCancel} />
 
       <div className="absolute inset-x-0 bottom-0 sm:inset-0 sm:flex sm:items-center sm:justify-center p-4">
         <div className="relative w-full max-w-md rounded-xl border bg-white shadow-xl">
           <div className="border-b px-5 py-4">
-            <h2 id="confirm-modal-title" className="text-lg font-semibold text-gray-900">Confirm options order</h2>
+            <h2 id="confirm-modal-title" className="text-lg font-semibold text-gray-900">
+              Confirm options order
+            </h2>
             <p id="confirm-modal-description" className="mt-1 text-sm text-gray-500">
               Please review your order details before submitting.
             </p>

@@ -40,9 +40,7 @@ export const deleteAlert = async (userId: string, alertId: string) => {
  * Check all active alerts against current prices.
  * Called from the WebSocket price broadcast loop.
  */
-export const checkAlerts = async (
-  prices: Map<string, { price: number }>
-): Promise<void> => {
+export const checkAlerts = async (prices: Map<string, { price: number }>): Promise<void> => {
   const activeAlerts = await prisma.priceAlert.findMany({
     where: { triggered: false },
   });

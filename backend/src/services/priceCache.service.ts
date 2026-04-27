@@ -21,11 +21,7 @@ interface CachedPrice {
  */
 export async function cacheStockPrice(symbol: string, data: CachedPrice): Promise<void> {
   try {
-    await redis.setEx(
-      `price:stock:${symbol.toUpperCase()}`,
-      STOCK_CACHE_TTL,
-      JSON.stringify(data)
-    );
+    await redis.setEx(`price:stock:${symbol.toUpperCase()}`, STOCK_CACHE_TTL, JSON.stringify(data));
   } catch (err) {
     logger.warn('Failed to cache stock price', { symbol, error: (err as Error).message });
   }

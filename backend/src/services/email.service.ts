@@ -6,12 +6,7 @@ const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null;
 
 const FROM_EMAIL = env.EMAIL_FROM || 'InvestEd <onboarding@resend.dev>';
 
-function emailTemplate(
-  title: string,
-  body: string,
-  ctaText: string,
-  ctaUrl: string
-): string {
+function emailTemplate(title: string, body: string, ctaText: string, ctaUrl: string): string {
   return `
 <!DOCTYPE html>
 <html>
@@ -44,16 +39,11 @@ function emailTemplate(
 </html>`;
 }
 
-export const sendVerificationEmail = async (
-  email: string,
-  token: string
-): Promise<void> => {
+export const sendVerificationEmail = async (email: string, token: string): Promise<void> => {
   const verificationUrl = `${env.FRONTEND_URL}/verify-email?token=${encodeURIComponent(token)}`;
 
   if (!resend) {
-    logger.info(
-      `[DEV] Verification email skipped. Verify link: ${verificationUrl}`
-    );
+    logger.info(`[DEV] Verification email skipped. Verify link: ${verificationUrl}`);
     return;
   }
 
@@ -76,16 +66,11 @@ export const sendVerificationEmail = async (
   }
 };
 
-export const sendPasswordResetEmail = async (
-  email: string,
-  token: string
-): Promise<void> => {
+export const sendPasswordResetEmail = async (email: string, token: string): Promise<void> => {
   const resetUrl = `${env.FRONTEND_URL}/reset-password?token=${encodeURIComponent(token)}`;
 
   if (!resend) {
-    logger.info(
-      `[DEV] Password reset email skipped. Reset link: ${resetUrl}`
-    );
+    logger.info(`[DEV] Password reset email skipped. Reset link: ${resetUrl}`);
     return;
   }
 

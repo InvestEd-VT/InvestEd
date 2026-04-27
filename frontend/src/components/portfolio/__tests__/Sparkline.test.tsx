@@ -60,11 +60,7 @@ describe('Sparkline', () => {
   });
 
   test('renders a chart when data has at least two bars', async () => {
-    mockGetHistory.mockResolvedValue([
-      { close: 100 },
-      { close: 105 },
-      { close: 110 },
-    ]);
+    mockGetHistory.mockResolvedValue([{ close: 100 }, { close: 105 }, { close: 110 }]);
 
     render(<Sparkline symbol="GOOG" />);
 

@@ -25,9 +25,7 @@ export function PriceAlertForm({ symbol, currentPrice }: PriceAlertFormProps) {
     try {
       setIsSubmitting(true);
       await api.post('/alerts', { symbol, targetPrice: price, condition });
-      toast.success(
-        `Alert set: ${symbol} ${condition.toLowerCase()} $${price.toFixed(2)}`
-      );
+      toast.success(`Alert set: ${symbol} ${condition.toLowerCase()} $${price.toFixed(2)}`);
       setTargetPrice('');
       setShowForm(false);
     } catch {
@@ -52,9 +50,7 @@ export function PriceAlertForm({ symbol, currentPrice }: PriceAlertFormProps) {
   return (
     <form onSubmit={handleSubmit} className="rounded-lg border border-gray-200 p-3 space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-gray-700">
-          Price Alert for {symbol}
-        </p>
+        <p className="text-xs font-medium text-gray-700">Price Alert for {symbol}</p>
         <button
           type="button"
           onClick={() => setShowForm(false)}
@@ -106,12 +102,7 @@ export function PriceAlertForm({ symbol, currentPrice }: PriceAlertFormProps) {
         </div>
       </div>
 
-      <Button
-        type="submit"
-        size="sm"
-        disabled={isSubmitting || !targetPrice}
-        className="w-full"
-      >
+      <Button type="submit" size="sm" disabled={isSubmitting || !targetPrice} className="w-full">
         <BellIcon className="size-3.5 mr-1.5" />
         {isSubmitting ? 'Setting...' : 'Set Alert'}
       </Button>

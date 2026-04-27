@@ -44,7 +44,9 @@ export default function OptionsTradeSuccess({ trade, onClose }: OptionsTradeSucc
               {trade.isDemo ? 'Practice trade completed' : 'Trade executed successfully'}
             </p>
             <p className="text-xs text-green-700/80">
-              {trade.isDemo ? 'Great job! You placed your first order.' : 'Your order has been recorded.'}
+              {trade.isDemo
+                ? 'Great job! You placed your first order.'
+                : 'Your order has been recorded.'}
             </p>
           </div>
         </div>

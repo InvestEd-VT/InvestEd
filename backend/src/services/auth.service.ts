@@ -157,9 +157,7 @@ export const login = async (data: LoginRequestBody): Promise<AuthResponse> => {
 
   // Check if account is locked
   if (user.lockedUntil && user.lockedUntil > new Date()) {
-    const minutesLeft = Math.ceil(
-      (user.lockedUntil.getTime() - Date.now()) / 60000
-    );
+    const minutesLeft = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
     throw new AppError(
       `Account locked due to too many failed attempts. Try again in ${minutesLeft} minute(s).`,
       429
@@ -170,9 +168,7 @@ export const login = async (data: LoginRequestBody): Promise<AuthResponse> => {
   if (!valid) {
     const attempts = user.failedLoginAttempts + 1;
     const lockout =
-      attempts >= MAX_FAILED_ATTEMPTS
-        ? new Date(Date.now() + LOCKOUT_DURATION_MS)
-        : null;
+      attempts >= MAX_FAILED_ATTEMPTS ? new Date(Date.now() + LOCKOUT_DURATION_MS) : null;
 
     await prisma.user.update({
       where: { id: user.id },

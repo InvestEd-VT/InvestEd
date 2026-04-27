@@ -16,7 +16,10 @@ vi.mock('@/utils/format', () => ({
 
 // Mock the Button component so we don't need the full UI library
 vi.mock('@/components/ui/button', () => ({
-  Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: string }) => (
+  Button: ({
+    children,
+    ...props
+  }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: string }) => (
     <button {...props}>{children}</button>
   ),
 }));

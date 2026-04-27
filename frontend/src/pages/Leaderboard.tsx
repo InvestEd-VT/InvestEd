@@ -83,9 +83,7 @@ export default function Leaderboard() {
                   <div
                     key={entry.userId}
                     className={`grid grid-cols-12 items-center px-4 py-3.5 text-sm transition-colors ${
-                      isCurrentUser
-                        ? 'bg-blue-50 border-l-2 border-l-blue-500'
-                        : 'hover:bg-gray-50'
+                      isCurrentUser ? 'bg-blue-50 border-l-2 border-l-blue-500' : 'hover:bg-gray-50'
                     }`}
                   >
                     <span className="col-span-1 font-semibold text-gray-500">

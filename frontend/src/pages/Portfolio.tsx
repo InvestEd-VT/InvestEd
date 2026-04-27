@@ -508,7 +508,11 @@ export default function Portfolio() {
               </button>
             </div>
           ) : (
-            <div role="table" aria-label="Open positions" className="rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-200">
+            <div
+              role="table"
+              aria-label="Open positions"
+              className="rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-200"
+            >
               {positions.map((position) => {
                 const costBasis = Number(position.avgCost) * Number(position.quantity) * 100;
                 return (

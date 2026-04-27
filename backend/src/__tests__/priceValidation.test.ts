@@ -23,10 +23,7 @@ vi.mock('../services/massive.service.js', () => ({
   ),
 }));
 
-import {
-  validateTradePrice,
-  getTheoreticalPrice,
-} from '../services/priceValidation.service.js';
+import { validateTradePrice, getTheoreticalPrice } from '../services/priceValidation.service.js';
 
 describe('Price Validation Service', () => {
   describe('validateTradePrice', () => {
