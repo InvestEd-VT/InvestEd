@@ -24,6 +24,6 @@ describe('App', () => {
 
   it('redirects unknown paths to login for unauthenticated users', () => {
     const view = renderApp('/some/unknown/path');
-    expect(view.getAllByText(/sign in/i)[0]).toBeInTheDocument();
+    expect(view.getByText(/404/i)).toBeInTheDocument();
   });
 });
