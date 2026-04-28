@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { stockService } from '../services';
 import { Button } from '../components/ui/button';
@@ -141,6 +142,7 @@ function WatchlistSearch({
 
 export default function Watchlist() {
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -244,7 +246,8 @@ export default function Watchlist() {
             {watchlist.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors"
+                onClick={() => navigate(`/stock/${item.symbol}`)}
+                className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-6 flex-1 min-w-0">
                   <div className="min-w-[60px]">
@@ -258,7 +261,10 @@ export default function Watchlist() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => handleRemove(item.symbol)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemove(item.symbol);
+                  }}
                   disabled={removingSymbol === item.symbol}
                   className="text-gray-400 hover:text-red-500 ml-4"
                 >
