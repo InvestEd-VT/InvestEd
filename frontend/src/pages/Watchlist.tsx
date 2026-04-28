@@ -8,8 +8,8 @@ import { Card, CardContent } from '../components/ui/card';
 import { PageShell } from '../components/layout/PageShell';
 import { Sparkline } from '../components/portfolio/Sparkline';
 import { useToast } from '../hooks';
-import { XIcon, PlusIcon, StarIcon, SearchIcon, LoaderIcon } from 'lucide-react';
-import type { StockSearchResult } from '../types';
+import { XIcon, PlusIcon, StarIcon, SearchIcon, LoaderIcon, TrendingUpIcon, TrendingDownIcon } from 'lucide-react';
+import type { StockSearchResult, Stock } from '../types';
 
 interface WatchlistItem {
   id: string;
@@ -145,6 +145,7 @@ export default function Watchlist() {
   const navigate = useNavigate();
 
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
+  const [prices, setPrices] = useState<Record<string, Stock>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [removingSymbol, setRemovingSymbol] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
@@ -164,6 +165,24 @@ export default function Watchlist() {
   useEffect(() => {
     fetchWatchlist();
   }, [fetchWatchlist]);
+
+  // Fetch price data for all watchlist items
+  useEffect(() => {
+    if (watchlist.length === 0) return;
+    const fetchPrices = async () => {
+      const results = await Promise.allSettled(
+        watchlist.map((item) => stockService.getDetail(item.symbol))
+      );
+      const newPrices: Record<string, Stock> = {};
+      results.forEach((result, i) => {
+        if (result.status === 'fulfilled') {
+          newPrices[watchlist[i].symbol] = result.value;
+        }
+      });
+      setPrices(newPrices);
+    };
+    fetchPrices();
+  }, [watchlist]);
 
   const handleAddSymbol = async (symbol: string) => {
     if (watchlist.some((item) => item.symbol === symbol)) {
@@ -243,35 +262,53 @@ export default function Watchlist() {
           </Card>
         ) : (
           <div className="rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-200">
-            {watchlist.map((item) => (
-              <div
-                key={item.id}
-                onClick={() => navigate(`/stock/${item.symbol}`)}
-                className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer"
-              >
-                <div className="flex items-center gap-6 flex-1 min-w-0">
-                  <div className="min-w-[60px]">
-                    <p className="text-sm font-semibold">{item.symbol}</p>
-                    <p className="text-[11px] text-gray-400">
-                      Added {new Date(item.addedAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <Sparkline symbol={item.symbol} width={120} height={32} />
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRemove(item.symbol);
-                  }}
-                  disabled={removingSymbol === item.symbol}
-                  className="text-gray-400 hover:text-red-500 ml-4"
+            {watchlist.map((item) => {
+              const stock = prices[item.symbol];
+              const changePercent = stock?.priceChangePercent ?? 0;
+              const isPositive = changePercent >= 0;
+              return (
+                <div
+                  key={item.id}
+                  onClick={() => navigate(`/stock/${item.symbol}`)}
+                  className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer"
                 >
-                  <XIcon className="size-4" />
-                </Button>
-              </div>
-            ))}
+                  <div className="flex items-center gap-6 flex-1 min-w-0">
+                    <div className="min-w-[60px]">
+                      <p className="text-sm font-semibold">{item.symbol}</p>
+                      <p className="text-[11px] text-gray-400">
+                        {stock?.companyName || `Added ${new Date(item.addedAt).toLocaleDateString()}`}
+                      </p>
+                    </div>
+                    <Sparkline symbol={item.symbol} width={120} height={32} />
+                  </div>
+                  <div className="flex items-center gap-4 ml-4">
+                    {stock ? (
+                      <div className="text-right min-w-[100px]">
+                        <p className="text-sm font-semibold">${stock.currentPrice.toFixed(2)}</p>
+                        <p className={`text-xs font-medium flex items-center justify-end gap-0.5 ${isPositive ? 'text-green-600' : 'text-red-500'}`}>
+                          {isPositive ? <TrendingUpIcon className="size-3" /> : <TrendingDownIcon className="size-3" />}
+                          {isPositive ? '+' : ''}{changePercent.toFixed(2)}%
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="min-w-[100px] h-8 bg-gray-100 rounded animate-pulse" />
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemove(item.symbol);
+                      }}
+                      disabled={removingSymbol === item.symbol}
+                      className="text-gray-400 hover:text-red-500"
+                    >
+                      <XIcon className="size-4" />
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
