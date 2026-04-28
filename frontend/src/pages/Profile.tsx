@@ -49,7 +49,8 @@ export default function ProfilePage() {
     };
 
     loadProfile();
-  }, [toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Handle name update
   const handleUpdateName = async (e: React.FormEvent) => {

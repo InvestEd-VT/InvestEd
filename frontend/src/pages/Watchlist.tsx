@@ -16,39 +16,22 @@ interface WatchlistItem {
   addedAt: string;
 }
 
-export default function Watchlist() {
-  const { toast } = useToast();
-
-  const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [removingSymbol, setRemovingSymbol] = useState<string | null>(null);
-
-  // Search state
+function WatchlistSearch({
+  onAdd,
+  watchlist,
+  isAdding,
+}: {
+  onAdd: (symbol: string) => void;
+  watchlist: WatchlistItem[];
+  isAdding: boolean;
+}) {
   const [query, setQuery] = useState('');
   const [searchResults, setSearchResults] = useState<StockSearchResult[]>([]);
   const [searching, setSearching] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [isAdding, setIsAdding] = useState(false);
   const debounceRef = useRef<number | undefined>(undefined);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const fetchWatchlist = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const response = await api.get<{ watchlist: WatchlistItem[] }>('/watchlist');
-      setWatchlist(response.data.watchlist);
-    } catch {
-      // Silent fail on initial load
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchWatchlist();
-  }, [fetchWatchlist]);
-
-  // Close dropdown on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -61,7 +44,6 @@ export default function Watchlist() {
     }
   }, [dropdownOpen]);
 
-  // Debounced search
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
@@ -89,6 +71,98 @@ export default function Watchlist() {
     };
   }, [query]);
 
+  const handleSelect = (symbol: string) => {
+    onAdd(symbol);
+    setQuery('');
+    setSearchResults([]);
+    setDropdownOpen(false);
+  };
+
+  return (
+    <div className="relative w-full" ref={dropdownRef}>
+      <div className="relative">
+        <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value.toUpperCase())}
+          onFocus={() => query.length >= 2 && setDropdownOpen(true)}
+          placeholder="Search stocks to add to watchlist..."
+          className="pl-10 pr-8"
+          disabled={isAdding}
+        />
+        {searching && (
+          <LoaderIcon className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-gray-400" />
+        )}
+      </div>
+
+      {dropdownOpen && (
+        <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden">
+          {searching && searchResults.length === 0 && (
+            <div className="px-4 py-6 text-center text-sm text-gray-400">Searching...</div>
+          )}
+
+          {!searching && searchResults.length === 0 && query.length >= 2 && (
+            <div className="px-4 py-6 text-center text-sm text-gray-400">
+              No stocks found for &quot;{query}&quot;
+            </div>
+          )}
+
+          {searchResults.length > 0 && (
+            <ul className="max-h-64 overflow-y-auto divide-y divide-gray-100">
+              {searchResults.map((stock) => {
+                const alreadyAdded = watchlist.some((w) => w.symbol === stock.symbol);
+                return (
+                  <li key={stock.symbol}>
+                    <button
+                      onClick={() => !alreadyAdded && handleSelect(stock.symbol)}
+                      disabled={alreadyAdded || isAdding}
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center justify-between disabled:opacity-50"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold">{stock.symbol}</p>
+                        <p className="text-xs text-gray-400 truncate">{stock.companyName}</p>
+                      </div>
+                      {alreadyAdded ? (
+                        <span className="text-[11px] text-gray-400 ml-2">Added</span>
+                      ) : (
+                        <PlusIcon className="size-4 text-gray-400 ml-2 shrink-0" />
+                      )}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function Watchlist() {
+  const { toast } = useToast();
+
+  const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [removingSymbol, setRemovingSymbol] = useState<string | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
+
+  const fetchWatchlist = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await api.get<{ watchlist: WatchlistItem[] }>('/watchlist');
+      setWatchlist(response.data.watchlist);
+    } catch {
+      // Silent fail on initial load
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchWatchlist();
+  }, [fetchWatchlist]);
+
   const handleAddSymbol = async (symbol: string) => {
     if (watchlist.some((item) => item.symbol === symbol)) {
       toast({ title: 'Already in watchlist', description: `${symbol} is already tracked` });
@@ -98,9 +172,6 @@ export default function Watchlist() {
     try {
       setIsAdding(true);
       await api.post('/watchlist', { symbol });
-      setQuery('');
-      setSearchResults([]);
-      setDropdownOpen(false);
       await fetchWatchlist();
       toast({ title: 'Added', description: `${symbol} added to watchlist` });
     } catch {
@@ -131,8 +202,12 @@ export default function Watchlist() {
     }
   };
 
+  const searchOverride = (
+    <WatchlistSearch onAdd={handleAddSymbol} watchlist={watchlist} isAdding={isAdding} />
+  );
+
   return (
-    <PageShell>
+    <PageShell searchOverride={searchOverride}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -140,63 +215,9 @@ export default function Watchlist() {
             <p className="text-sm text-gray-500 mt-1">Track your favorite stocks</p>
           </div>
 
-          {/* Search + Add */}
-          <div className="relative w-72" ref={dropdownRef}>
-            <div className="relative">
-              <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <Input
-                value={query}
-                onChange={(e) => setQuery(e.target.value.toUpperCase())}
-                onFocus={() => query.length >= 2 && setDropdownOpen(true)}
-                placeholder="Search stocks to add..."
-                className="pl-10 pr-8"
-                disabled={isAdding}
-              />
-              {searching && (
-                <LoaderIcon className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-gray-400" />
-              )}
-            </div>
-
-            {dropdownOpen && (
-              <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden">
-                {searching && searchResults.length === 0 && (
-                  <div className="px-4 py-6 text-center text-sm text-gray-400">Searching...</div>
-                )}
-
-                {!searching && searchResults.length === 0 && query.length >= 2 && (
-                  <div className="px-4 py-6 text-center text-sm text-gray-400">
-                    No stocks found for "{query}"
-                  </div>
-                )}
-
-                {searchResults.length > 0 && (
-                  <ul className="max-h-64 overflow-y-auto divide-y divide-gray-100">
-                    {searchResults.map((stock) => {
-                      const alreadyAdded = watchlist.some((w) => w.symbol === stock.symbol);
-                      return (
-                        <li key={stock.symbol}>
-                          <button
-                            onClick={() => !alreadyAdded && handleAddSymbol(stock.symbol)}
-                            disabled={alreadyAdded || isAdding}
-                            className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center justify-between disabled:opacity-50"
-                          >
-                            <div className="min-w-0">
-                              <p className="text-sm font-semibold">{stock.symbol}</p>
-                              <p className="text-xs text-gray-400 truncate">{stock.companyName}</p>
-                            </div>
-                            {alreadyAdded ? (
-                              <span className="text-[11px] text-gray-400 ml-2">Added</span>
-                            ) : (
-                              <PlusIcon className="size-4 text-gray-400 ml-2 shrink-0" />
-                            )}
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </div>
-            )}
+          {/* Mobile-only search (header search is hidden on mobile) */}
+          <div className="md:hidden w-60">
+            <WatchlistSearch onAdd={handleAddSymbol} watchlist={watchlist} isAdding={isAdding} />
           </div>
         </div>
 

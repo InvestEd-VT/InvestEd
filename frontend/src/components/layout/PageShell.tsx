@@ -2,7 +2,7 @@ import { AppSidebar } from '@/components/app-sidebar';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
-export function PageShell({ children }: { children: React.ReactNode }) {
+export function PageShell({ children, searchOverride }: { children: React.ReactNode; searchOverride?: React.ReactNode }) {
   return (
     <>
       <a
@@ -44,7 +44,7 @@ export function PageShell({ children }: { children: React.ReactNode }) {
           } as React.CSSProperties
         }
       >
-        <SiteHeader />
+        <SiteHeader searchOverride={searchOverride} />
         <main id="main-content" className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">{children}</div>

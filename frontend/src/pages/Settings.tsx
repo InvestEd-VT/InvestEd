@@ -40,7 +40,8 @@ export default function Settings() {
     };
 
     loadProfile();
-  }, [toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
