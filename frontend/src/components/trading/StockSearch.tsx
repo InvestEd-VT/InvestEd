@@ -62,7 +62,6 @@ export function StockSearch() {
         } else {
           setError('Failed to search stocks');
         }
-        console.error('Stock search error:', err);
       } finally {
         setLoading(false);
       }

@@ -24,7 +24,7 @@ const portfolioService = {
           '30d': 30,
           '90d': 90,
           '1y': 365,
-          all: 90,
+          all: 3650,
         };
         const days = periodMap[period] || 30;
         const now = new Date();
@@ -33,7 +33,12 @@ const portfolioService = {
           d.setDate(now.getDate() - (days - i - 1));
           // create a gentle oscillating balance around $10k
           const value = 10000 + Math.round(Math.sin(i / 3) * 300 + (i - days / 2) * 2);
-          return { date: d.toISOString(), cashBalance: value };
+          return {
+            date: d.toISOString(),
+            totalValue: value,
+            cashBalance: value,
+            positionsValue: 0,
+          };
         });
 
         return { history, currentCash: history[history.length - 1]?.cashBalance ?? 10000 };

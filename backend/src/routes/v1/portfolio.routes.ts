@@ -36,6 +36,14 @@ router.get('/transactions', authMiddleware, portfolioController.getTransactions)
 router.get('/history', authMiddleware, portfolioController.getPortfolioHistory);
 
 /**
+ * GET /api/v1/portfolio/export/csv
+ * @access Private
+ * Export positions or transactions as CSV
+ * @query type - 'positions' (default) or 'transactions'
+ */
+router.get('/export/csv', authMiddleware, portfolioController.exportCsv);
+
+/**
  * POST /api/v1/portfolio/reset
  * @access Private
  * Resets portfolio to $10,000 (requires { confirm: "RESET" })

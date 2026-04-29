@@ -16,7 +16,10 @@ model User {
   passwordHash       String
   firstName          String
   lastName           String
-  emailVerified      Boolean     @default(false)
+  emailVerified          Boolean     @default(false)
+  hasCompletedFirstTrade Boolean     @default(false)
+  failedLoginAttempts    Int         @default(0)
+  lockedUntil            DateTime?
   refreshToken       String?
   verificationToken  String?     @unique
   verificationExpiry DateTime?
@@ -27,6 +30,39 @@ model User {
   portfolios         Portfolio[]
   progress           ModuleProgress[]
   notifications    Notification[]
+  watchlist        Watchlist[]
+  priceAlerts      PriceAlert[]
+}
+
+model PriceAlert {
+  id          String         @id @default(uuid())
+  userId      String
+  symbol      String
+  targetPrice Float
+  condition   AlertCondition
+  triggered   Boolean        @default(false)
+  triggeredAt DateTime?
+  createdAt   DateTime       @default(now())
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([triggered])
+}
+
+enum AlertCondition {
+  ABOVE
+  BELOW
+}
+
+model Watchlist {
+  id        String   @id @default(uuid())
+  userId    String
+  symbol    String
+  addedAt   DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, symbol])
+  @@index([userId])
 }
 
 model Portfolio {

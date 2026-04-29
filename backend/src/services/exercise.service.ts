@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { getStockPrice } from './massive.service.js';
 import { AppError } from '../utils/AppError.js';
 import { createNotification } from './notification.service.js';
+import logger from '../config/logger.js';
 
 /**
  * Calculate settlement value for an expiring option
@@ -165,10 +166,10 @@ export const processPositionExpiration = async (positionId: string): Promise<voi
     }
   } catch (err) {
     // Notification failure should not affect position processing
-    console.error(`[exercise] Failed to create notification for position ${positionId}:`, err);
+    logger.error(`[exercise] Failed to create notification for position ${positionId}:`, err);
   }
 
-  console.log(
+  logger.info(
     `[exercise] ${position.symbol} ${optionType} $${strikePrice} — ${newStatus} — P&L: $${pnl.toFixed(2)}`
   );
 };

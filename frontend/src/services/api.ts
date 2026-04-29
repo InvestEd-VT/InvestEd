@@ -43,12 +43,6 @@ api.interceptors.response.use(
 
   async (error) => {
     const originalRequest = error.config;
-    console.debug('[api] response error', {
-      url: originalRequest?.url || error.request?.responseURL,
-      status: error.response?.status,
-      message: error.message,
-    });
-
     // Only attempt refresh on 401 errors.
     // _retry flag prevents infinite loops if the refresh request itself returns 401.
     if (error.response?.status !== 401 || originalRequest._retry) {
@@ -76,19 +70,16 @@ api.interceptors.response.use(
       // endpoint (the backend expects a token in the body and will return 400).
       // Immediately force a logout and redirect to the login page.
       if (!refreshToken) {
-        console.warn('[api] no refreshToken available, aborting refresh');
         refreshQueue = [];
         useAuthStore.getState().logout();
         window.location.href = '/login';
         return Promise.reject(error);
       }
 
-      console.debug('[api] attempting token refresh');
       // Call the refresh endpoint with the current refresh token
       const response = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken });
       const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data;
 
-      console.debug('[api] refresh successful, updating tokens');
       // Persist the new tokens in the store (and localStorage via persist middleware)
       setTokens(newAccessToken, newRefreshToken);
 

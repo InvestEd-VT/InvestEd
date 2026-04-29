@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../types/auth.types.js';
 import * as tradeService from '../services/trade.service.js';
+import { getTheoreticalPrice } from '../services/priceValidation.service.js';
 
 /**
  * POST /api/v1/trade/options/buy
@@ -104,6 +105,43 @@ export const sellOption = async (
     });
 
     res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * GET /api/v1/trade/options/price
+ * Returns theoretical price for an option contract (INVESTED-299)
+ */
+export const getOptionPrice = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { symbol, strikePrice, expirationDate, optionType } = req.query;
+
+    if (!symbol || !strikePrice || !expirationDate || !optionType) {
+      res.status(400).json({
+        error: 'Missing required query params: symbol, strikePrice, expirationDate, optionType',
+      });
+      return;
+    }
+
+    if (!['CALL', 'PUT'].includes(String(optionType))) {
+      res.status(400).json({ error: 'optionType must be CALL or PUT' });
+      return;
+    }
+
+    const result = await getTheoreticalPrice(
+      String(symbol),
+      parseFloat(String(strikePrice)),
+      String(expirationDate),
+      String(optionType) as 'CALL' | 'PUT'
+    );
+
+    res.json(result);
   } catch (error) {
     next(error);
   }

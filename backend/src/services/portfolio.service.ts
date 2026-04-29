@@ -1,6 +1,7 @@
 import { Prisma, Transaction } from '@prisma/client';
 import prisma from '../config/database.js';
 import { AppError } from '../utils/AppError.js';
+import { getStockPriceWithCache } from './priceCache.service.js';
 
 type PrismaClientOrTransaction = typeof prisma | Prisma.TransactionClient;
 
@@ -192,7 +193,7 @@ export const getPortfolio = async (userId: string) => {
     throw new AppError('Portfolio not found', 404);
   }
 
-  const { totalPositionsValue, totalPnL, positionsWithPnL } = calculatePortfolioValue(
+  const { totalPositionsValue, totalPnL, positionsWithPnL } = await calculatePortfolioValue(
     portfolio.positions
   );
 
@@ -299,13 +300,14 @@ export const getTransactions = async (
     prisma.transaction.findMany({
       where,
       orderBy: { executedAt: filters.sort === 'asc' ? 'asc' : 'desc' },
-      take: filters.limit || 50,
+      take: Math.min(filters.limit || 50, 200),
       skip: filters.offset || 0,
     }),
     prisma.transaction.count({ where }),
   ]);
 
-  return { transactions, total, limit: filters.limit || 50, offset: filters.offset || 0 };
+  const effectiveLimit = Math.min(filters.limit || 50, 200);
+  return { transactions, total, limit: effectiveLimit, offset: filters.offset || 0 };
 };
 
 /**
@@ -401,11 +403,11 @@ export const getPortfolioHistory = async (userId: string, period: string = '30d'
 };
 
 /**
- * Calculates total value and unrealized P&L for a set of open positions
- * NOTE: Uses avgCost as current price placeholder, unrealizedPnL will always be $0
- * until live prices are integrated via Massive API (INVESTED-150)
+ * Calculates total value and unrealized P&L for a set of open positions.
+ * Fetches live stock prices from cache/API for accurate market valuations.
+ * INVESTED-337: Replaced hardcoded avgCost with live Massive API prices.
  */
-const calculatePortfolioValue = (
+const calculatePortfolioValue = async (
   positions: Array<{
     symbol: string;
     quantity: Prisma.Decimal;
@@ -418,13 +420,27 @@ const calculatePortfolioValue = (
   let totalPositionsValue = 0;
   let totalPnL = 0;
 
+  // Fetch live prices for all unique symbols
+  const uniqueSymbols = [...new Set(positions.map((p) => p.symbol))];
+  const priceMap = new Map<string, number>();
+  await Promise.all(
+    uniqueSymbols.map(async (symbol) => {
+      try {
+        const data = await getStockPriceWithCache(symbol);
+        priceMap.set(symbol, data.price);
+      } catch {
+        // If price fetch fails, we'll fall back to avgCost below
+      }
+    })
+  );
+
   const positionsWithPnL = positions.map((position) => {
     const quantity = Number(position.quantity);
     const avgCost = Number(position.avgCost);
     const multiplier = position.positionType === 'OPTION' ? 100 : 1;
 
-    // TODO: Replace currentPrice with live price from Massive API (INVESTED-150)
-    const currentPrice = avgCost;
+    // Use live price if available, fall back to avgCost
+    const currentPrice = priceMap.get(position.symbol) ?? avgCost;
     const marketValue = currentPrice * quantity * multiplier;
     const costBasis = avgCost * quantity * multiplier;
     const unrealizedPnL = marketValue - costBasis;

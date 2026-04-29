@@ -2,12 +2,17 @@ import { Prisma } from '@prisma/client';
 import prisma from '../config/database.js';
 import { AppError } from '../utils/AppError.js';
 import * as massiveService from './massive.service.js';
+import * as notificationService from './notification.service.js';
+import { validateTradePrice } from './priceValidation.service.js';
+import { env } from '../config/env.js';
+import logger from '../config/logger.js';
 
 /**
  * Buys an options contract
  * INVESTED-182: tradeService.buyOption()
  * INVESTED-183: Validate sufficient cash balance
  * INVESTED-184: Update options position and deduct cash
+ * INVESTED-333: First trade is a demo — no real transaction
  */
 export const buyOption = async (
   userId: string,
@@ -21,12 +26,81 @@ export const buyOption = async (
     price: number;
   }
 ) => {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    throw new AppError('User not found', 404);
+  }
+
   const portfolio = await prisma.portfolio.findFirst({
     where: { userId },
   });
 
   if (!portfolio) {
     throw new AppError('Portfolio not found', 404);
+  }
+
+  // INVESTED-333: First trade is a demo — return simulated result
+  if (!user.hasCompletedFirstTrade) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { hasCompletedFirstTrade: true },
+    });
+
+    const contractMultiplier = 100;
+    const totalCost = data.price * data.quantity * contractMultiplier;
+
+    return {
+      position: {
+        id: 'demo',
+        symbol: data.symbol,
+        quantity: data.quantity,
+        avgCost: data.price,
+        positionType: 'OPTION',
+        optionType: data.optionType,
+        strikePrice: data.strikePrice,
+        expirationDate: data.expirationDate,
+        contractSymbol: data.contractSymbol,
+        status: 'OPEN',
+        portfolioId: portfolio.id,
+      },
+      transaction: {
+        id: 'demo',
+        type: 'BUY',
+        symbol: data.symbol,
+        quantity: data.quantity,
+        price: data.price,
+        positionType: 'OPTION',
+        optionType: data.optionType,
+        strikePrice: data.strikePrice,
+        expirationDate: data.expirationDate,
+        contractSymbol: data.contractSymbol,
+        portfolioId: portfolio.id,
+      },
+      cashBalance: portfolio.cashBalance,
+      isDemo: true,
+    };
+  }
+
+  // INVESTED-298: Validate submitted price against theoretical market price
+  // Skip in test environment — Polygon API not available in CI
+  if (env.NODE_ENV !== 'test') {
+    try {
+      const validation = await validateTradePrice(
+        data.symbol,
+        data.strikePrice,
+        data.expirationDate,
+        data.optionType,
+        data.price
+      );
+      if (!validation.isValid) {
+        throw new AppError(
+          `${validation.reason}. Adjust your limit price to be within the valid range.`,
+          400
+        );
+      }
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+    }
   }
 
   const contractMultiplier = 100;
@@ -139,6 +213,18 @@ export const buyOption = async (
     return { position, transaction, cashBalance: updatedPortfolio.cashBalance };
   });
 
+  // Create notification for successful purchase
+  try {
+    await notificationService.createNotification(
+      userId,
+      'TRADE_EXECUTED',
+      'Trade Executed',
+      `Bought ${data.quantity} ${data.optionType} contract(s) for ${data.symbol} at $${data.price.toFixed(2)}/contract`
+    );
+  } catch (error) {
+    logger.error('Failed to create buy notification:', error);
+  }
+
   return result;
 };
 
@@ -166,6 +252,28 @@ export const sellOption = async (
 
   if (!portfolio) {
     throw new AppError('Portfolio not found', 404);
+  }
+
+  // INVESTED-298: Validate submitted price against theoretical market price
+  // Skip in test environment — Polygon API not available in CI
+  if (env.NODE_ENV !== 'test') {
+    try {
+      const validation = await validateTradePrice(
+        data.symbol,
+        data.strikePrice,
+        data.expirationDate,
+        data.optionType,
+        data.price
+      );
+      if (!validation.isValid) {
+        throw new AppError(
+          `${validation.reason}. Adjust your limit price to be within the valid range.`,
+          400
+        );
+      }
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+    }
   }
 
   // INVESTED-190: Validate sufficient position
@@ -236,6 +344,18 @@ export const sellOption = async (
 
     return { position, transaction, cashBalance: updatedPortfolio.cashBalance };
   });
+
+  // Create notification for successful sale
+  try {
+    await notificationService.createNotification(
+      userId,
+      'TRADE_EXECUTED',
+      'Trade Executed',
+      `Sold ${data.quantity} ${data.optionType} contract(s) for ${data.symbol} at $${data.price.toFixed(2)}/contract`
+    );
+  } catch (error) {
+    logger.error('Failed to create sell notification:', error);
+  }
 
   return result;
 };

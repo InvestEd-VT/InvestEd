@@ -25,4 +25,11 @@ router.post(
   tradeController.sellOption
 );
 
+/**
+ * GET /api/v1/trade/options/price
+ * @access Private
+ * Get theoretical price for an option contract (INVESTED-299)
+ */
+router.get('/options/price', authMiddleware, tradeController.getOptionPrice);
+
 export default router;

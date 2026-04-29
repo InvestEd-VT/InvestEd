@@ -18,6 +18,8 @@ import {
   ChartBarIcon,
   ListIcon,
   BookOpenIcon,
+  StarIcon,
+  TrophyIcon,
   Settings2Icon,
   CircleHelpIcon,
   TrendingUpIcon,
@@ -50,6 +52,16 @@ const data = {
       title: 'Learn',
       url: '/learn',
       icon: <BookOpenIcon />,
+    },
+    {
+      title: 'Watchlist',
+      url: '/watchlist',
+      icon: <StarIcon />,
+    },
+    {
+      title: 'Leaderboard',
+      url: '/leaderboard',
+      icon: <TrophyIcon />,
     },
   ],
   navSecondary: [

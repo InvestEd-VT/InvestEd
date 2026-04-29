@@ -4,6 +4,7 @@ import {
   processPositionExpiration,
   archiveExpiredPositions,
 } from '../services/exercise.service.js';
+import logger from '../config/logger.js';
 
 /**
  * Find and process all expired options positions
@@ -20,11 +21,11 @@ export const processExpiredOptions = async (): Promise<void> => {
   });
 
   if (expiredPositions.length === 0) {
-    console.log('[expiration] No expired positions found');
+    logger.info('[expiration] No expired positions found');
     return;
   }
 
-  console.log(`[expiration] Processing ${expiredPositions.length} expired position(s)...`);
+  logger.info(`[expiration] Processing ${expiredPositions.length} expired position(s)...`);
 
   const portfolioPositions = new Map<string, string[]>();
 
@@ -35,27 +36,27 @@ export const processExpiredOptions = async (): Promise<void> => {
       ids.push(position.id);
       portfolioPositions.set(position.portfolioId, ids);
     } catch (err) {
-      console.error(`[expiration] Failed to process position ${position.id}:`, err);
+      logger.error(`[expiration] Failed to process position ${position.id}:`, err);
     }
   }
 
   for (const [portfolioId, positionIds] of portfolioPositions) {
     try {
       const archived = await archiveExpiredPositions(portfolioId, positionIds);
-      console.log(`[expiration] Archived ${archived} position(s) for portfolio ${portfolioId}`);
+      logger.info(`[expiration] Archived ${archived} position(s) for portfolio ${portfolioId}`);
     } catch (err) {
-      console.error(`[expiration] Failed to archive positions for portfolio ${portfolioId}:`, err);
+      logger.error(`[expiration] Failed to archive positions for portfolio ${portfolioId}:`, err);
     }
   }
 
-  console.log('[expiration] Done processing expired options');
+  logger.info('[expiration] Done processing expired options');
 };
 
 export const startExpirationJob = () => {
   // Runs at 6pm ET daily (after market close)
   cron.schedule('0 18 * * 1-5', async () => {
-    console.log('[expiration] Running options expiration processing...');
+    logger.info('[expiration] Running options expiration processing...');
     await processExpiredOptions();
   });
-  console.log('[expiration] Options expiration job scheduled');
+  logger.info('[expiration] Options expiration job scheduled');
 };
