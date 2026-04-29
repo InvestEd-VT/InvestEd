@@ -8,7 +8,15 @@ import { Card, CardContent } from '../components/ui/card';
 import { PageShell } from '../components/layout/PageShell';
 import { Sparkline } from '../components/portfolio/Sparkline';
 import { useToast } from '../hooks';
-import { XIcon, PlusIcon, StarIcon, SearchIcon, LoaderIcon, TrendingUpIcon, TrendingDownIcon } from 'lucide-react';
+import {
+  XIcon,
+  PlusIcon,
+  StarIcon,
+  SearchIcon,
+  LoaderIcon,
+  TrendingUpIcon,
+  TrendingDownIcon,
+} from 'lucide-react';
 import type { StockSearchResult, Stock } from '../types';
 
 interface WatchlistItem {
@@ -276,7 +284,8 @@ export default function Watchlist() {
                     <div className="min-w-[60px]">
                       <p className="text-sm font-semibold">{item.symbol}</p>
                       <p className="text-[11px] text-gray-400">
-                        {stock?.companyName || `Added ${new Date(item.addedAt).toLocaleDateString()}`}
+                        {stock?.companyName ||
+                          `Added ${new Date(item.addedAt).toLocaleDateString()}`}
                       </p>
                     </div>
                     <Sparkline symbol={item.symbol} width={120} height={32} />
@@ -285,9 +294,16 @@ export default function Watchlist() {
                     {stock ? (
                       <div className="text-right min-w-[100px]">
                         <p className="text-sm font-semibold">${stock.currentPrice.toFixed(2)}</p>
-                        <p className={`text-xs font-medium flex items-center justify-end gap-0.5 ${isPositive ? 'text-green-600' : 'text-red-500'}`}>
-                          {isPositive ? <TrendingUpIcon className="size-3" /> : <TrendingDownIcon className="size-3" />}
-                          {isPositive ? '+' : ''}{changePercent.toFixed(2)}%
+                        <p
+                          className={`text-xs font-medium flex items-center justify-end gap-0.5 ${isPositive ? 'text-green-600' : 'text-red-500'}`}
+                        >
+                          {isPositive ? (
+                            <TrendingUpIcon className="size-3" />
+                          ) : (
+                            <TrendingDownIcon className="size-3" />
+                          )}
+                          {isPositive ? '+' : ''}
+                          {changePercent.toFixed(2)}%
                         </p>
                       </div>
                     ) : (

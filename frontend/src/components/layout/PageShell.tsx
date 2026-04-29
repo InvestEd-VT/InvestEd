@@ -2,7 +2,13 @@ import { AppSidebar } from '@/components/app-sidebar';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
-export function PageShell({ children, searchOverride }: { children: React.ReactNode; searchOverride?: React.ReactNode }) {
+export function PageShell({
+  children,
+  searchOverride,
+}: {
+  children: React.ReactNode;
+  searchOverride?: React.ReactNode;
+}) {
   return (
     <>
       <a
